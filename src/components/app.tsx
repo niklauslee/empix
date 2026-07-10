@@ -36,6 +36,22 @@ function App() {
         >
           Rectangle
         </button>
+        <button
+          className="text-xs px-2 py-1 border border-black bg-slate-200"
+          onClick={() => {
+            window.editor.handlers.setActiveHandler("Ellipse");
+          }}
+        >
+          Ellipse
+        </button>
+        <button
+          className="text-xs px-2 py-1 border border-black bg-slate-200"
+          onClick={() => {
+            window.editor.handlers.setActiveHandler("Line");
+          }}
+        >
+          Line
+        </button>
       </div>
       <div className="flex flex-row items-center justify-center gap-2 py-2">
         <button

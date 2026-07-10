@@ -1,6 +1,11 @@
 import { useEffect, useRef } from "react";
 import { Editor, type EditorOptions } from "./editor";
-import { RectangleFactoryHandler, SelectHandler } from "./handlers";
+import {
+  EllipseFactoryHandler,
+  LineFactoryHandler,
+  RectangleFactoryHandler,
+  SelectHandler,
+} from "./handlers";
 import { BoxManipulator, SelectionManipulator } from "./manipulators";
 
 export interface EditorComponentProps extends Omit<
@@ -15,11 +20,15 @@ function basicSetup(): EditorOptions {
     handlers: [
       new SelectHandler("Select"),
       new RectangleFactoryHandler("Rectangle"),
+      new EllipseFactoryHandler("Ellipse"),
+      new LineFactoryHandler("Line"),
     ],
     defaultHandlerId: "Select",
     manipulators: {
       Selection: new SelectionManipulator(),
       Rectangle: new BoxManipulator(),
+      Ellipse: new BoxManipulator(),
+      Line: new BoxManipulator(),
     },
     width: 64,
     height: 32,
