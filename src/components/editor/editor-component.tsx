@@ -65,7 +65,7 @@ export const EditorComponent: React.FC<EditorComponentProps> = ({
 
   return (
     <div
-      className="flex flex-col items-center justify-center gap-4 border h-fit w-fit p-8"
+      className="flex flex-col items-center justify-center gap-4 h-fit w-fit"
       ref={editorHolderRef}
       {...others}
     />

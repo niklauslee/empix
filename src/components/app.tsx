@@ -57,6 +57,24 @@ function App() {
         <button
           className="text-xs px-2 py-1 border border-black"
           onClick={() => {
+            const scale = window.editor.getScale();
+            if (scale < 16) window.editor.setScale(scale + 1);
+          }}
+        >
+          +
+        </button>
+        <button
+          className="text-xs px-2 py-1 border border-black"
+          onClick={() => {
+            const scale = window.editor.getScale();
+            if (scale > 1) window.editor.setScale(scale - 1);
+          }}
+        >
+          -
+        </button>
+        <button
+          className="text-xs px-2 py-1 border border-black"
+          onClick={() => {
             window.editor.undo();
           }}
         >

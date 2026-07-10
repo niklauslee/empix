@@ -370,6 +370,9 @@ export class Controller {
     this.dyStep = 0;
   }
 
+  /**
+   * Reset the states of controller
+   */
   reset() {
     this.dragging = false;
     this.dragStartPoint = [-1, -1];
@@ -916,6 +919,9 @@ export class Editor {
     this.repaint();
   }
 
+  /**
+   * Bring shapes to the front.
+   */
   bringToFront(shapes: Shape[] = []) {
     const shapesToBring = shapes.length > 0 ? shapes : this.selection.get();
     this.transform.begin();
@@ -926,6 +932,9 @@ export class Editor {
     this.repaint();
   }
 
+  /**
+   * Send shapes to the back.
+   */
   sendToBack(shapes: Shape[] = []) {
     const shapesToSend = shapes.length > 0 ? shapes : this.selection.get();
     this.transform.begin();
