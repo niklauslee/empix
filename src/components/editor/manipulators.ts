@@ -3,6 +3,7 @@ import { ControllerPosition } from "./consts";
 import {
   BoxMoveController,
   BoxSizeController,
+  LineMoveController,
   SelectionMoveController,
 } from "./controllers";
 
@@ -35,5 +36,15 @@ export class BoxManipulator extends Manipulator {
       new BoxSizeController(this, { position: ControllerPosition.LEFT_BOTTOM }),
       new BoxMoveController(this),
     ];
+  }
+}
+
+/**
+ * Manipulator for line shape
+ */
+export class LineManipulator extends Manipulator {
+  constructor() {
+    super();
+    this.controllers = [new LineMoveController(this)];
   }
 }

@@ -6,7 +6,11 @@ import {
   RectangleFactoryHandler,
   SelectHandler,
 } from "./handlers";
-import { BoxManipulator, SelectionManipulator } from "./manipulators";
+import {
+  BoxManipulator,
+  LineManipulator,
+  SelectionManipulator,
+} from "./manipulators";
 
 export interface EditorComponentProps extends Omit<
   React.HTMLAttributes<HTMLDivElement>,
@@ -28,7 +32,7 @@ function basicSetup(): EditorOptions {
       Selection: new SelectionManipulator(),
       Rectangle: new BoxManipulator(),
       Ellipse: new BoxManipulator(),
-      Line: new BoxManipulator(),
+      Line: new LineManipulator(),
     },
     width: 64,
     height: 32,

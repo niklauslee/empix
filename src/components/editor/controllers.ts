@@ -1,6 +1,6 @@
 import { Editor, Manipulator, Controller } from "./editor";
 import { Color, ControllerPosition, Cursor } from "./consts";
-import { getBoundingRect, type Shape } from "./shapes";
+import { getBoundingRect, type LineShape, type Shape } from "./shapes";
 import * as geometry from "./geometry";
 import {
   drawBoundary,
@@ -232,5 +232,54 @@ export class BoxSizeController extends Controller {
     const gc = editor.gc;
     const cp = getControllerPosition(gc, shape, this.options.position);
     drawControlPoint(gc, cp[0], cp[1]);
+  }
+}
+
+/**
+ * Moving controller for line shape
+ */
+export class LineMoveController extends Controller {
+  mouseCursor(
+    editor: Editor,
+    shape: Shape,
+    e: PointerEvent,
+    point: number[],
+  ): [string, number] {
+    return [Cursor.MOVE, 0];
+  }
+
+  active(editor: Editor, shape: Shape) {
+    return editor.selection.size() === 1 && editor.selection.isSelected(shape);
+  }
+
+  initialize(editor: Editor, shape: Shape, e: PointerEvent, point: number[]) {
+    editor.transform.begin();
+  }
+
+  update(editor: Editor, shape: Shape, e: PointerEvent, point: number[]) {
+    if (this.dxStep === 0 && this.dyStep === 0) return;
+    const s = shape as LineShape;
+    editor.transform.assign(s, "x1", s.x1 + this.dxStep);
+    editor.transform.assign(s, "y1", s.y1 + this.dyStep);
+    editor.transform.assign(s, "x2", s.x2 + this.dxStep);
+    editor.transform.assign(s, "y2", s.y2 + this.dyStep);
+    editor.transform.assign(s, "left", s.left + this.dxStep);
+    editor.transform.assign(s, "top", s.top + this.dyStep);
+  }
+
+  finalize(editor: Editor, shape: Shape, e: PointerEvent, point: number[]) {
+    editor.transform.end();
+  }
+
+  draw(editor: Editor, shape: Shape) {
+    let r = getBoundingRect(shape);
+    drawBoundary(
+      editor.gc,
+      r[0][0],
+      r[0][1],
+      r[1][0],
+      r[1][1],
+      Color.SELECTION,
+    );
   }
 }

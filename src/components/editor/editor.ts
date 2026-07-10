@@ -3,15 +3,12 @@ import { Color, Mouse } from "./consts";
 import {
   containsPoint,
   getBoundingRect,
-  type RectangleShape,
   render,
   type Shape,
   ShapeFactory,
-  ShapeType,
 } from "./shapes";
 import * as geometry from "./geometry";
 import { drawBoundary } from "./utils";
-import { nanoid } from "nanoid";
 import { Transform } from "./transform";
 import { Store } from "./store";
 
@@ -683,29 +680,6 @@ export class Editor {
     this.factory = new ShapeFactory();
     this.transform = new Transform(this.store);
     this.initializeCanvas();
-
-    // Initialize the scene
-    const rect1 = {
-      type: ShapeType.RECTANGLE,
-      id: nanoid(),
-      left: 4,
-      top: 4,
-      width: 15,
-      height: 20,
-      color: "yellow",
-    } as RectangleShape;
-    const rect2 = {
-      type: ShapeType.RECTANGLE,
-      id: nanoid(),
-      left: 10,
-      top: 10,
-      width: 20,
-      height: 10,
-      color: "red",
-    } as RectangleShape;
-    this.store.shapes.push(rect1);
-    this.store.shapes.push(rect2);
-
     this.fit();
     this.repaint();
   }
