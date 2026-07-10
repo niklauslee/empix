@@ -1,6 +1,11 @@
 import { Editor, Manipulator, Controller } from "./editor";
 import { Color, ControllerPosition, Cursor } from "./consts";
-import { getBoundingRect, type LineShape, type Shape } from "./shapes";
+import {
+  getBoundingRect,
+  ShapeType,
+  type LineShape,
+  type Shape,
+} from "./shapes";
 import * as geometry from "./geometry";
 import {
   drawBoundary,
@@ -49,6 +54,16 @@ export class SelectionMoveController extends Controller {
     for (let s of selections) {
       editor.transform.assign(s, "left", s.left + this.dxStep);
       editor.transform.assign(s, "top", s.top + this.dyStep);
+      switch (s.type) {
+        case ShapeType.LINE: {
+          const line = s as LineShape;
+          editor.transform.assign(line, "x1", line.x1 + this.dxStep);
+          editor.transform.assign(line, "y1", line.y1 + this.dyStep);
+          editor.transform.assign(line, "x2", line.x2 + this.dxStep);
+          editor.transform.assign(line, "y2", line.y2 + this.dyStep);
+          break;
+        }
+      }
     }
   }
 
