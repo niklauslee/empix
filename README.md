@@ -1,43 +1,102 @@
-# Astro Starter Kit: Minimal
+# Bitmap Editor
 
-```sh
-npm create astro@latest -- --template minimal
+```mermaid
+classDiagram
+  class Scene
+  class Shape {
+    id: string
+    type: string
+    name: string
+  }
+  class Editor
+  class HandlerManager
+  class Handler
+  class GraphicContext
+  class Renderer
+  Scene "1" o-- "*" Shape
+  Editor "1" --> "1" Scene
+  Editor "1" --> "1" HandlerManager
+  Editor "1" --> "1" GraphicContext
+  Editor "1" --> "1" Renderer
+  HandlerManager "1" o-- "*" Handler
+  HandlerManager "1" --> "1" Handler : activeHandler
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Shapes
 
-## 🚀 Project Structure
+- `Line`, `Rectangle`, `Circle`, `Polygon`, `Text`
+- `Pixels`는 여러 픽셀을 하나의 Shape로 묶어서 관리할 수 있음. (마우스로 한번에 그림 픽셀들은 하나의 `Pixels` Shape로 묶임)
+- 각 도형은 class 가 아닌 JSON object 형태로 저장됨. (Shape type에 따라 다른 속성을 가짐)
 
-Inside of your Astro project, you'll see the following folders and files:
+```ts
+interface Shape {
+  type: string;
+  color: number;
+}
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+interface Line extends Shape {
+  type: "line";
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+}
+
+interface Rectangle extends Shape {
+  type: "rectangle";
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  radius: number;
+}
+
+interface Ellipse extends Shape {
+  type: "ellipse";
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+interface Polygon extends Shape {
+  type: "polygon";
+  points: [][];
+}
+
+interface Pixels extends Shape {
+  type: "pixels";
+  pixels: [][];
+}
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## Rendering
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+## Interaction
 
-Any static assets, like images, can be placed in the `public/` directory.
+- Canvas에서 마우스 이벤트 발생시 --> 비트맵 좌표로 변환
 
-## 🧞 Commands
+```ts
+class GraphicBuffer {
+  buffer: Uint8Array; // W * H * colors
+  width: number;
+  height: number;
+  put(x, y, color: number);
+  get(x, y): number;
+}
 
-All commands are run from the root of the project, from a terminal:
+class Page {
+  shapes: Shape[];
+}
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+class Project {
+  pages: Page[];
+}
 
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+class Editor {
+  canvas: HTMLCanvasElement;
+  buffer: GraphicBuffer;
+  handlers: Handlers;
+  render() {}
+}
+```
