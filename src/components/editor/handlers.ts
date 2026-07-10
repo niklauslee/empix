@@ -381,9 +381,8 @@ export class TextFactoryHandler extends Handler {
   initialize(editor: Editor, e: PointerEvent): void {
     editor.transform.begin();
     this.shape = editor.factory.create(ShapeType.TEXT) as TextShape;
-    const text = this.shape?.text ?? "";
-    const metric = editor.gc.metricText(text);
-    console.log("Text metric:", metric, this.shape);
+    editor.gc.setFont(this.shape.font);
+    const metric = editor.gc.metricText(this.shape.text);
     this.shape.left = this.dragStartPoint[0];
     this.shape.top = this.dragStartPoint[1];
     this.shape.width = metric.width;

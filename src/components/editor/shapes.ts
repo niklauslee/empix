@@ -113,7 +113,7 @@ export class ShapeFactory {
           width: 1,
           height: 1,
           color: "#000000",
-          font: "Leros",
+          font: "-Misc-Fixed-Medium-R-Normal--6-60-75-75-C-40-ISO10646-1", // "Leros",
           text: "Hello, world!Ä",
         } as TextShape;
       default:

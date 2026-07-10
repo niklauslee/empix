@@ -11,6 +11,7 @@ import * as geometry from "./geometry";
 import { drawBoundary } from "./utils";
 import { Transform } from "./transform";
 import { Store } from "./store";
+import { getAvailableFonts, loadFont } from "./font";
 
 /**
  * Handler for editor events
@@ -805,6 +806,20 @@ export class Editor {
   setCursor(cursor: string, angle: number = 0) {
     const cssCursor = cursor.replace("{{angle}}", angle.toString());
     this.canvas.style.cursor = cssCursor;
+  }
+
+  /**
+   * Load a font from a BDF string.
+   */
+  async loadFont(bdfstring: string) {
+    return await loadFont(bdfstring);
+  }
+
+  /**
+   * Get a list of available font names
+   */
+  getAvailableFonts(): string[] {
+    return getAvailableFonts();
   }
 
   /**
