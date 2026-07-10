@@ -5,11 +5,13 @@ import {
   LineFactoryHandler,
   RectangleFactoryHandler,
   SelectHandler,
+  TextFactoryHandler,
 } from "./handlers";
 import {
   BoxManipulator,
   LineManipulator,
   SelectionManipulator,
+  TextManipulator,
 } from "./manipulators";
 
 export interface EditorComponentProps extends Omit<
@@ -26,6 +28,7 @@ function basicSetup(): EditorOptions {
       new RectangleFactoryHandler("Rectangle"),
       new EllipseFactoryHandler("Ellipse"),
       new LineFactoryHandler("Line"),
+      new TextFactoryHandler("Text"),
     ],
     defaultHandlerId: "Select",
     manipulators: {
@@ -33,11 +36,12 @@ function basicSetup(): EditorOptions {
       Rectangle: new BoxManipulator(),
       Ellipse: new BoxManipulator(),
       Line: new LineManipulator(),
+      Text: new TextManipulator(),
     },
-    width: 64,
-    height: 32,
+    width: 128,
+    height: 64,
     margin: 20,
-    scale: 12,
+    scale: 8,
   };
 }
 

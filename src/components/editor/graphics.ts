@@ -1,4 +1,4 @@
-import * as geometry from "./geometry";
+import { getFont } from "./font";
 
 /**
  * Graphic context options
@@ -21,6 +21,7 @@ export class GraphicContext {
   width: number;
   height: number;
   scale: number;
+  font: string | null;
 
   constructor(canvas: HTMLCanvasElement, options: GraphicContextOptions) {
     this.canvas = canvas;
@@ -31,6 +32,7 @@ export class GraphicContext {
     this.width = options.width;
     this.height = options.height;
     this.scale = options.scale;
+    this.font = "Leros";
   }
 
   /**
@@ -56,6 +58,20 @@ export class GraphicContext {
    */
   clear() {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  }
+
+  /**
+   * Set the font for text rendering
+   */
+  setFont(font: string) {
+    this.font = font;
+  }
+
+  /**
+   * Get the current font
+   */
+  getFont(): string | null {
+    return this.font;
   }
 
   /**
@@ -179,5 +195,67 @@ export class GraphicContext {
         y += sy;
       }
     }
+  }
+
+  /**
+   * Draw text on the canvas
+   */
+  drawText(x: number, y: number, text: string, color: string) {
+    if (!this.font) throw new Error("Font is not set");
+    const font = getFont(this.font);
+    if (!font) throw new Error(`Font "${this.font}" not found`);
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+      const glyph = font.glyph(char);
+      if (!glyph) continue;
+      const { bbw, bbh, bbxoff, bbyoff, hexdata, dwx0 } = glyph.meta;
+      const bitmap = hexdata.map((row) => parseInt(row, 16));
+      const numBytesPerRow = Math.ceil(bbw / 8);
+      for (let r = 0; r < bbh; r++) {
+        const rowValue = bitmap[r] ?? 0;
+        for (let b = 0; b < bbw; b++) {
+          const bitPosFromRight = 8 * numBytesPerRow - 1 - b;
+          const bit = (rowValue >> bitPosFromRight) & 1;
+          if (bit) {
+            const gx = x + bbxoff + b;
+            const gy = y + r;
+            this.drawPixel(gx, gy, color);
+          }
+        }
+      }
+      x += dwx0 ?? bbw;
+    }
+  }
+
+  /**
+   * Measure the width, height, and baseline of the text in pixels
+   */
+  metricText(text: string): {
+    width: number;
+    height: number;
+    baseline: number;
+  } {
+    if (!this.font) throw new Error("Font is not set");
+    const font = getFont(this.font);
+    if (!font) throw new Error(`Font "${this.font}" not found`);
+    let width = 0;
+    let minTop = 0;
+    let maxBottom = 0;
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+      const glyph = font.glyph(char);
+      if (!glyph) continue;
+      const { bbw, bbh, bbyoff, dwx0 } = glyph.meta;
+      const top = -bbyoff - bbh + 1;
+      const bottom = -bbyoff;
+      minTop = Math.min(minTop, top);
+      maxBottom = Math.max(maxBottom, bottom);
+      width += dwx0 ?? bbw;
+    }
+    return {
+      width,
+      height: maxBottom - minTop + 1,
+      baseline: -minTop,
+    };
   }
 }

@@ -52,6 +52,15 @@ export interface LineShape extends Shape {
 }
 
 /**
+ * Text shape type
+ */
+export interface TextShape extends Shape {
+  type: typeof ShapeType.TEXT;
+  text: string;
+  font: string;
+}
+
+/**
  * ShapeFactory is responsible for creating shapes based on their type.
  */
 export class ShapeFactory {
@@ -94,6 +103,19 @@ export class ShapeFactory {
           x2: 0,
           y2: 0,
         } as LineShape;
+      case ShapeType.TEXT:
+        return {
+          id: nanoid(),
+          type: ShapeType.TEXT,
+          name: "",
+          left: 10,
+          top: 10,
+          width: 1,
+          height: 1,
+          color: "#000000",
+          font: "Leros",
+          text: "Hello, world!Ä",
+        } as TextShape;
       default:
         throw new Error(`Unknown shape type: ${shapeType}`);
     }
@@ -142,6 +164,12 @@ export function render(gc: GraphicContext, shape: Shape) {
     case ShapeType.LINE: {
       const s = shape as LineShape;
       gc.drawLine(s.x1, s.y1, s.x2, s.y2, s.color);
+      break;
+    }
+    case ShapeType.TEXT: {
+      const s = shape as TextShape;
+      gc.setFont(s.font);
+      gc.drawText(s.left, s.top, s.text, s.color);
       break;
     }
     default:

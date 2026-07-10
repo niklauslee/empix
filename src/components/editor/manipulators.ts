@@ -48,3 +48,13 @@ export class LineManipulator extends Manipulator {
     this.controllers = [new LineMoveController(this)];
   }
 }
+
+/**
+ * Manipulator for text shapes
+ */
+export class TextManipulator extends Manipulator {
+  constructor() {
+    super();
+    this.controllers = [new BoxMoveController(this)];
+  }
+}

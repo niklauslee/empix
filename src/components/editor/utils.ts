@@ -4,6 +4,18 @@ import { GraphicContext } from "./graphics";
 import { getBoundingRect, type Shape } from "./shapes";
 
 /**
+ * Convert a string to an async iterator of lines
+ */
+export async function* stringToAsyncIterator(
+  text: string,
+): AsyncIterableIterator<string> {
+  const lines = text.split(/\r?\n/);
+  for (const line of lines) {
+    yield line;
+  }
+}
+
+/**
  * Returns the bounding rectangle of the shape in canvas coordinates
  */
 export function getBoundingRectInCanvasCoord(gc: GraphicContext, shape: Shape) {
