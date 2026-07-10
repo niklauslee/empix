@@ -1,0 +1,964 @@
+import { GraphicContext, type GraphicContextOptions } from "./graphics";
+import { Color, Mouse } from "./consts";
+import {
+  containsPoint,
+  getBoundingRect,
+  type RectangleShape,
+  render,
+  type Shape,
+  ShapeFactory,
+  ShapeType,
+} from "./shapes";
+import * as geometry from "./geometry";
+import { drawBoundary } from "./utils";
+import { nanoid } from "nanoid";
+import { Transform } from "./transform";
+import { Store } from "./store";
+
+/**
+ * Handler for editor events
+ */
+export abstract class Handler {
+  id: string;
+  dragging: boolean;
+  dragStartPoint: number[];
+  dragPoint: number[];
+
+  constructor(id: string) {
+    this.id = id;
+    this.dragging = false;
+    this.dragStartPoint = [0, 0];
+    this.dragPoint = [0, 0];
+  }
+
+  /**
+   * Reset the states of handler
+   */
+  reset() {
+    this.dragging = false;
+    this.dragStartPoint = [-1, -1];
+    this.dragPoint = [-1, -1];
+  }
+
+  /**
+   * Trigger when the handler action is complete
+   */
+  complete(editor: Editor) {
+    // if (!editor.getActiveHandlerLock()) {
+    //   editor.activateDefaultHandler();
+    // }
+  }
+
+  /**
+   * Initialize handler
+   */
+  initialize(editor: Editor, e: PointerEvent): void {}
+
+  /**
+   * Update handler
+   */
+  update(editor: Editor, e: PointerEvent): void {}
+
+  /**
+   * Update handler when hovering (not dragging)
+   */
+  updateHovering(editor: Editor, e: PointerEvent): void {}
+
+  /**
+   * Finalize handler
+   */
+  finalize(editor: Editor, e: PointerEvent): void {}
+
+  /**
+   * pointer down handler
+   */
+  pointerDown(editor: Editor, e: PointerEvent, point: number[]) {
+    if (e.button === Mouse.BUTTON1) {
+      this.dragging = true;
+      this.dragStartPoint = [point[0], point[1]];
+      this.dragPoint = geometry.copy(this.dragStartPoint);
+      this.initialize(editor, e);
+      editor.repaint();
+      this.drawDragging(editor, e);
+    }
+  }
+
+  /**
+   * pointer move handler
+   */
+  pointerMove(editor: Editor, e: PointerEvent, point: number[]) {
+    if (this.dragging) {
+      this.dragPoint = [point[0], point[1]];
+      this.update(editor, e);
+      editor.repaint();
+      this.drawDragging(editor, e);
+    } else {
+      this.updateHovering(editor, e);
+      editor.repaint();
+      this.drawHovering(editor, e);
+    }
+  }
+
+  /**
+   * pointer up handler
+   */
+  pointerUp(editor: Editor, e: PointerEvent, point: number[]) {
+    if (e.button === Mouse.BUTTON1 && this.dragging) {
+      this.finalize(editor, e);
+      editor.repaint();
+      this.reset();
+      this.complete(editor);
+    }
+  }
+
+  /**
+   * keyDown
+   */
+  keyDown(editor: Editor, e: KeyboardEvent) {
+    if (e.key === "Escape" && this.dragging) {
+      editor.transform.cancel();
+      editor.repaint();
+      this.reset();
+      this.complete(editor);
+    }
+    return false;
+  }
+
+  /**
+   * Draw ghost for the selected shape
+   */
+  drawSelection(editor: Editor) {}
+
+  /**
+   * Draw hovering
+   */
+  drawHovering(editor: Editor, e: PointerEvent) {}
+
+  /**
+   * Draw dragging
+   */
+  drawDragging(editor: Editor, e: PointerEvent) {}
+}
+
+/**
+ * Manager for editor handlers
+ */
+export class HandlerManager {
+  handlers: Record<string, Handler> = {};
+  activeHandler: Handler | null = null;
+  defaultHandlerId: string = "";
+
+  constructor(handlers: Handler[] = [], defaultHandlerId: string = "") {
+    handlers.forEach((handler) => {
+      this.handlers[handler.id] = handler;
+    });
+    this.defaultHandlerId = defaultHandlerId;
+    if (defaultHandlerId) {
+      this.setActiveHandler(defaultHandlerId);
+    }
+  }
+
+  /**
+   * Set the active handler by its ID.
+   */
+  setActiveHandler(handlerId: string) {
+    const handler = this.handlers[handlerId];
+    if (!handler) {
+      throw new Error(`Handler ${handlerId} not found`);
+    }
+    this.activeHandler = handler;
+  }
+
+  /**
+   * pointer down handler
+   */
+  pointerDown(editor: Editor, e: PointerEvent, point: number[]) {
+    if (this.activeHandler) {
+      this.activeHandler.pointerDown(editor, e, point);
+    }
+  }
+
+  /**
+   * pointer move handler
+   */
+  pointerMove(editor: Editor, e: PointerEvent, point: number[]) {
+    if (this.activeHandler) {
+      this.activeHandler.pointerMove(editor, e, point);
+    }
+  }
+
+  /**
+   * pointer up handler
+   */
+  pointerUp(editor: Editor, e: PointerEvent, point: number[]) {
+    if (this.activeHandler) {
+      this.activeHandler.pointerUp(editor, e, point);
+    }
+  }
+}
+
+/**
+ * Manipulator for shape manipulation
+ */
+export class Manipulator {
+  controllers: Controller[];
+  draggingController: Controller | null;
+
+  constructor() {
+    this.controllers = [];
+    this.draggingController = null;
+  }
+
+  /**
+   * Returns one of controllers is dragging or not
+   */
+  isDragging(): boolean {
+    return this.controllers.some((cp) => cp.dragging);
+  }
+
+  /**
+   * Returns true if mouse cursor is inside the shape or control points
+   */
+  mouseIn(
+    editor: Editor,
+    shape: Shape,
+    e: PointerEvent,
+    point: number[],
+  ): boolean {
+    return this.controllers.some(
+      (cp) => cp.active(editor, shape) && cp.mouseIn(editor, shape, e, point),
+    );
+  }
+
+  /**
+   * Returns mouse cursor for the manipulator
+   * @returns cursor object
+   */
+  mouseCursor(
+    editor: Editor,
+    shape: Shape,
+    e: PointerEvent,
+    point: number[],
+  ): [string, number] | null {
+    // dragging controller has higher priority
+    for (let c of this.controllers) {
+      if (c.dragging) return c.mouseCursor(editor, shape, e, point);
+    }
+    for (let c of this.controllers) {
+      if (c.active(editor, shape) && c.mouseIn(editor, shape, e, point)) {
+        return c.mouseCursor(editor, shape, e, point);
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Handle pointer down and return handled or not.
+   */
+  pointerDown(editor: Editor, shape: Shape, e: PointerEvent, point: number[]) {
+    let handled = false;
+    for (let cp of this.controllers) {
+      if (cp.active(editor, shape) && cp.mouseIn(editor, shape, e, point)) {
+        handled = cp.pointerDown(editor, shape, e, point);
+        if (handled) {
+          this.draggingController = cp;
+          break;
+        }
+      }
+    }
+    return handled;
+  }
+
+  /**
+   * Handle pointer move and return handled or not.
+   */
+  pointerMove(editor: Editor, shape: Shape, e: PointerEvent, point: number[]) {
+    if (
+      this.mouseIn(editor, shape, e, point) &&
+      !editor.selection.isSelected(shape)
+    ) {
+      this.drawHovering(editor, shape);
+    }
+    let handled = false;
+    if (this.draggingController) {
+      handled = this.draggingController.pointerMove(editor, shape, e, point);
+    }
+    return handled;
+  }
+
+  /**
+   * Handle pointer up and return handled or not.
+   */
+  pointerUp(editor: Editor, shape: Shape, e: PointerEvent, point: number[]) {
+    let handled = false;
+    if (this.draggingController) {
+      handled = this.draggingController.pointerUp(editor, shape, e, point);
+    }
+    this.draggingController = null;
+    return handled;
+  }
+
+  /**
+   * Draw controllers
+   */
+  draw(editor: Editor, shape: Shape) {
+    if (!this.draggingController) {
+      for (let i = this.controllers.length - 1; i >= 0; i--) {
+        const cp = this.controllers[i];
+        if (cp.active(editor, shape)) {
+          cp.draw(editor, shape);
+        }
+      }
+    }
+  }
+
+  /**
+   * Draw hovering effect
+   */
+  drawHovering(editor: Editor, shape: Shape) {
+    // if (shape instanceof Scene) return;
+    if (!shape) return;
+    let r = getBoundingRect(shape);
+    drawBoundary(editor.gc, r[0][0], r[0][1], r[1][0], r[1][1], Color.HOVER);
+    this.controllers.forEach(
+      (cp) => cp.active(editor, shape) && cp.drawHovering(editor, shape),
+    );
+  }
+}
+
+/**
+ * Manager for manipulators
+ */
+export class ManipulatorManager {
+  manipulators: Record<string, Manipulator> = {};
+
+  constructor(manipulators: Record<string, Manipulator> = {}) {
+    Object.keys(manipulators).forEach((key) => {
+      this.manipulators[key] = manipulators[key];
+    });
+  }
+
+  /**
+   * Get a manipulator by shape type.
+   */
+  get(shapeType: string): Manipulator | null {
+    const manipulator = this.manipulators[shapeType];
+    return manipulator ?? null;
+  }
+}
+
+/**
+ * Controller
+ */
+export class Controller {
+  manipulator: Manipulator;
+  dragging: boolean;
+  dragStartPoint: number[];
+  dragPrevPoint: number[];
+  dragPoint: number[];
+  dx: number;
+  dy: number;
+  dxStep: number;
+  dyStep: number;
+
+  constructor(manipulator: Manipulator) {
+    this.manipulator = manipulator;
+    this.dragging = false;
+    this.dragStartPoint = [-1, -1];
+    this.dragPrevPoint = [-1, -1];
+    this.dragPoint = [-1, -1];
+    this.dx = 0;
+    this.dy = 0;
+    this.dxStep = 0;
+    this.dyStep = 0;
+  }
+
+  reset() {
+    this.dragging = false;
+    this.dragStartPoint = [-1, -1];
+    this.dragPrevPoint = [-1, -1];
+    this.dragPoint = [-1, -1];
+    this.dx = 0;
+    this.dy = 0;
+    this.dxStep = 0;
+    this.dyStep = 0;
+  }
+
+  /**
+   * Indicates the controller is active or not
+   */
+  active(editor: Editor, shape: Shape): boolean {
+    return true;
+  }
+
+  /**
+   * Returns true if mouse cursor is inside the controller.
+   * Default implementation returns true if the point inside the shape.
+   */
+  mouseIn(
+    editor: Editor,
+    shape: Shape,
+    e: PointerEvent,
+    point: number[],
+  ): boolean {
+    return containsPoint(shape, point);
+  }
+
+  /**
+   * Returns mouse cursor for the controller
+   * @returns cursor object (null is default cursor)
+   */
+  mouseCursor(
+    editor: Editor,
+    shape: Shape,
+    e: PointerEvent,
+    point: number[],
+  ): [string, number] | null {
+    return null;
+  }
+
+  /**
+   * Initialize before dragging
+   */
+  initialize(editor: Editor, shape: Shape, e: PointerEvent, point: number[]) {}
+
+  /**
+   * Update ghost
+   */
+  update(editor: Editor, shape: Shape, e: PointerEvent, point: number[]) {}
+
+  /**
+   * Finalize shape by ghost
+   */
+  finalize(editor: Editor, shape: Shape, e: PointerEvent, point: number[]) {}
+
+  /**
+   * Draw controller
+   */
+  draw(editor: Editor, shape: Shape) {}
+
+  /**
+   * Draw on dragging
+   */
+  drawDragging(editor: Editor, shape: Shape) {}
+
+  /**
+   * Draw on hovering
+   */
+  drawHovering(editor: Editor, shape: Shape) {}
+
+  /**
+   * Handle pointer down and return handled or not.
+   */
+  pointerDown(editor: Editor, shape: Shape, e: PointerEvent, point: number[]) {
+    let handled = false;
+    if (e.button === Mouse.BUTTON1 && this.mouseIn(editor, shape, e, point)) {
+      this.reset();
+      this.dragging = true;
+      this.dragStartPoint = [point[0], point[1]];
+      this.dragPrevPoint = geometry.copy(this.dragStartPoint);
+      this.dragPoint = geometry.copy(this.dragStartPoint);
+      handled = true;
+      this.initialize(editor, shape, e, point);
+      this.update(editor, shape, e, point);
+      editor.repaint();
+      this.drawDragging(editor, shape);
+    }
+    return handled;
+  }
+
+  /**
+   * Handle pointer move and return handled or not.
+   */
+  pointerMove(editor: Editor, shape: Shape, e: PointerEvent, point: number[]) {
+    let handled = false;
+    if (this.dragging) {
+      this.dragPrevPoint = geometry.copy(this.dragPoint);
+      this.dragPoint = [point[0], point[1]];
+      this.dx = this.dragPoint[0] - this.dragStartPoint[0];
+      this.dy = this.dragPoint[1] - this.dragStartPoint[1];
+      this.dxStep = this.dragPoint[0] - this.dragPrevPoint[0];
+      this.dyStep = this.dragPoint[1] - this.dragPrevPoint[1];
+      handled = true;
+      this.update(editor, shape, e, point);
+      editor.repaint();
+      this.drawDragging(editor, shape);
+    }
+    return handled;
+  }
+
+  /**
+   * Handle pointer up and return handled or not.
+   */
+  pointerUp(editor: Editor, shape: Shape, e: PointerEvent, point: number[]) {
+    let handled = false;
+    if (e.button === Mouse.BUTTON1 && this.dragging) {
+      this.finalize(editor, shape, e, point);
+      this.reset();
+      handled = true;
+      editor.repaint();
+    }
+    return handled;
+  }
+}
+
+/**
+ * Selection manager for editor
+ */
+class SelectionManager {
+  editor: Editor;
+  shapes: Set<Shape>;
+
+  constructor(editor: Editor) {
+    this.editor = editor;
+    this.shapes = new Set();
+  }
+
+  /**
+   * Clear the selection
+   */
+  clear() {
+    this.shapes.clear();
+  }
+
+  /**
+   * Return the number of selected shapes
+   */
+  size(): number {
+    return this.shapes.size;
+  }
+
+  /**
+   * Return the selected shapes
+   */
+  get(): Shape[] {
+    return Array.from(this.shapes);
+  }
+
+  /**
+   * Check if a shape is selected
+   */
+  isSelected(shape: Shape): boolean {
+    return this.shapes.has(shape);
+  }
+
+  /**
+   * Select a shape
+   */
+  select(shape: Shape) {
+    this.shapes.add(shape);
+  }
+
+  /**
+   * Select shapes in the given area
+   */
+  selectArea(x1: number, y1: number, x2: number, y2: number) {
+    const rect = geometry.normalizeRect([
+      [x1, y1],
+      [x2, y2],
+    ]);
+    this.shapes.clear();
+    for (const shape of this.editor.store.shapes) {
+      const r = getBoundingRect(shape);
+      if (geometry.overlapRect(r, rect)) {
+        this.shapes.add(shape);
+      }
+    }
+  }
+
+  /**
+   * Deselect a shape
+   */
+  deselect(shape: Shape) {
+    this.shapes.delete(shape);
+  }
+
+  /**
+   * Returns bounding rect of selected shapes
+   */
+  getBoundingRect(): number[][] {
+    if (this.shapes.size === 0)
+      return [
+        [0, 0],
+        [0, 0],
+      ];
+    return this.get()
+      .map((shape) => getBoundingRect(shape))
+      .reduce(geometry.unionRect);
+  }
+
+  /**
+   * Draw the selection on the editor
+   */
+  drawSelection(editor: Editor) {
+    // delegates to manipulators
+    if (editor.selection.size() > 1) {
+      const manipulator = editor.manipulators.get("Selection");
+      if (manipulator) manipulator.draw(editor, null as any);
+    }
+    for (const shape of editor.store.shapes) {
+      if (editor.selection.isSelected(shape)) {
+        const manipulator = editor.manipulators.get(shape.type);
+        if (manipulator) manipulator.draw(editor, shape);
+      }
+    }
+  }
+}
+
+/**
+ * Editor options
+ */
+export interface EditorOptions extends GraphicContextOptions {
+  handlers: Handler[];
+  defaultHandlerId: string;
+  manipulators: Record<string, Manipulator>;
+}
+
+/**
+ * The editor
+ */
+export class Editor {
+  options!: EditorOptions;
+
+  /**
+   * The parent HTML element that holds the editor
+   */
+  parent: HTMLDivElement;
+
+  /**
+   * The canvas element for the editor
+   */
+  canvas!: HTMLCanvasElement;
+
+  /**
+   * The graphic context for the editor
+   */
+  gc!: GraphicContext;
+
+  /**
+   * The shape store.
+   */
+  store: Store;
+
+  /**
+   * The shape factory.
+   */
+  factory: ShapeFactory;
+
+  /**
+   * The handler manager for the editor
+   */
+  handlers: HandlerManager;
+
+  /**
+   * The manipulator manager for the editor
+   */
+  manipulators: ManipulatorManager;
+
+  /**
+   * The selection manager for the editor
+   */
+  selection: SelectionManager;
+
+  /**
+   * The transform manager for the editor
+   */
+  transform: Transform;
+
+  /**
+   * Indicates whether the editor is enabled or not. If disabled, the editor will not respond to user interactions.
+   */
+  enabled: boolean = true;
+
+  constructor(editorHolder: HTMLDivElement, options: EditorOptions) {
+    this.parent = editorHolder;
+    this.options = options;
+    this.handlers = new HandlerManager(
+      this.options.handlers,
+      this.options.defaultHandlerId,
+    );
+    this.manipulators = new ManipulatorManager(this.options.manipulators);
+    this.selection = new SelectionManager(this);
+    this.store = new Store();
+    this.factory = new ShapeFactory();
+    this.transform = new Transform(this.store);
+    this.initializeCanvas();
+
+    // Initialize the scene
+    const rect1 = {
+      type: ShapeType.RECTANGLE,
+      id: nanoid(),
+      left: 4,
+      top: 4,
+      width: 15,
+      height: 20,
+      color: "yellow",
+    } as RectangleShape;
+    const rect2 = {
+      type: ShapeType.RECTANGLE,
+      id: nanoid(),
+      left: 10,
+      top: 10,
+      width: 20,
+      height: 10,
+      color: "red",
+    } as RectangleShape;
+    this.store.shapes.push(rect1);
+    this.store.shapes.push(rect2);
+
+    this.fit();
+    this.repaint();
+  }
+
+  /**
+   * Initialize the canvas element and set up event listeners
+   */
+  private initializeCanvas() {
+    this.canvas = document.createElement("canvas");
+    this.canvas.tabIndex = 0; // enable focus
+    this.canvas.style.touchAction = "none"; // prevent pointer cancel event in mobile
+    this.canvas.style.outline = "none"; // remove focus outline
+    this.gc = new GraphicContext(this.canvas, {
+      margin: this.options.margin,
+      width: this.options.width,
+      height: this.options.height,
+      scale: this.options.scale,
+    });
+    this.parent.appendChild(this.canvas);
+
+    const pointerDownHandler = (e: PointerEvent) => {
+      if (this.enabled) {
+        const p = this.gc.toPixelCoord([e.offsetX, e.offsetY]);
+        this.handlers.pointerDown(this, e, p);
+      }
+    };
+
+    const pointerMoveHandler = (e: PointerEvent) => {
+      if (this.enabled) {
+        const p = this.gc.toPixelCoord([e.offsetX, e.offsetY]);
+        this.handlers.pointerMove(this, e, p);
+      }
+    };
+
+    const pointerUpHandler = (e: PointerEvent) => {
+      if (this.enabled) {
+        const p = this.gc.toPixelCoord([e.offsetX, e.offsetY]);
+        this.handlers.pointerUp(this, e, p);
+      }
+    };
+
+    const keyDownHandler = (e: KeyboardEvent) => {
+      if (this.enabled) {
+        if (this.handlers.activeHandler) {
+          this.handlers.activeHandler.keyDown(this, e);
+        }
+      }
+    };
+
+    // pointer event handlers
+    this.canvas.addEventListener("pointerdown", pointerDownHandler);
+    this.canvas.addEventListener("pointermove", pointerMoveHandler);
+    this.canvas.addEventListener("pointerup", pointerUpHandler);
+    this.canvas.addEventListener("keydown", keyDownHandler);
+  }
+
+  /**
+   * Fit the canvas size to the graphic context size
+   */
+  fit() {
+    const w = this.gc.width * this.gc.scale + this.gc.margin * 2;
+    const h = this.gc.height * this.gc.scale + this.gc.margin * 2;
+    this.canvas.width = Math.floor(w * this.gc.ratio);
+    this.canvas.height = Math.floor(h * this.gc.ratio);
+    this.canvas.style.width = `${w}px`;
+    this.canvas.style.height = `${h}px`;
+  }
+
+  /**
+   * Set margin in pixels.
+   */
+  setMargin(margin: number) {
+    this.gc.margin = margin;
+    this.fit();
+  }
+
+  /**
+   * Set scene size in pixels.
+   */
+  setSize(width: number, height: number) {
+    this.gc.width = width;
+    this.gc.height = height;
+    this.fit();
+    this.repaint();
+  }
+
+  /**
+   * Get scene size in pixels.
+   */
+  getSize(): number[] {
+    return [this.gc.width, this.gc.height];
+  }
+
+  /**
+   * Set scale factor.
+   */
+  setScale(scale: number) {
+    this.gc.scale = scale;
+    this.fit();
+    this.repaint();
+  }
+
+  /**
+   * Get scale factor.
+   */
+  getScale(): number {
+    return this.gc.scale;
+  }
+
+  /**
+   * Get cursor
+   */
+  getCursor() {
+    return this.canvas.style.cursor;
+  }
+
+  /**
+   * Set cursor
+   */
+  setCursor(cursor: string, angle: number = 0) {
+    const cssCursor = cursor.replace("{{angle}}", angle.toString());
+    this.canvas.style.cursor = cssCursor;
+  }
+
+  /**
+   * Repaint the editor
+   */
+  repaint(drawSelection: boolean = true) {
+    this.gc.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.drawGrid();
+    this.drawBorder();
+    this.render();
+    if (drawSelection) {
+      this.selection.drawSelection(this);
+    }
+  }
+
+  /**
+   * Draw the border of the editor
+   */
+  drawBorder() {
+    this.gc.context.save();
+    this.gc.context.scale(this.gc.ratio, this.gc.ratio);
+    this.gc.context.strokeStyle = Color.BORDER;
+    this.gc.context.lineWidth = 1;
+    this.gc.context.strokeRect(
+      this.gc.margin,
+      this.gc.margin,
+      this.gc.width * this.gc.scale,
+      this.gc.height * this.gc.scale,
+    );
+    this.gc.context.restore();
+  }
+
+  /**
+   * Draw the grid of the editor
+   */
+  drawGrid() {
+    this.gc.context.save();
+    this.gc.context.scale(this.gc.ratio, this.gc.ratio);
+    this.gc.context.strokeStyle = Color.GRID;
+    this.gc.context.lineWidth = 1;
+    for (let x = 1; x < this.gc.width; x++) {
+      const xPos = this.gc.margin + x * this.gc.scale;
+      this.gc.context.beginPath();
+      this.gc.context.moveTo(xPos, this.gc.margin);
+      this.gc.context.lineTo(
+        xPos,
+        this.gc.margin + this.gc.height * this.gc.scale,
+      );
+      this.gc.context.stroke();
+    }
+    for (let y = 1; y < this.gc.height; y++) {
+      const yPos = this.gc.margin + y * this.gc.scale;
+      this.gc.context.beginPath();
+      this.gc.context.moveTo(this.gc.margin, yPos);
+      this.gc.context.lineTo(
+        this.gc.margin + this.gc.width * this.gc.scale,
+        yPos,
+      );
+      this.gc.context.stroke();
+    }
+    this.gc.context.restore();
+  }
+
+  /**
+   * Render the scene shapes
+   */
+  render() {
+    for (const shape of this.store.shapes) {
+      render(this.gc, shape);
+    }
+  }
+
+  /**
+   * Get the shape at the given pixel coordinates.
+   */
+  getShapeAt(point: number[]): Shape | null {
+    for (let i = this.store.shapes.length - 1; i >= 0; i--) {
+      const shape = this.store.shapes[i];
+      if (containsPoint(shape, point)) {
+        return shape;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Undo the last action
+   */
+  undo() {
+    this.store.undo();
+    this.repaint();
+  }
+
+  /**
+   * Redo the last undone action
+   */
+  redo() {
+    this.store.redo();
+    this.repaint();
+  }
+
+  /**
+   * Delete shapes from the editor. If no shapes are provided, it will delete the currently selected shapes.
+   */
+  delete(shapes: Shape[] = []) {
+    const shapesToDelete = shapes.length > 0 ? shapes : this.selection.get();
+    this.transform.begin();
+    for (const shape of shapesToDelete) {
+      this.transform.delete(shape);
+    }
+    this.transform.end();
+    this.repaint();
+  }
+
+  bringToFront(shapes: Shape[] = []) {
+    const shapesToBring = shapes.length > 0 ? shapes : this.selection.get();
+    this.transform.begin();
+    for (const shape of shapesToBring) {
+      this.transform.reorder(shape, this.store.shapes.length - 1);
+    }
+    this.transform.end();
+    this.repaint();
+  }
+
+  sendToBack(shapes: Shape[] = []) {
+    const shapesToSend = shapes.length > 0 ? shapes : this.selection.get();
+    this.transform.begin();
+    for (const shape of shapesToSend) {
+      this.transform.reorder(shape, 0);
+    }
+    this.transform.end();
+    this.repaint();
+  }
+}
