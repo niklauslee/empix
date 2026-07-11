@@ -204,4 +204,39 @@ export class Store {
     }
     this.undoHistory.push(action);
   }
+
+  /**
+   * Clears the store, removing all shapes and resetting history.
+   */
+  clear() {
+    this.shapes = [];
+    this.currentAction = null;
+    this.undoHistory.clear();
+    this.redoHistory.clear();
+  }
+
+  /**
+   * Loads the store from JSON
+   */
+  loadFromJSON(json: string) {
+    try {
+      const shapes = JSON.parse(json) as Shape[];
+      if (!Array.isArray(shapes)) {
+        throw new Error("Invalid JSON format: Expected an array of shapes.");
+      }
+      this.shapes = shapes;
+      this.currentAction = null;
+      this.undoHistory.clear();
+      this.redoHistory.clear();
+    } catch (error) {
+      console.error("Failed to load store from JSON:", error);
+    }
+  }
+
+  /**
+   * Saves the store to JSON
+   */
+  saveToJSON(): string {
+    return JSON.stringify(structuredClone(this.shapes));
+  }
 }
