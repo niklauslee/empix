@@ -26,6 +26,53 @@ export function move(point: number[], dx: number, dy: number): number[] {
 }
 
 /**
+ * Returns width of the rect
+ */
+export function width(rect: number[][]): number {
+  return Math.abs(rect[1][0] - rect[0][0]);
+}
+
+/**
+ * Returns height of the rect
+ */
+export function height(rect: number[][]): number {
+  return Math.abs(rect[1][1] - rect[0][1]);
+}
+
+/**
+ * Returns an copy of the rect
+ */
+export function copyRect(rect: number[][]): number[][] {
+  return [copy(rect[0]), copy(rect[1])];
+}
+
+/**
+ * Copy a path
+ */
+export function copyPath(path: number[][]): number[][] {
+  return path.map((p) => copy(p));
+}
+
+/**
+ * Returns path moved as dx and dy
+ */
+export function movePath(path: number[][], dx: number, dy: number): number[][] {
+  return path.map((p) => move(p, dx, dy));
+}
+
+/**
+ * Get a bounding rect of a path
+ */
+export function boundingRect(path: number[][]): number[][] {
+  const xs = path.map((p) => p[0]);
+  const ys = path.map((p) => p[1]);
+  return [
+    [Math.min(...xs), Math.min(...ys)],
+    [Math.max(...xs), Math.max(...ys)],
+  ];
+}
+
+/**
  * Test whether a point is inside a rect
  */
 export function inRect(point: number[], rect: number[][]): boolean {

@@ -47,9 +47,16 @@ export class GraphicContext {
   /**
    * Convert pixel coordinates to canvas coordinates
    */
-  toCanvasCoord(point: number[]): [number, number] {
-    const cx = this.margin + point[0] * this.scale;
-    const cy = this.margin + point[1] * this.scale;
+  toCanvasCoord(
+    point: number[],
+    pixelCenter: boolean = false,
+  ): [number, number] {
+    let cx = this.margin + point[0] * this.scale;
+    let cy = this.margin + point[1] * this.scale;
+    if (pixelCenter) {
+      cx += 0.5 * this.scale;
+      cy += 0.5 * this.scale;
+    }
     return [cx, cy];
   }
 

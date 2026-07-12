@@ -1,7 +1,7 @@
 import { Color, CONTROL_POINT_APOTHEM, ControllerPosition } from "./consts";
 import * as geometry from "./geometry";
 import { GraphicContext } from "./graphics";
-import { getBoundingRect, type Shape } from "./shapes";
+import { getBoundingRect, type LineShape, type Shape } from "./shapes";
 
 /**
  * Convert a string to an async iterator of lines
@@ -75,7 +75,6 @@ export function drawControlPoint(gc: GraphicContext, x: number, y: number) {
  * Returns whether a point inside the controlPoint
  */
 export function inControlPoint(
-  gc: GraphicContext,
   point: number[],
   controlPoint: number[],
 ): boolean {
@@ -85,6 +84,21 @@ export function inControlPoint(
     [controlPoint[0] + r, controlPoint[1] + r],
   ];
   return geometry.inRect(point, cp);
+}
+
+/**
+ * Returns the index of the control point if the point is inside a control point of the line shape, otherwise returns -1
+ */
+export function findControlPoint(shape: LineShape, point: number[]): number {
+  let cpIndex = -1;
+  for (let i = 0; i < shape.path.length; i++) {
+    const cp = shape.path[i];
+    if (inControlPoint(point, cp)) {
+      cpIndex = i;
+      break;
+    }
+  }
+  return cpIndex;
 }
 
 /**

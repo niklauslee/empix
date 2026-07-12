@@ -4,6 +4,7 @@ import {
   BoxMoveController,
   BoxSizeController,
   LineMoveController,
+  LineMovePointController,
   SelectionMoveController,
 } from "./controllers";
 
@@ -45,7 +46,10 @@ export class BoxManipulator extends Manipulator {
 export class LineManipulator extends Manipulator {
   constructor() {
     super();
-    this.controllers = [new LineMoveController(this)];
+    this.controllers = [
+      new LineMovePointController(this),
+      new LineMoveController(this),
+    ];
   }
 }
 

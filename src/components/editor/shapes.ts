@@ -45,10 +45,7 @@ export interface EllipseShape extends Shape {
  */
 export interface LineShape extends Shape {
   type: typeof ShapeType.LINE;
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
+  path: number[][];
 }
 
 /**
@@ -98,10 +95,10 @@ export class ShapeFactory {
           width: 1,
           height: 1,
           color: "#000000",
-          x1: 0,
-          y1: 0,
-          x2: 0,
-          y2: 0,
+          path: [
+            [0, 0],
+            [1, 1],
+          ],
         } as LineShape;
       case ShapeType.TEXT:
         return {
@@ -163,7 +160,14 @@ export function render(gc: GraphicContext, shape: Shape) {
     }
     case ShapeType.LINE: {
       const s = shape as LineShape;
-      gc.drawLine(s.x1, s.y1, s.x2, s.y2, s.color);
+      if (s.path.length < 2) {
+        throw new Error(
+          "Line shape must have at least two points in its path.",
+        );
+      }
+      const [x1, y1] = s.path[0];
+      const [x2, y2] = s.path[1];
+      gc.drawLine(x1, y1, x2, y2, s.color);
       break;
     }
     case ShapeType.TEXT: {

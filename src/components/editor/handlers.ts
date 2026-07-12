@@ -332,10 +332,10 @@ export class LineFactoryHandler extends Handler {
   initialize(editor: Editor, e: PointerEvent): void {
     editor.transform.begin();
     this.shape = editor.factory.create(ShapeType.LINE) as LineShape;
-    this.shape.x1 = this.dragStartPoint[0];
-    this.shape.y1 = this.dragStartPoint[1];
-    this.shape.x2 = this.dragStartPoint[0];
-    this.shape.y2 = this.dragStartPoint[1];
+    this.shape.path = [
+      [this.dragStartPoint[0], this.dragStartPoint[1]],
+      [this.dragStartPoint[0], this.dragStartPoint[1]],
+    ];
     this.shape.left = this.dragStartPoint[0];
     this.shape.top = this.dragStartPoint[1];
     this.shape.width = 1;
@@ -352,10 +352,10 @@ export class LineFactoryHandler extends Handler {
     const t = normalized[0][1];
     const w = normalized[1][0] - normalized[0][0] + 1;
     const h = normalized[1][1] - normalized[0][1] + 1;
-    editor.transform.assign(this.shape, "x1", this.dragStartPoint[0]);
-    editor.transform.assign(this.shape, "y1", this.dragStartPoint[1]);
-    editor.transform.assign(this.shape, "x2", this.dragPoint[0]);
-    editor.transform.assign(this.shape, "y2", this.dragPoint[1]);
+    editor.transform.assign(this.shape, "path", [
+      geometry.copy(this.dragStartPoint),
+      geometry.copy(this.dragPoint),
+    ]);
     editor.transform.assign(this.shape, "left", l);
     editor.transform.assign(this.shape, "top", t);
     editor.transform.assign(this.shape, "width", w);
