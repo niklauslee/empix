@@ -391,19 +391,7 @@ export class TextFactoryHandler extends Handler {
     editor.transform.insert(this.shape);
   }
 
-  update(editor: Editor, e: PointerEvent): void {
-    if (!this.shape) return;
-    const r = [this.dragStartPoint, this.dragPoint];
-    const normalized = geometry.normalizeRect(r);
-    const l = normalized[0][0];
-    const t = normalized[0][1];
-    const w = normalized[1][0] - normalized[0][0] + 1;
-    const h = normalized[1][1] - normalized[0][1] + 1;
-    editor.transform.assign(this.shape, "left", l);
-    editor.transform.assign(this.shape, "top", t);
-    editor.transform.assign(this.shape, "width", w);
-    editor.transform.assign(this.shape, "height", h);
-  }
+  update(editor: Editor, e: PointerEvent): void {}
 
   finalize(editor: Editor, e: PointerEvent): void {
     editor.transform.end();
