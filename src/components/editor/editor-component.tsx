@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Editor, type EditorOptions } from "./editor";
 import {
+  BitmapFactoryHandler,
   EllipseFactoryHandler,
   LineFactoryHandler,
   RectangleFactoryHandler,
@@ -8,6 +9,7 @@ import {
   TextFactoryHandler,
 } from "./handlers";
 import {
+  BitmapManipulator,
   BoxManipulator,
   LineManipulator,
   SelectionManipulator,
@@ -29,6 +31,7 @@ function basicSetup(): EditorOptions {
       new EllipseFactoryHandler("Ellipse"),
       new LineFactoryHandler("Line"),
       new TextFactoryHandler("Text"),
+      new BitmapFactoryHandler("Bitmap"),
     ],
     defaultHandlerId: "Select",
     manipulators: {
@@ -37,6 +40,7 @@ function basicSetup(): EditorOptions {
       Ellipse: new BoxManipulator(),
       Line: new LineManipulator(),
       Text: new TextManipulator(),
+      Bitmap: new BitmapManipulator(),
     },
     width: 128,
     height: 64,

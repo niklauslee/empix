@@ -64,3 +64,13 @@ export class TextManipulator extends Manipulator {
     this.controllers = [new BoxMoveController(this)];
   }
 }
+
+/**
+ * Manipulator for bitmap shapes
+ */
+export class BitmapManipulator extends Manipulator {
+  constructor() {
+    super();
+    this.controllers = [new BoxMoveController(this)];
+  }
+}

@@ -10,6 +10,7 @@ export const ShapeType = {
   ELLIPSE: "Ellipse",
   LINE: "Line",
   TEXT: "Text",
+  BITMAP: "Bitmap",
 } as const;
 
 /**
@@ -58,43 +59,43 @@ export interface TextShape extends Shape {
 }
 
 /**
+ * Bitmap shape type
+ */
+export interface BitmapShape extends Shape {
+  type: typeof ShapeType.BITMAP;
+  bpp: number;
+  data: Uint8Array;
+}
+
+/**
  * ShapeFactory is responsible for creating shapes based on their type.
  */
 export class ShapeFactory {
   create(shapeType: string): Shape {
+    const defaults = {
+      id: nanoid(),
+      name: "",
+      left: 0,
+      top: 0,
+      width: 1,
+      height: 1,
+      color: "#000000",
+    };
     switch (shapeType) {
       case ShapeType.RECTANGLE:
         return {
-          id: nanoid(),
+          ...defaults,
           type: ShapeType.RECTANGLE,
-          name: "",
-          left: 0,
-          top: 0,
-          width: 1,
-          height: 1,
-          color: "#000000",
         } as RectangleShape;
       case ShapeType.ELLIPSE:
         return {
-          id: nanoid(),
+          ...defaults,
           type: ShapeType.ELLIPSE,
-          name: "",
-          left: 0,
-          top: 0,
-          width: 1,
-          height: 1,
-          color: "#000000",
         } as EllipseShape;
       case ShapeType.LINE:
         return {
-          id: nanoid(),
+          ...defaults,
           type: ShapeType.LINE,
-          name: "",
-          left: 0,
-          top: 0,
-          width: 1,
-          height: 1,
-          color: "#000000",
           path: [
             [0, 0],
             [1, 1],
@@ -102,17 +103,23 @@ export class ShapeFactory {
         } as LineShape;
       case ShapeType.TEXT:
         return {
-          id: nanoid(),
+          ...defaults,
           type: ShapeType.TEXT,
-          name: "",
-          left: 10,
-          top: 10,
-          width: 1,
-          height: 1,
-          color: "#000000",
           font: "-Misc-Fixed-Medium-R-Normal--6-60-75-75-C-40-ISO10646-1", // "Leros",
           text: "Hello, world!Ä",
         } as TextShape;
+      case ShapeType.BITMAP:
+        return {
+          ...defaults,
+          type: ShapeType.BITMAP,
+          width: 8,
+          height: 8,
+          bpp: 1,
+          data: new Uint8Array([
+            0b00111100, 0b01000010, 0b10000001, 0b10100101, 0b10000001,
+            0b10011001, 0b01000010, 0b00111100,
+          ]),
+        } as BitmapShape;
       default:
         throw new Error(`Unknown shape type: ${shapeType}`);
     }
@@ -176,6 +183,11 @@ export function render(gc: GraphicContext, shape: Shape) {
       const s = shape as TextShape;
       gc.setFont(s.font);
       gc.drawText(s.left, s.top, s.text, s.color);
+      break;
+    }
+    case ShapeType.BITMAP: {
+      const s = shape as BitmapShape;
+      gc.drawBitmap(s.left, s.top, s.width, s.height, s.data, s.bpp);
       break;
     }
     default:

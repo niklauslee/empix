@@ -265,4 +265,44 @@ export class GraphicContext {
       baseline: -minTop,
     };
   }
+
+  /**
+   * Draw bitmap on the canvas
+   * @param x The x coordinate of the top-left corner of the bitmap
+   * @param y The y coordinate of the top-left corner of the bitmap
+   * @param width The width of the bitmap in pixels
+   * @param height The height of the bitmap in pixels
+   * @param bitmap The bitmap data as a Uint8Array
+   * @param bpp The bits per pixel (1, 2, 4, or 8)
+   */
+  drawBitmap(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    bitmap: Uint8Array,
+    bpp: number = 1,
+  ) {
+    const bytesPerRow = Math.ceil((width * bpp) / 8);
+    const maxValue = (1 << bpp) - 1;
+    for (let row = 0; row < height; row++) {
+      const rowOffset = row * bytesPerRow;
+      for (let col = 0; col < width; col++) {
+        const bitStart = col * bpp;
+        const byteIndex = rowOffset + Math.floor(bitStart / 8);
+        const shift = 8 - bpp - (bitStart % 8);
+        const pixelValue = (bitmap[byteIndex] >> shift) & maxValue;
+        if (pixelValue === 0) continue;
+        let color: string;
+        if (bpp === 1) {
+          color = "#000000";
+        } else {
+          const intensity = Math.round((pixelValue / maxValue) * 255);
+          const hex = intensity.toString(16).padStart(2, "0");
+          color = `#${hex}${hex}${hex}`;
+        }
+        this.drawPixel(x + col, y + row, color);
+      }
+    }
+  }
 }

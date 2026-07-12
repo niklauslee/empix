@@ -3,6 +3,7 @@ import { Color, Cursor, Mouse } from "./consts";
 import * as geometry from "./geometry";
 import { drawBoundary } from "./utils";
 import {
+  type BitmapShape,
   type EllipseShape,
   type LineShape,
   type RectangleShape,
@@ -392,6 +393,47 @@ export class TextFactoryHandler extends Handler {
   }
 
   update(editor: Editor, e: PointerEvent): void {}
+
+  finalize(editor: Editor, e: PointerEvent): void {
+    editor.transform.end();
+  }
+}
+
+/**
+ * Bitmap Factory Handler
+ */
+export class BitmapFactoryHandler extends Handler {
+  shape: BitmapShape | null = null;
+
+  reset() {
+    super.reset();
+    this.shape = null;
+  }
+
+  initialize(editor: Editor, e: PointerEvent): void {
+    editor.transform.begin();
+    this.shape = editor.factory.create(ShapeType.BITMAP) as BitmapShape;
+    this.shape.left = this.dragStartPoint[0];
+    this.shape.top = this.dragStartPoint[1];
+    // this.shape.width = 1;
+    // this.shape.height = 1;
+    this.shape.color = "#000000";
+    editor.transform.insert(this.shape);
+  }
+
+  update(editor: Editor, e: PointerEvent): void {
+    if (!this.shape) return;
+    // const r = [this.dragStartPoint, this.dragPoint];
+    // const normalized = geometry.normalizeRect(r);
+    // const l = normalized[0][0];
+    // const t = normalized[0][1];
+    // const w = normalized[1][0] - normalized[0][0] + 1;
+    // const h = normalized[1][1] - normalized[0][1] + 1;
+    // editor.transform.assign(this.shape, "left", l);
+    // editor.transform.assign(this.shape, "top", t);
+    // editor.transform.assign(this.shape, "width", w);
+    // editor.transform.assign(this.shape, "height", h);
+  }
 
   finalize(editor: Editor, e: PointerEvent): void {
     editor.transform.end();
