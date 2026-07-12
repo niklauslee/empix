@@ -58,16 +58,66 @@ export function drawBoundary(
 
 /**
  * Draw a control point at the given canvas coordinates
+ * - type = 0: Rect
+ * - type = 1: Circle
+ * - type = 2: Rect with Plus
+ * - type = 3: Cross
+ * - type = 4: Circle with Plus
  */
-export function drawControlPoint(gc: GraphicContext, x: number, y: number) {
+export function drawControlPoint(
+  gc: GraphicContext,
+  x: number,
+  y: number,
+  type: number = 0,
+) {
   const g = CONTROL_POINT_APOTHEM;
   gc.context.save();
   gc.context.scale(gc.ratio, gc.ratio);
   gc.context.fillStyle = Color.BACKGROUND;
   gc.context.strokeStyle = Color.SELECTION;
   gc.context.lineWidth = 1.5;
-  gc.context.fillRect(x - g, y - g, g * 2, g * 2);
-  gc.context.strokeRect(x - g, y - g, g * 2, g * 2);
+  switch (type) {
+    case 0: // Rect
+      gc.context.fillRect(x - g, y - g, g * 2, g * 2);
+      gc.context.strokeRect(x - g, y - g, g * 2, g * 2);
+      break;
+    case 1: // Circle
+      gc.context.beginPath();
+      gc.context.arc(x, y, g, 0, Math.PI * 2);
+      gc.context.fill();
+      gc.context.stroke();
+      break;
+    case 2: // Rect with Plus
+      gc.context.fillRect(x - g, y - g, g * 2, g * 2);
+      gc.context.strokeRect(x - g, y - g, g * 2, g * 2);
+      gc.context.beginPath();
+      gc.context.moveTo(x - g, y);
+      gc.context.lineTo(x + g, y);
+      gc.context.moveTo(x, y - g);
+      gc.context.lineTo(x, y + g);
+      gc.context.stroke();
+      break;
+    case 3: // Cross
+      gc.context.beginPath();
+      gc.context.moveTo(x - g, y - g);
+      gc.context.lineTo(x + g, y + g);
+      gc.context.moveTo(x + g, y - g);
+      gc.context.lineTo(x - g, y + g);
+      gc.context.stroke();
+      break;
+    case 4: // Circle with Plus
+      gc.context.beginPath();
+      gc.context.arc(x, y, g, 0, Math.PI * 2);
+      gc.context.fill();
+      gc.context.stroke();
+      gc.context.beginPath();
+      gc.context.moveTo(x - g, y);
+      gc.context.lineTo(x + g, y);
+      gc.context.moveTo(x, y - g);
+      gc.context.lineTo(x, y + g);
+      gc.context.stroke();
+      break;
+  }
   gc.context.restore();
 }
 
@@ -99,6 +149,34 @@ export function findControlPoint(shape: LineShape, point: number[]): number {
     }
   }
   return cpIndex;
+}
+
+/**
+ * Get index of the segment control point where mouse in
+ */
+export function findSegmentControlPoint(
+  gc: GraphicContext,
+  shape: LineShape,
+  p: number[],
+): number {
+  if (shape.path.length > 1) {
+    for (let i = 0; i < shape.path.length - 1; i++) {
+      const p1 = gc.toCanvasCoord(shape.path[i], true);
+      const p2 = gc.toCanvasCoord(shape.path[i + 1], true);
+      const outline = geometry
+        .copyPath(shape.path)
+        .map((p) => gc.toCanvasCoord(p, true));
+      const p1pos = i === 0 ? 0 : geometry.getPositionOnPath(outline, p1);
+      const p2pos =
+        i === shape.path.length - 2
+          ? 1
+          : geometry.getPositionOnPath(outline, p2);
+      const midpos = (p1pos + p2pos) / 2;
+      const mid = geometry.getPointOnPath(outline, midpos);
+      if (inControlPoint(p, mid)) return i;
+    }
+  }
+  return -1;
 }
 
 /**
@@ -142,4 +220,31 @@ export function getControllerPosition(
     }
   }
   return [-1, -1];
+}
+
+/**
+ * Reduce the path by removing points that are too close to each other.
+ */
+export function reducePath(
+  path: number[][],
+  stratifyAngleThreshold: number,
+): number[][] {
+  let newPath = geometry.copyPath(path);
+  let i = 0;
+  while (i < newPath.length - 2) {
+    const p1 = newPath[i];
+    const p2 = newPath[i + 1];
+    const p3 = newPath[i + 2];
+    const _angle = geometry.normalizeAngle(
+      geometry.angle(p2, p3) - geometry.angle(p2, p1),
+    );
+    if (geometry.equals(p1, p2)) {
+      newPath.splice(i, 1);
+    } else if (Math.abs(180 - _angle) < stratifyAngleThreshold) {
+      newPath.splice(i + 1, 1);
+    } else {
+      i++;
+    }
+  }
+  return newPath;
 }

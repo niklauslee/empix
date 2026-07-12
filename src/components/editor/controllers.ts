@@ -1,5 +1,10 @@
 import { Editor, Manipulator, Controller } from "./editor";
-import { Color, ControllerPosition, Cursor } from "./consts";
+import {
+  LINE_STRATIFY_ANGLE_THRESHOLD,
+  Color,
+  ControllerPosition,
+  Cursor,
+} from "./consts";
 import {
   getBoundingRect,
   ShapeType,
@@ -11,8 +16,10 @@ import {
   drawBoundary,
   drawControlPoint,
   findControlPoint,
+  findSegmentControlPoint,
   getControllerPosition,
   inControlPoint,
+  reducePath,
 } from "./utils";
 import { containsPoint } from "./shapes";
 
@@ -295,15 +302,19 @@ export class LineMoveController extends Controller {
       r[1][1],
       Color.SELECTION,
     );
-    const p1 = editor.gc.toCanvasCoord(s.path[0], true);
+    const sp = editor.gc.toCanvasCoord(s.path[0], true);
     const p2 = editor.gc.toCanvasCoord(s.path[s.path.length - 1], true);
     const gc = editor.gc;
     gc.context.save();
     gc.context.scale(gc.ratio, gc.ratio);
     gc.context.strokeStyle = Color.SELECTION;
     gc.context.lineWidth = 1.5;
-    gc.context.moveTo(p1[0], p1[1]);
-    gc.context.lineTo(p2[0], p2[1]);
+    gc.context.beginPath();
+    gc.context.moveTo(sp[0], sp[1]);
+    for (let i = 1; i < s.path.length; i++) {
+      const p = editor.gc.toCanvasCoord(s.path[i], true);
+      gc.context.lineTo(p[0], p[1]);
+    }
     gc.context.stroke();
     gc.context.restore();
   }
@@ -375,6 +386,11 @@ export class LineMovePointController extends Controller {
   }
 
   finalize(editor: Editor, shape: Shape, e: PointerEvent, point: number[]) {
+    const reducedPath = reducePath(
+      (shape as LineShape).path,
+      LINE_STRATIFY_ANGLE_THRESHOLD,
+    );
+    editor.transform.assign(shape, "path", reducedPath);
     editor.transform.end();
   }
 
@@ -382,7 +398,103 @@ export class LineMovePointController extends Controller {
     const s = shape as LineShape;
     for (let i = 0; i < s.path.length; i++) {
       const cp = editor.gc.toCanvasCoord(s.path[i], true);
-      drawControlPoint(editor.gc, cp[0], cp[1]);
+      drawControlPoint(editor.gc, cp[0], cp[1], 1);
+    }
+  }
+}
+
+/**
+ * Moving controller for adding a line point
+ */
+export class LineAddPointController extends Controller {
+  /**
+   * current control point
+   */
+  controlPoint: number = -1;
+
+  /**
+   * current control path
+   */
+  controlPath: number[][] = [];
+
+  active(editor: Editor, shape: Shape): boolean {
+    return (
+      editor.selection.size() === 1 &&
+      editor.selection.isSelected(shape) &&
+      shape.type === ShapeType.LINE
+    );
+  }
+
+  mouseIn(
+    editor: Editor,
+    shape: Shape,
+    e: PointerEvent,
+    point: number[],
+  ): boolean {
+    const p = [e.offsetX, e.offsetY];
+    const s = shape as LineShape;
+    const cp = findSegmentControlPoint(editor.gc, s, p);
+    return cp >= 0;
+  }
+
+  mouseCursor(
+    editor: Editor,
+    shape: Shape,
+    e: PointerEvent,
+    point: number[],
+  ): [string, number] {
+    return [Cursor.POINTER, 0];
+  }
+
+  initialize(editor: Editor, shape: Shape, e: PointerEvent, point: number[]) {
+    const p = [e.offsetX, e.offsetY];
+    this.controlPoint = findSegmentControlPoint(
+      editor.gc,
+      shape as LineShape,
+      p,
+    );
+    this.controlPath = geometry.copyPath((shape as LineShape).path);
+    editor.transform.begin();
+  }
+
+  update(editor: Editor, shape: Shape, e: PointerEvent, point: number[]) {
+    if (this.dxStep === 0 && this.dyStep === 0) return;
+    if (this.controlPoint < 0) return;
+    const s = shape as LineShape;
+    let newPath = geometry.copyPath(this.controlPath);
+    newPath.splice(
+      this.controlPoint + 1,
+      0,
+      geometry.quantize(
+        geometry.mid(
+          newPath[this.controlPoint],
+          newPath[this.controlPoint + 1],
+        ),
+      ),
+    );
+    newPath[this.controlPoint + 1][0] += this.dx;
+    newPath[this.controlPoint + 1][1] += this.dy;
+    const rect = geometry.boundingRect(newPath);
+    editor.transform.assign(s, "path", newPath);
+    editor.transform.assign(s, "left", rect[0][0]);
+    editor.transform.assign(s, "top", rect[0][1]);
+    editor.transform.assign(s, "width", geometry.width(rect) + 1);
+    editor.transform.assign(s, "height", geometry.height(rect) + 1);
+  }
+
+  finalize(editor: Editor, shape: Shape, e: PointerEvent, point: number[]) {
+    editor.transform.end();
+  }
+
+  draw(editor: Editor, shape: Shape) {
+    const s = shape as LineShape;
+    if (s.path.length > 1) {
+      for (let i = 0; i < s.path.length - 1; i++) {
+        const p1 = editor.gc.toCanvasCoord(s.path[i], true);
+        const p2 = editor.gc.toCanvasCoord(s.path[i + 1], true);
+        const mid = geometry.mid(p1, p2);
+        drawControlPoint(editor.gc, mid[0], mid[1], 4);
+      }
     }
   }
 }

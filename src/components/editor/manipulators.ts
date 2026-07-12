@@ -3,6 +3,7 @@ import { ControllerPosition } from "./consts";
 import {
   BoxMoveController,
   BoxSizeController,
+  LineAddPointController,
   LineMoveController,
   LineMovePointController,
   SelectionMoveController,
@@ -48,6 +49,7 @@ export class LineManipulator extends Manipulator {
     super();
     this.controllers = [
       new LineMovePointController(this),
+      new LineAddPointController(this),
       new LineMoveController(this),
     ];
   }

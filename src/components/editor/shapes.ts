@@ -165,9 +165,11 @@ export function render(gc: GraphicContext, shape: Shape) {
           "Line shape must have at least two points in its path.",
         );
       }
-      const [x1, y1] = s.path[0];
-      const [x2, y2] = s.path[1];
-      gc.drawLine(x1, y1, x2, y2, s.color);
+      for (let i = 0; i < s.path.length - 1; i++) {
+        const [x1, y1] = s.path[i];
+        const [x2, y2] = s.path[i + 1];
+        gc.drawLine(x1, y1, x2, y2, s.color);
+      }
       break;
     }
     case ShapeType.TEXT: {
