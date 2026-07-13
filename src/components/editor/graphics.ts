@@ -167,11 +167,17 @@ export class GraphicContext {
     if (x < 0 || x >= this.width || y < 0 || y >= this.height) {
       return;
     }
-    this.buffer[
+    const byteIndex =
       y * Math.ceil((this.width * this.bpp) / 8) +
-        Math.floor((x * this.bpp) / 8)
-    ] |=
-      (color & ((1 << this.bpp) - 1)) << (8 - this.bpp - ((x * this.bpp) % 8));
+      Math.floor((x * this.bpp) / 8);
+    const shift = 8 - this.bpp - ((x * this.bpp) % 8);
+    const maxVal = (1 << this.bpp) - 1;
+    if (color < 0) {
+      /* -1 means XOR: toggle all bits of the pixel */
+      this.buffer[byteIndex] ^= maxVal << shift;
+    } else {
+      this.buffer[byteIndex] |= (color & maxVal) << shift;
+    }
   }
 
   /**
@@ -237,8 +243,8 @@ export class GraphicContext {
   drawRect(x: number, y: number, width: number, height: number, color: number) {
     this.drawHLine(y, x, x + width - 1, color);
     this.drawHLine(y + height - 1, x, x + width - 1, color);
-    this.drawVLine(x, y, y + height - 1, color);
-    this.drawVLine(x + width - 1, y, y + height - 1, color);
+    this.drawVLine(x, y + 1, y + height - 2, color);
+    this.drawVLine(x + width - 1, y + 1, y + height - 2, color);
   }
 
   /**
