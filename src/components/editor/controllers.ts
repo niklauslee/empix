@@ -346,7 +346,7 @@ export class LineMovePointController extends Controller {
   ): boolean {
     const p = [e.offsetX, e.offsetY];
     const s = shape as LineShape;
-    let cpIndex = findControlPoint(s, point);
+    let cpIndex = findControlPoint(editor.gc, s, p);
     if (cpIndex >= 0) {
       const cp = editor.gc.toCanvasCoord(s.path[cpIndex], true);
       return inControlPoint(p, cp);
@@ -364,7 +364,8 @@ export class LineMovePointController extends Controller {
   }
 
   initialize(editor: Editor, shape: Shape, e: PointerEvent, point: number[]) {
-    this.controlPoint = findControlPoint(shape as LineShape, point);
+    const p = [e.offsetX, e.offsetY];
+    this.controlPoint = findControlPoint(editor.gc, shape as LineShape, p);
     editor.transform.begin();
   }
 

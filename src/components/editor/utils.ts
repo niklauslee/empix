@@ -144,10 +144,14 @@ export function inControlPoint(
 /**
  * Returns the index of the control point if the point is inside a control point of the line shape, otherwise returns -1
  */
-export function findControlPoint(shape: LineShape, point: number[]): number {
+export function findControlPoint(
+  gc: GraphicContext,
+  shape: LineShape,
+  point: number[],
+): number {
   let cpIndex = -1;
   for (let i = 0; i < shape.path.length; i++) {
-    const cp = shape.path[i];
+    const cp = gc.toCanvasCoord(shape.path[i], true);
     if (inControlPoint(point, cp)) {
       cpIndex = i;
       break;
