@@ -248,52 +248,118 @@ export class GraphicContext {
   }
 
   /**
+   * Fill a rectangle
+   */
+  fillRect(x: number, y: number, width: number, height: number, color: number) {
+    for (let j = y; j < y + height; j++) {
+      this.drawHLine(j, x, x + width - 1, color);
+    }
+  }
+
+  /**
    * Draw an ellipse
    */
   drawEllipse(x1: number, y1: number, x2: number, y2: number, color: number) {
-    const rx = Math.round(Math.abs(x2 - x1) / 2);
-    const ry = Math.round(Math.abs(y2 - y1) / 2);
-    const cx = Math.round((x1 + x2) / 2);
-    const cy = Math.round((y1 + y2) / 2);
-    const rx2 = rx * rx;
-    const ry2 = ry * ry;
-    let x = 0;
-    let y = ry;
-    let dx = 2 * ry2 * x;
-    let dy = 2 * rx2 * y;
-    const plot = (px: number, py: number) => {
-      this.putPixel(cx + px, cy + py, color);
-      this.putPixel(cx - px, cy + py, color);
-      this.putPixel(cx + px, cy - py, color);
-      this.putPixel(cx - px, cy - py, color);
-    };
-    // Region 1
-    let p = ry2 - rx2 * ry + 0.25 * rx2;
-    while (dx < dy) {
-      plot(x, y);
-      x++;
-      dx += 2 * ry2;
-      if (p < 0) {
-        p += ry2 + dx;
-      } else {
-        y--;
-        dy -= 2 * rx2;
-        p += ry2 + dx - dy;
+    let px0 = Math.min(x1, x2);
+    let py0 = Math.min(y1, y2);
+    let px1 = Math.max(x1, x2);
+    let py1 = Math.max(y1, y2);
+    const a = px1 - px0;
+    const b = py1 - py0;
+    const b1 = b & 1;
+    let dx = 4 * (1 - a) * b * b;
+    let dy = 4 * (b1 + 1) * a * a;
+    let err = dx + dy + b1 * a * a;
+    py0 += (b + 1) >> 1;
+    py1 = py0 - b1;
+    const da = 8 * a * a;
+    const db = 8 * b * b;
+    do {
+      this.putPixel(px1, py0, color);
+      if (px0 !== px1) this.putPixel(px0, py0, color);
+      if (py0 !== py1) {
+        this.putPixel(px1, py1, color);
+        if (px0 !== px1) this.putPixel(px0, py1, color);
       }
+      const e2 = 2 * err;
+      if (e2 <= dy) {
+        py0++;
+        py1--;
+        err += dy += da;
+      }
+      if (e2 >= dx || 2 * err > dy) {
+        px0++;
+        px1--;
+        err += dx += db;
+      }
+    } while (px0 <= px1);
+    // Advance past rows already drawn by the do-while to prevent XOR double-toggle
+    py0++;
+    py1--;
+    while (py0 - py1 <= b) {
+      const lx = px0 - 1;
+      const rx = px1 + 1;
+      this.putPixel(lx, py0, color);
+      if (lx !== rx) this.putPixel(rx, py0, color);
+      if (py0 !== py1) {
+        this.putPixel(lx, py1, color);
+        if (lx !== rx) this.putPixel(rx, py1, color);
+      }
+      py0++;
+      py1--;
     }
-    // Region 2
-    p = ry2 * (x + 0.5) * (x + 0.5) + rx2 * (y - 1) * (y - 1) - rx2 * ry2;
-    while (y >= 0) {
-      plot(x, y);
-      y--;
-      dy -= 2 * rx2;
-      if (p > 0) {
-        p += rx2 - dy;
-      } else {
-        x++;
-        dx += 2 * ry2;
-        p += rx2 - dy + dx;
+  }
+
+  /**
+   * Fill an ellipse
+   */
+  fillEllipse(x1: number, y1: number, x2: number, y2: number, color: number) {
+    let px0 = Math.min(x1, x2);
+    let py0 = Math.min(y1, y2);
+    let px1 = Math.max(x1, x2);
+    let py1 = Math.max(y1, y2);
+    const a = px1 - px0;
+    const b = py1 - py0;
+    const b1 = b & 1;
+    let dx = 4 * (1 - a) * b * b;
+    let dy = 4 * (b1 + 1) * a * a;
+    let err = dx + dy + b1 * a * a;
+    py0 += (b + 1) >> 1;
+    py1 = py0 - b1;
+    const da = 8 * a * a;
+    const db = 8 * b * b;
+    // Track last drawn y values to draw each row exactly once (XOR-safe)
+    let lastPy0 = -1;
+    let lastPy1 = -1;
+    do {
+      if (py0 !== lastPy0) {
+        this.drawHLine(py0, px0, px1, color);
+        lastPy0 = py0;
       }
+      if (py1 !== lastPy1 && py1 !== py0) {
+        this.drawHLine(py1, px0, px1, color);
+        lastPy1 = py1;
+      }
+      const e2 = 2 * err;
+      if (e2 <= dy) {
+        py0++;
+        py1--;
+        err += dy += da;
+      }
+      if (e2 >= dx || 2 * err > dy) {
+        px0++;
+        px1--;
+        err += dx += db;
+      }
+    } while (px0 <= px1);
+    // Advance past rows already drawn by the do-while to prevent XOR double-toggle
+    py0++;
+    py1--;
+    while (py0 - py1 <= b) {
+      this.drawHLine(py0, px0 - 1, px1 + 1, color);
+      if (py0 !== py1) this.drawHLine(py1, px0 - 1, px1 + 1, color);
+      py0++;
+      py1--;
     }
   }
 

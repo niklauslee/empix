@@ -32,6 +32,7 @@ export interface Shape {
  */
 export interface RectangleShape extends Shape {
   type: typeof ShapeType.RECTANGLE;
+  fill: boolean;
 }
 
 /**
@@ -39,6 +40,7 @@ export interface RectangleShape extends Shape {
  */
 export interface EllipseShape extends Shape {
   type: typeof ShapeType.ELLIPSE;
+  fill: boolean;
 }
 
 /**
@@ -86,11 +88,13 @@ export class ShapeFactory {
         return {
           ...defaults,
           type: ShapeType.RECTANGLE,
+          fill: false,
         } as RectangleShape;
       case ShapeType.ELLIPSE:
         return {
           ...defaults,
           type: ShapeType.ELLIPSE,
+          fill: false,
         } as EllipseShape;
       case ShapeType.LINE:
         return {
@@ -151,18 +155,32 @@ export function render(gc: GraphicContext, shape: Shape) {
   switch (shape.type) {
     case ShapeType.RECTANGLE: {
       const s = shape as RectangleShape;
-      gc.drawRect(s.left, s.top, s.width, s.height, s.color);
+      if (s.fill) {
+        gc.fillRect(s.left, s.top, s.width, s.height, s.color);
+      } else {
+        gc.drawRect(s.left, s.top, s.width, s.height, s.color);
+      }
       break;
     }
     case ShapeType.ELLIPSE: {
       const s = shape as EllipseShape;
-      gc.drawEllipse(
-        s.left,
-        s.top,
-        s.left + s.width - 1,
-        s.top + s.height - 1,
-        s.color,
-      );
+      if (s.fill) {
+        gc.fillEllipse(
+          s.left,
+          s.top,
+          s.left + s.width - 1,
+          s.top + s.height - 1,
+          s.color,
+        );
+      } else {
+        gc.drawEllipse(
+          s.left,
+          s.top,
+          s.left + s.width - 1,
+          s.top + s.height - 1,
+          s.color,
+        );
+      }
       break;
     }
     case ShapeType.LINE: {
