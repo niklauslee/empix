@@ -6,6 +6,7 @@ import { getFont } from "./font";
 export interface GraphicContextOptions {
   width: number;
   height: number;
+  bpp: number;
   margin: number;
   scale: number;
 }
@@ -14,13 +15,54 @@ export interface GraphicContextOptions {
  * Graphic context object
  */
 export class GraphicContext {
+  /**
+   * The canvas element
+   */
   canvas: HTMLCanvasElement;
+
+  /**
+   * The 2D rendering context
+   */
   context: CanvasRenderingContext2D;
+
+  /**
+   * The pixel buffer
+   */
+  buffer: Uint8Array;
+
+  /**
+   * The device pixel ratio
+   */
   ratio: number = window.devicePixelRatio ?? 1;
+
+  /**
+   * The margin around the canvas in pixels
+   */
   margin: number;
+
+  /**
+   * The width of the canvas in pixels
+   */
   width: number;
+
+  /**
+   * The height of the canvas in pixels
+   */
   height: number;
+
+  /**
+   * The bits per pixel
+   */
+  bpp: number;
+
+  /**
+   * The scale of the canvas
+   */
   scale: number;
+
+  /**
+   * The font used for text rendering
+   */
   font: string | null;
 
   constructor(canvas: HTMLCanvasElement, options: GraphicContextOptions) {
@@ -28,10 +70,14 @@ export class GraphicContext {
     const context = this.canvas.getContext("2d");
     if (!context) throw new Error("Failed to create context2d");
     this.context = context;
-    this.margin = options.margin;
     this.width = options.width;
     this.height = options.height;
+    this.bpp = options.bpp;
+    this.buffer = new Uint8Array(
+      Math.ceil((this.width * this.bpp) / 8) * this.height,
+    ).fill(0);
     this.scale = options.scale;
+    this.margin = options.margin;
     this.font = "Leros";
   }
 
@@ -61,10 +107,43 @@ export class GraphicContext {
   }
 
   /**
-   * Clear the canvas
+   * Convert a color value to a CSS color string
+   */
+  toCssColor(color: number): string {
+    if (this.bpp === 1) {
+      return color === 0 ? "#000000" : "#FFFFFF";
+    }
+    return "#FFFFFF";
+  }
+
+  /**
+   * Clear the buffer
    */
   clear() {
-    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.buffer.fill(0);
+    // this.context.save();
+    // this.context.scale(this.ratio, this.ratio);
+    this.context.fillStyle = this.toCssColor(0);
+    this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    // this.context.restore();
+  }
+
+  /**
+   * Get the size of the canvas in pixels
+   */
+  getSize(): number[] {
+    return [this.width, this.height];
+  }
+
+  /**
+   * Set the size of the canvas in pixels
+   */
+  setSize(width: number, height: number) {
+    this.width = width;
+    this.height = height;
+    this.buffer = new Uint8Array(
+      Math.ceil((width * this.bpp) / 8) * height,
+    ).fill(0);
   }
 
   /**
@@ -82,46 +161,80 @@ export class GraphicContext {
   }
 
   /**
-   * Draw a pixel on the canvas
+   * Put a pixel on the buffer
    */
-  drawPixel(x: number, y: number, color: string) {
+  putPixel(x: number, y: number, color: number) {
     if (x < 0 || x >= this.width || y < 0 || y >= this.height) {
       return;
     }
+    this.buffer[
+      y * Math.ceil((this.width * this.bpp) / 8) +
+        Math.floor((x * this.bpp) / 8)
+    ] |=
+      (color & ((1 << this.bpp) - 1)) << (8 - this.bpp - ((x * this.bpp) % 8));
+  }
+
+  /**
+   * Get a pixel from the buffer
+   */
+  getPixel(x: number, y: number): number {
+    if (x < 0 || x >= this.width || y < 0 || y >= this.height) {
+      return 0;
+    }
+    return (
+      (this.buffer[
+        y * Math.ceil((this.width * this.bpp) / 8) +
+          Math.floor((x * this.bpp) / 8)
+      ] >>
+        (8 - this.bpp - ((x * this.bpp) % 8))) &
+      ((1 << this.bpp) - 1)
+    );
+  }
+
+  /**
+   * Render the buffer to the canvas
+   */
+  renderBuffer() {
     this.context.save();
     this.context.scale(this.ratio, this.ratio);
-    this.context.fillStyle = color;
-    this.context.fillRect(
-      this.margin + x * this.scale,
-      this.margin + y * this.scale,
-      this.scale,
-      this.scale,
-    );
+    for (let y = 0; y < this.height; y++) {
+      for (let x = 0; x < this.width; x++) {
+        const color = this.getPixel(x, y);
+        if (color === 0) continue;
+        this.context.fillStyle = this.toCssColor(color);
+        this.context.fillRect(
+          this.margin + x * this.scale,
+          this.margin + y * this.scale,
+          this.scale,
+          this.scale,
+        );
+      }
+    }
     this.context.restore();
   }
 
   /**
    * Draw a vertical line
    */
-  drawVLine(x: number, y1: number, y2: number, color: string) {
+  drawVLine(x: number, y1: number, y2: number, color: number) {
     for (let y = y1; y <= y2; y++) {
-      this.drawPixel(x, y, color);
+      this.putPixel(x, y, color);
     }
   }
 
   /**
    * Draw a horizontal line
    */
-  drawHLine(y: number, x1: number, x2: number, color: string) {
+  drawHLine(y: number, x1: number, x2: number, color: number) {
     for (let x = x1; x <= x2; x++) {
-      this.drawPixel(x, y, color);
+      this.putPixel(x, y, color);
     }
   }
 
   /**
    * Draw a rectangle
    */
-  drawRect(x: number, y: number, width: number, height: number, color: string) {
+  drawRect(x: number, y: number, width: number, height: number, color: number) {
     this.drawHLine(y, x, x + width - 1, color);
     this.drawHLine(y + height - 1, x, x + width - 1, color);
     this.drawVLine(x, y, y + height - 1, color);
@@ -131,7 +244,7 @@ export class GraphicContext {
   /**
    * Draw an ellipse
    */
-  drawEllipse(x1: number, y1: number, x2: number, y2: number, color: string) {
+  drawEllipse(x1: number, y1: number, x2: number, y2: number, color: number) {
     const rx = Math.round(Math.abs(x2 - x1) / 2);
     const ry = Math.round(Math.abs(y2 - y1) / 2);
     const cx = Math.round((x1 + x2) / 2);
@@ -143,10 +256,10 @@ export class GraphicContext {
     let dx = 2 * ry2 * x;
     let dy = 2 * rx2 * y;
     const plot = (px: number, py: number) => {
-      this.drawPixel(cx + px, cy + py, color);
-      this.drawPixel(cx - px, cy + py, color);
-      this.drawPixel(cx + px, cy - py, color);
-      this.drawPixel(cx - px, cy - py, color);
+      this.putPixel(cx + px, cy + py, color);
+      this.putPixel(cx - px, cy + py, color);
+      this.putPixel(cx + px, cy - py, color);
+      this.putPixel(cx - px, cy - py, color);
     };
     // Region 1
     let p = ry2 - rx2 * ry + 0.25 * rx2;
@@ -181,7 +294,7 @@ export class GraphicContext {
   /**
    * Draw a line using Bresenham's algorithm
    */
-  drawLine(x1: number, y1: number, x2: number, y2: number, color: string) {
+  drawLine(x1: number, y1: number, x2: number, y2: number, color: number) {
     const dx = Math.abs(x2 - x1);
     const dy = Math.abs(y2 - y1);
     const sx = x1 < x2 ? 1 : -1;
@@ -190,7 +303,7 @@ export class GraphicContext {
     let x = x1;
     let y = y1;
     while (true) {
-      this.drawPixel(x, y, color);
+      this.putPixel(x, y, color);
       if (x === x2 && y === y2) break;
       const e2 = 2 * err;
       if (e2 > -dy) {
@@ -207,7 +320,7 @@ export class GraphicContext {
   /**
    * Draw text on the canvas
    */
-  drawText(x: number, y: number, text: string, color: string) {
+  drawText(x: number, y: number, text: string, color: number) {
     if (!this.font) throw new Error("Font is not set");
     const font = getFont(this.font);
     if (!font) throw new Error(`Font "${this.font}" not found`);
@@ -226,7 +339,7 @@ export class GraphicContext {
           if (bit) {
             const gx = x + bbxoff + b;
             const gy = y + r;
-            this.drawPixel(gx, gy, color);
+            this.putPixel(gx, gy, color);
           }
         }
       }
@@ -293,15 +406,7 @@ export class GraphicContext {
         const shift = 8 - bpp - (bitStart % 8);
         const pixelValue = (bitmap[byteIndex] >> shift) & maxValue;
         if (pixelValue === 0) continue;
-        let color: string;
-        if (bpp === 1) {
-          color = "#000000";
-        } else {
-          const intensity = Math.round((pixelValue / maxValue) * 255);
-          const hex = intensity.toString(16).padStart(2, "0");
-          color = `#${hex}${hex}${hex}`;
-        }
-        this.drawPixel(x + col, y + row, color);
+        this.putPixel(x + col, y + row, pixelValue);
       }
     }
   }

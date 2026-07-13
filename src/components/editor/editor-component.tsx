@@ -44,6 +44,7 @@ function basicSetup(): EditorOptions {
     },
     width: 128,
     height: 64,
+    bpp: 1,
     margin: 20,
     scale: 8,
   };

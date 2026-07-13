@@ -1,4 +1,9 @@
-import { Color, CONTROL_POINT_APOTHEM, ControllerPosition } from "./consts";
+import {
+  Color,
+  CONTROL_LINE_WIDTH,
+  CONTROL_POINT_APOTHEM,
+  ControllerPosition,
+} from "./consts";
 import * as geometry from "./geometry";
 import { GraphicContext } from "./graphics";
 import { getBoundingRect, type LineShape, type Shape } from "./shapes";
@@ -46,7 +51,7 @@ export function drawBoundary(
   gc.context.save();
   gc.context.scale(gc.ratio, gc.ratio);
   gc.context.strokeStyle = color;
-  gc.context.lineWidth = 1.5;
+  gc.context.lineWidth = CONTROL_LINE_WIDTH;
   gc.context.strokeRect(
     gc.margin + r[0][0] * gc.scale,
     gc.margin + r[0][1] * gc.scale,
@@ -75,7 +80,7 @@ export function drawControlPoint(
   gc.context.scale(gc.ratio, gc.ratio);
   gc.context.fillStyle = Color.BACKGROUND;
   gc.context.strokeStyle = Color.SELECTION;
-  gc.context.lineWidth = 1.5;
+  gc.context.lineWidth = CONTROL_LINE_WIDTH;
   switch (type) {
     case 0: // Rect
       gc.context.fillRect(x - g, y - g, g * 2, g * 2);

@@ -697,9 +697,10 @@ export class Editor {
     this.canvas.style.touchAction = "none"; // prevent pointer cancel event in mobile
     this.canvas.style.outline = "none"; // remove focus outline
     this.gc = new GraphicContext(this.canvas, {
-      margin: this.options.margin,
       width: this.options.width,
       height: this.options.height,
+      bpp: this.options.bpp,
+      margin: this.options.margin,
       scale: this.options.scale,
     });
     this.parent.appendChild(this.canvas);
@@ -764,8 +765,7 @@ export class Editor {
    * Set scene size in pixels.
    */
   setSize(width: number, height: number) {
-    this.gc.width = width;
-    this.gc.height = height;
+    this.gc.setSize(width, height);
     this.fit();
     this.repaint();
   }
@@ -774,7 +774,7 @@ export class Editor {
    * Get scene size in pixels.
    */
   getSize(): number[] {
-    return [this.gc.width, this.gc.height];
+    return this.gc.getSize();
   }
 
   /**
@@ -826,13 +826,21 @@ export class Editor {
    * Repaint the editor
    */
   repaint(drawSelection: boolean = true) {
-    this.gc.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.clearBackground();
     this.drawGrid();
     this.drawBorder();
-    this.render();
+    this.drawShapes();
     if (drawSelection) {
       this.selection.drawSelection(this);
     }
+  }
+
+  /**
+   * Draw the background of the editor
+   */
+  clearBackground() {
+    // this.gc.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.gc.clear();
   }
 
   /**
@@ -886,10 +894,11 @@ export class Editor {
   /**
    * Render the scene shapes
    */
-  render() {
+  drawShapes() {
     for (const shape of this.store.shapes) {
       render(this.gc, shape);
     }
+    this.gc.renderBuffer();
   }
 
   /**

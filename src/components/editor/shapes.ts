@@ -24,7 +24,7 @@ export interface Shape {
   top: number;
   width: number;
   height: number;
-  color: string;
+  color: number;
 }
 
 /**
@@ -79,7 +79,7 @@ export class ShapeFactory {
       top: 0,
       width: 1,
       height: 1,
-      color: "#000000",
+      color: 1,
     };
     switch (shapeType) {
       case ShapeType.RECTANGLE:

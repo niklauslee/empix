@@ -1,4 +1,5 @@
-export const CONTROL_POINT_APOTHEM = 4; // px
+export const CONTROL_POINT_APOTHEM = 5; // px
+export const CONTROL_LINE_WIDTH = 2; // px
 export const LINE_STRATIFY_ANGLE_THRESHOLD = 10;
 
 // Cursor SVG Data is a string of URL-encoded SVG with {{angle}} parameter.
@@ -32,10 +33,10 @@ export const Mouse = {
 } as const;
 
 export const Color = {
-  BACKGROUND: "#FFFFFF",
-  FOREGROUND: "#000000",
-  GRID: "#E8E8EC",
-  BORDER: "#000000",
+  BACKGROUND: "#000000",
+  FOREGROUND: "#FFFFFF",
+  GRID: "#38383C",
+  BORDER: "#FFFFFF",
   SELECTION: "#0588F0",
   HOVER: "#0588F0",
 } as const;

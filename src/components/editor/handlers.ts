@@ -255,7 +255,7 @@ export class RectangleFactoryHandler extends Handler {
     this.shape.top = this.dragStartPoint[1];
     this.shape.width = 1;
     this.shape.height = 1;
-    this.shape.color = "#000000";
+    this.shape.color = 1;
     editor.transform.insert(this.shape);
   }
 
@@ -296,7 +296,7 @@ export class EllipseFactoryHandler extends Handler {
     this.shape.top = this.dragStartPoint[1];
     this.shape.width = 1;
     this.shape.height = 1;
-    this.shape.color = "#000000";
+    this.shape.color = 1;
     editor.transform.insert(this.shape);
   }
 
@@ -341,7 +341,7 @@ export class LineFactoryHandler extends Handler {
     this.shape.top = this.dragStartPoint[1];
     this.shape.width = 1;
     this.shape.height = 1;
-    this.shape.color = "#000000";
+    this.shape.color = 1;
     editor.transform.insert(this.shape);
   }
 
@@ -388,7 +388,7 @@ export class TextFactoryHandler extends Handler {
     this.shape.top = this.dragStartPoint[1];
     this.shape.width = metric.width;
     this.shape.height = metric.height;
-    this.shape.color = "#000000";
+    this.shape.color = 1;
     editor.transform.insert(this.shape);
   }
 
@@ -417,7 +417,7 @@ export class BitmapFactoryHandler extends Handler {
     this.shape.top = this.dragStartPoint[1];
     // this.shape.width = 1;
     // this.shape.height = 1;
-    this.shape.color = "#000000";
+    this.shape.color = 1;
     editor.transform.insert(this.shape);
   }
 

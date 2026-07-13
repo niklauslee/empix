@@ -4,6 +4,7 @@ import {
   Color,
   ControllerPosition,
   Cursor,
+  CONTROL_LINE_WIDTH,
 } from "./consts";
 import {
   getBoundingRect,
@@ -308,7 +309,7 @@ export class LineMoveController extends Controller {
     gc.context.save();
     gc.context.scale(gc.ratio, gc.ratio);
     gc.context.strokeStyle = Color.SELECTION;
-    gc.context.lineWidth = 1.5;
+    gc.context.lineWidth = CONTROL_LINE_WIDTH;
     gc.context.beginPath();
     gc.context.moveTo(sp[0], sp[1]);
     for (let i = 1; i < s.path.length; i++) {

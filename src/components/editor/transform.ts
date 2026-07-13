@@ -94,7 +94,7 @@ export class Transform {
    * Triggers a mutation event.
    */
   trigger(mutation: Mutation) {
-    console.log("[onMutation]", mutation);
+    // console.log("[onMutation]", mutation);
     this.onMutation.emit(mutation);
   }
 
