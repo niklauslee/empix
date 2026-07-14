@@ -1,26 +1,12 @@
-# Bitmap Editor
+# Empix Studio
 
-```mermaid
-classDiagram
-  class Scene
-  class Shape {
-    id: string
-    type: string
-    name: string
-  }
-  class Editor
-  class HandlerManager
-  class Handler
-  class GraphicContext
-  class Renderer
-  Scene "1" o-- "*" Shape
-  Editor "1" --> "1" Scene
-  Editor "1" --> "1" HandlerManager
-  Editor "1" --> "1" GraphicContext
-  Editor "1" --> "1" Renderer
-  HandlerManager "1" o-- "*" Handler
-  HandlerManager "1" --> "1" Handler : activeHandler
-```
+## TODOs
+
+- [ ] color 지원 (grayscale, 16bit, 24bit, ...)
+- [ ] Polygon handler 지원 (line 도형에 closed: boolean 속성을 추가하여 Polygon을 지원할 수 있음)
+- [ ] Free drawing handler 지원 (Bitmap 도형 생성)
+- [ ] Ruler 그리기
+- [ ] 선택된 도형의 guide 그리기 (좌표, 크기 등)
 
 ## Shapes
 
