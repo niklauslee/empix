@@ -37,8 +37,8 @@ export const Color = {
   FOREGROUND: "#FFFFFF",
   GRID: "#38383C",
   BORDER: "#FFFFFF",
-  SELECTION: "#0588F0",
-  HOVER: "#0588F0",
+  SELECTION: "#00a63e", // "#218358", // "#0588F0",
+  HOVER: "#00a63e", // "#0588F0",
 } as const;
 
 export const ControllerPosition = {

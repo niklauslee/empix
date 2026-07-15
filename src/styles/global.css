@@ -1,1 +1,12 @@
 @import "tailwindcss";
+@import "./fonts.css";
+
+@theme {
+  --font-sans: "HelvetiPixel", monospace;
+}
+
+@layer base {
+  * {
+    letter-spacing: 0.05em;
+  }
+}

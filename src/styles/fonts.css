@@ -1,0 +1,62 @@
+@font-face {
+  font-family: "Fixed 6x10";
+  src: url("/fonts/Fixed6x10-Regular.ttf");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "ProFont11";
+  src: url("/fonts/ProFont11-Regular.ttf");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Leros";
+  src: url("/fonts/Leros-Regular.ttf");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "LeeSans";
+  src: url("/fonts/LeeSans-Regular.ttf");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "HelvetiPixel";
+  src: url("/fonts/HelvetiPixel.ttf");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Handheld";
+  src: url("/fonts/Handheld.ttf");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Born2bSporty";
+  src: url("/fonts/Born2bSporty.ttf");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "BetterPixels";
+  src: url("/fonts/BetterPixels.ttf");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Macintosh128K";
+  src: url("/fonts/Macintosh128K.ttf");
+  font-weight: 400;
+  font-style: normal;
+}

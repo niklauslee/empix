@@ -109,7 +109,7 @@ export class ShapeFactory {
         return {
           ...defaults,
           type: ShapeType.TEXT,
-          font: "-Misc-Fixed-Medium-R-Normal--6-60-75-75-C-40-ISO10646-1", // "Leros",
+          font: "Leros",
           text: "Hello, world!Ä",
         } as TextShape;
       case ShapeType.BITMAP:

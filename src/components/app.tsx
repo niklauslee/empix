@@ -15,13 +15,14 @@ function App() {
   };
 
   return (
-    <main>
-      <h1 className="text-4xl font-bold text-green-500 text-center py-5">
+    <main className="bg-black text-white w-screen h-screen flex flex-col items-center justify-start">
+      <h1 className="text-6xl font-bold text-green-600 text-center py-5">
         Empix Studio
       </h1>
-      <div className="flex flex-row items-center justify-center gap-2 py-2">
+
+      <div className="text-lg flex flex-row items-center justify-center gap-2 py-2">
         <button
-          className="text-xs px-2 py-1 border border-black bg-slate-200"
+          className="px-2 py-0 border-[1.5px] border-white"
           onClick={() => {
             window.editor.handlers.setActiveHandler("Select");
           }}
@@ -29,7 +30,7 @@ function App() {
           Select
         </button>
         <button
-          className="text-xs px-2 py-1 border border-black bg-slate-200"
+          className="px-2 py-0 border-[1.5px] border-white"
           onClick={() => {
             window.editor.handlers.setActiveHandler("Rectangle");
           }}
@@ -37,7 +38,7 @@ function App() {
           Rectangle
         </button>
         <button
-          className="text-xs px-2 py-1 border border-black bg-slate-200"
+          className="px-2 py-0 border-[1.5px] border-white"
           onClick={() => {
             window.editor.handlers.setActiveHandler("Ellipse");
           }}
@@ -45,7 +46,7 @@ function App() {
           Ellipse
         </button>
         <button
-          className="text-xs px-2 py-1 border border-black bg-slate-200"
+          className="px-2 py-0 border-[1.5px] border-white"
           onClick={() => {
             window.editor.handlers.setActiveHandler("Line");
           }}
@@ -53,7 +54,7 @@ function App() {
           Line
         </button>
         <button
-          className="text-xs px-2 py-1 border border-black bg-slate-200"
+          className="px-2 py-0 border-[1.5px] border-white"
           onClick={() => {
             window.editor.handlers.setActiveHandler("Text");
           }}
@@ -61,7 +62,7 @@ function App() {
           Text
         </button>
         <button
-          className="text-xs px-2 py-1 border border-black bg-slate-200"
+          className="px-2 py-0 border-[1.5px] border-white"
           onClick={() => {
             window.editor.handlers.setActiveHandler("Bitmap");
           }}
@@ -69,9 +70,10 @@ function App() {
           Bitmap
         </button>
       </div>
-      <div className="flex flex-row items-center justify-center gap-2 py-2">
+
+      <div className="text-lg flex flex-row items-center justify-center gap-2 py-2">
         <button
-          className="text-xs px-2 py-1 border border-black"
+          className="px-2 py-0 border-[1.5px] border-white"
           onClick={() => {
             const scale = window.editor.getScale();
             if (scale < 16) window.editor.setScale(scale + 1);
@@ -80,7 +82,7 @@ function App() {
           +
         </button>
         <button
-          className="text-xs px-2 py-1 border border-black"
+          className="px-2 py-0 border-[1.5px] border-white"
           onClick={() => {
             const scale = window.editor.getScale();
             if (scale > 1) window.editor.setScale(scale - 1);
@@ -89,7 +91,7 @@ function App() {
           -
         </button>
         <button
-          className="text-xs px-2 py-1 border border-black"
+          className="px-2 py-0 border-[1.5px] border-white"
           onClick={() => {
             window.editor.undo();
           }}
@@ -97,7 +99,7 @@ function App() {
           Undo
         </button>
         <button
-          className="text-xs px-2 py-1 border border-black"
+          className="px-2 py-0 border-[1.5px] border-white"
           onClick={() => {
             window.editor.redo();
           }}
@@ -105,7 +107,7 @@ function App() {
           Redo
         </button>
         <button
-          className="text-xs px-2 py-1 border border-black"
+          className="px-2 py-0 border-[1.5px] border-white"
           onClick={() => {
             window.editor.delete();
           }}
@@ -113,7 +115,7 @@ function App() {
           Delete
         </button>
         <button
-          className="text-xs px-2 py-1 border border-black"
+          className="px-2 py-0 border-[1.5px] border-white"
           onClick={() => {
             window.editor.bringToFront();
           }}
@@ -121,7 +123,7 @@ function App() {
           Bring to Front
         </button>
         <button
-          className="text-xs px-2 py-1 border border-black"
+          className="px-2 py-0 border-[1.5px] border-white"
           onClick={() => {
             window.editor.sendToBack();
           }}
@@ -129,7 +131,8 @@ function App() {
           Send to Back
         </button>
       </div>
-      <div className="flex flex-col items-center justify-center w-full h-full mt-4">
+
+      <div className="flex flex-col items-center justify-center w-full h-full mt-0">
         <EditorComponent onMount={handleMount} />
       </div>
     </main>
