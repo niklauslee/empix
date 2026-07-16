@@ -1,7 +1,7 @@
 import { Handler, Editor } from "./editor";
 import { Color, Cursor, Mouse } from "./consts";
 import * as geometry from "./geometry";
-import { drawBoundary } from "./utils";
+import { drawBox } from "./utils";
 import {
   type BitmapShape,
   type EllipseShape,
@@ -27,6 +27,9 @@ export class SelectHandler extends Handler {
 
     if (e.button === Mouse.BUTTON1) {
       const shape = editor.getShapeAt(point);
+
+      console.log("shapeAt", shape);
+
       if (
         editor.selection.size() === 1 &&
         selectedManipulator?.mouseIn(
@@ -232,7 +235,7 @@ export class SelectHandler extends Handler {
     if (this.dragging) {
       const r = geometry.normalizeRect([this.dragStartPoint, this.dragPoint]);
       const gc = editor.gc;
-      drawBoundary(gc, r[0][0], r[0][1], r[1][0], r[1][1], Color.SELECTION);
+      drawBox(gc, r, Color.SELECTION);
     }
   }
 }

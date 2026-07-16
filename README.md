@@ -2,7 +2,7 @@
 
 ## TODOs
 
-- [ ] 도형의 마우스 선택 개선 (선이나 채워지지 않은 사각형, 타원들은 외곽선에 근접해서 선택되도록)
+- [x] 도형의 마우스 선택 개선 (선이나 채워지지 않은 사각형, 타원들은 외곽선에 근접해서 선택되도록)
 - [ ] color 지원 (grayscale, 16bit, 24bit, ...)
 - [ ] Polygon handler 지원 (line 도형에 closed: boolean 속성을 추가하여 Polygon을 지원할 수 있음)
 - [ ] Free drawing handler 지원 (Bitmap 도형 생성)

@@ -34,20 +34,10 @@ export function getBoundingRectInCanvasCoord(gc: GraphicContext, shape: Shape) {
 }
 
 /**
- * Draw a boundary rectangle in pixel coordinates
+ * Draw a box in pixel coordinates
  */
-export function drawBoundary(
-  gc: GraphicContext,
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
-  color: string,
-) {
-  const r = geometry.normalizeRect([
-    [x1, y1],
-    [x2, y2],
-  ]);
+export function drawBox(gc: GraphicContext, rect: number[][], color: string) {
+  const r = geometry.normalizeRect([rect[0], rect[1]]);
   gc.context.save();
   gc.context.scale(gc.ratio, gc.ratio);
   gc.context.strokeStyle = color;
@@ -58,6 +48,30 @@ export function drawBoundary(
     (r[1][0] - r[0][0] + 1) * gc.scale,
     (r[1][1] - r[0][1] + 1) * gc.scale,
   );
+  gc.context.restore();
+}
+
+/**
+ * Draw a path in pixel coordinates
+ */
+export function drawPath(gc: GraphicContext, path: number[][], color: string) {
+  if (path.length < 2) return;
+  gc.context.save();
+  gc.context.scale(gc.ratio, gc.ratio);
+  gc.context.strokeStyle = color;
+  gc.context.lineWidth = CONTROL_LINE_WIDTH;
+  gc.context.beginPath();
+  gc.context.moveTo(
+    gc.margin + path[0][0] * gc.scale + gc.scale / 2,
+    gc.margin + path[0][1] * gc.scale + gc.scale / 2,
+  );
+  for (let i = 1; i < path.length; i++) {
+    gc.context.lineTo(
+      gc.margin + path[i][0] * gc.scale + gc.scale / 2,
+      gc.margin + path[i][1] * gc.scale + gc.scale / 2,
+    );
+  }
+  gc.context.stroke();
   gc.context.restore();
 }
 

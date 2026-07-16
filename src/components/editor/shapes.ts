@@ -1,6 +1,8 @@
 import { nanoid } from "nanoid";
 import { GraphicContext } from "./graphics";
 import * as geometry from "./geometry";
+import { Color, CONTROL_POINT_APOTHEM } from "./consts";
+import { drawBox, drawPath } from "./utils";
 
 /**
  * Shape types
@@ -141,11 +143,85 @@ export function getBoundingRect(shape: Shape): number[][] {
 }
 
 /**
+ * Get the outline of a shape as a polygon (array of points)
+ */
+export function getOutline(shape: Shape): number[][] {
+  switch (shape.type) {
+    case ShapeType.RECTANGLE:
+    case ShapeType.TEXT:
+    case ShapeType.BITMAP: {
+      return geometry.rectToPolygon(getBoundingRect(shape), true);
+    }
+    case ShapeType.ELLIPSE: {
+      const s = shape as EllipseShape;
+      const r = getBoundingRect(s);
+      return geometry.pointsOnEllipse(
+        geometry.center(r),
+        s.width / 2,
+        s.height / 2,
+        Math.max(Math.round((s.width + s.height) / 5), 30), // num of points
+      );
+    }
+    case ShapeType.LINE: {
+      const s = shape as LineShape;
+      return geometry.copyPath(s.path);
+    }
+    default:
+      return [];
+  }
+}
+
+/**
  * Check if a point is contained within a shape
  */
 export function containsPoint(shape: Shape, point: number[]): boolean {
-  const r = getBoundingRect(shape);
-  return geometry.inRect(point, r);
+  const distance = 1.5; // pixels
+  switch (shape.type) {
+    case ShapeType.RECTANGLE: {
+      const s = shape as RectangleShape;
+      const r = getBoundingRect(s);
+      if (s.fill) {
+        return geometry.inRect(point, r);
+      } else {
+        const outline = geometry.rectToPolygon(r, true);
+        return geometry.getNearSegment(point, outline, distance) >= 0;
+      }
+    }
+    case ShapeType.ELLIPSE: {
+      const s = shape as EllipseShape;
+      const o = getOutline(s);
+      if (s.fill) {
+        return geometry.inPolygon(point, o);
+      } else {
+        const outline = getOutline(s);
+        return geometry.getNearSegment(point, outline, distance) >= 0;
+      }
+    }
+    case ShapeType.LINE: {
+      const s = shape as LineShape;
+      const o = getOutline(s);
+      return geometry.getNearSegment(point, o, distance) >= 0;
+    }
+    case ShapeType.TEXT:
+    case ShapeType.BITMAP: {
+      const r = getBoundingRect(shape);
+      return geometry.inRect(point, r);
+    }
+    default:
+      return false;
+  }
+}
+
+/**
+ * Check if a shape's outline overlaps with a given rectangle
+ */
+export function overlapRect(shape: Shape, rect: number[][]): boolean {
+  const outline = getOutline(shape);
+  for (let i = 0; i < outline.length - 1; i++) {
+    if (geometry.lineOverlapRect([outline[i], outline[i + 1]], rect))
+      return true;
+  }
+  return false;
 }
 
 /**
@@ -210,5 +286,28 @@ export function render(gc: GraphicContext, shape: Shape) {
     }
     default:
       throw new Error(`Unknown shape type: ${shape.type}`);
+  }
+}
+
+/**
+ * Draw the shape's outline on the graphic context
+ */
+export function renderOutline(gc: GraphicContext, shape: Shape) {
+  const o = getOutline(shape);
+
+  switch (shape.type) {
+    case ShapeType.RECTANGLE:
+    case ShapeType.TEXT:
+    case ShapeType.BITMAP: {
+      const r = getBoundingRect(shape);
+      drawBox(gc, r, Color.HOVER);
+      break;
+    }
+    case ShapeType.ELLIPSE:
+    case ShapeType.LINE: {
+      const o = getOutline(shape);
+      drawPath(gc, o, Color.HOVER);
+      break;
+    }
   }
 }

@@ -3,12 +3,13 @@ import { Color, Mouse } from "./consts";
 import {
   containsPoint,
   getBoundingRect,
+  overlapRect,
   render,
+  renderOutline,
   type Shape,
   ShapeFactory,
 } from "./shapes";
 import * as geometry from "./geometry";
-import { drawBoundary } from "./utils";
 import { Transform } from "./transform";
 import { Store } from "./store";
 import { getAvailableFonts, loadFont } from "./font";
@@ -314,10 +315,8 @@ export class Manipulator {
    * Draw hovering effect
    */
   drawHovering(editor: Editor, shape: Shape) {
-    // if (shape instanceof Scene) return;
     if (!shape) return;
-    let r = getBoundingRect(shape);
-    drawBoundary(editor.gc, r[0][0], r[0][1], r[1][0], r[1][1], Color.HOVER);
+    renderOutline(editor.gc, shape);
     this.controllers.forEach(
       (cp) => cp.active(editor, shape) && cp.drawHovering(editor, shape),
     );
@@ -560,8 +559,7 @@ class SelectionManager {
     ]);
     this.shapes.clear();
     for (const shape of this.editor.store.shapes) {
-      const r = getBoundingRect(shape);
-      if (geometry.overlapRect(r, rect)) {
+      if (overlapRect(shape, rect)) {
         this.shapes.add(shape);
       }
     }

@@ -154,6 +154,65 @@ export function boundingRect(path: number[][]): number[][] {
 }
 
 /**
+ * Returns an intersect point of two finite lines
+ * Ref: https://jsfiddle.net/justin_c_rounds/Gd2S2/light/
+ * @param line1
+ * @param line2
+ * @param lb1 line1 is infinite to backward
+ * @param lf1 line1 is infinite to forward
+ * @param lb2 line2 is infinite to backward
+ * @param lf2 line2 is infinite to forward
+ * @returns null if not intersect
+ */
+export function intersect(
+  line1: number[][],
+  line2: number[][],
+  lb1: boolean = false,
+  lf1: boolean = false,
+  lb2: boolean = false,
+  lf2: boolean = false,
+): number[] | null {
+  const p1 = line1[0];
+  const p2 = line1[1];
+  const p3 = line2[0];
+  const p4 = line2[1];
+  let d = (p4[1] - p3[1]) * (p2[0] - p1[0]) - (p4[0] - p3[0]) * (p2[1] - p1[1]);
+  if (d == 0) {
+    return null;
+  }
+  let a = p1[1] - p3[1];
+  let b = p1[0] - p3[0];
+  let n1 = (p4[0] - p3[0]) * a - (p4[1] - p3[1]) * b;
+  let n2 = (p2[0] - p1[0]) * a - (p2[1] - p1[1]) * b;
+  a = n1 / d;
+  b = n2 / d;
+  let x = p1[0] + a * (p2[0] - p1[0]);
+  let y = p1[1] + a * (p2[1] - p1[1]);
+  let in1 = (a >= 0 && a <= 1) || (lb1 && a < 0) || (lf1 && a > 1);
+  let in2 = (b >= 0 && b <= 1) || (lb2 && b < 0) || (lf2 && b > 1);
+  if (in1 && in2) {
+    return [x, y];
+  }
+  return null;
+}
+
+/**
+ * Returns whether a rect overlap (or contains) a line
+ */
+export function lineOverlapRect(line: number[][], rect: number[][]): boolean {
+  const p1 = line[0];
+  const p2 = line[1];
+  if (inRect(p1, rect) && inRect(p2, rect)) return true; // contains
+  const polygon = rectToPolygon(rect);
+  return (
+    intersect(line, [polygon[0], polygon[1]]) !== null ||
+    intersect(line, [polygon[1], polygon[2]]) !== null ||
+    intersect(line, [polygon[2], polygon[3]]) !== null ||
+    intersect(line, [polygon[3], polygon[4]]) !== null
+  );
+}
+
+/**
  * Return a point which is positioned on the line.
  * If position is 0, returns the start point and if position is 1, returns the end point
  * @param point1 line start point
@@ -256,6 +315,28 @@ export function inRect(point: number[], rect: number[][]): boolean {
 }
 
 /**
+ * Performs the even-odd-rule Algorithm (a raycasting algorithm) to find out
+ * whether a point is in a given polygon.
+ * Ref: https://www.algorithms-and-technologies.com/point_in_polygon/javascript
+ */
+export function inPolygon(point: number[], polygon: number[][]): boolean {
+  let odd = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; i++) {
+    if (
+      polygon[i][1] > point[1] !== polygon[j][1] > point[1] &&
+      point[0] <
+        ((polygon[j][0] - polygon[i][0]) * (point[1] - polygon[i][1])) /
+          (polygon[j][1] - polygon[i][1]) +
+          polygon[i][0]
+    ) {
+      odd = !odd;
+    }
+    j = i;
+  }
+  return odd;
+}
+
+/**
  * Test whether two rects are overlap or not
  */
 export function overlapRect(rect1: number[][], rect2: number[][]): boolean {
@@ -293,6 +374,35 @@ export function normalizeRect(rect: number[][]): number[][] {
 }
 
 /**
+ * Convert a rect to a polygon
+ * @param rect
+ * @param close close the polygon
+ * @returns polygon
+ */
+export function rectToPolygon(
+  rect: number[][],
+  close: boolean = true,
+): number[][] {
+  let poly = [
+    [rect[0][0], rect[0][1]],
+    [rect[1][0], rect[0][1]],
+    [rect[1][0], rect[1][1]],
+    [rect[0][0], rect[1][1]],
+  ];
+  if (close) {
+    poly.push([rect[0][0], rect[0][1]]);
+  }
+  return poly;
+}
+
+/**
+ * Get a center point of rect
+ */
+export function center(rect: number[][]): number[] {
+  return [(rect[0][0] + rect[1][0]) / 2, (rect[0][1] + rect[1][1]) / 2];
+}
+
+/**
  * Returns an union of two rects
  */
 export function unionRect(rect1: number[][], rect2: number[][]): number[][] {
@@ -318,4 +428,25 @@ export function normalizeAngle(angle: number): number {
   if (angle < 0) angle = angle + 360;
   if (angle >= 360) angle = angle - 360;
   return angle;
+}
+
+/**
+ * Return points on a ellipse outline
+ */
+export function pointsOnEllipse(
+  center: number[],
+  radiusX: number,
+  radiusY: number,
+  segments: number = 10,
+): number[][] {
+  let points = [];
+  let angleIncrement = (2 * Math.PI) / segments;
+  for (let i = 0; i < segments; i++) {
+    let angle = i * angleIncrement;
+    let x = center[0] + radiusX * Math.cos(angle);
+    let y = center[1] + radiusY * Math.sin(angle);
+    points.push([x, y]);
+  }
+  points.push(points[0]);
+  return points;
 }

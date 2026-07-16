@@ -4,7 +4,6 @@ import {
   Color,
   ControllerPosition,
   Cursor,
-  CONTROL_LINE_WIDTH,
 } from "./consts";
 import {
   getBoundingRect,
@@ -14,7 +13,7 @@ import {
 } from "./shapes";
 import * as geometry from "./geometry";
 import {
-  drawBoundary,
+  drawBox,
   drawControlPoint,
   findControlPoint,
   findSegmentControlPoint,
@@ -83,14 +82,7 @@ export class SelectionMoveController extends Controller {
 
   draw(editor: Editor, shape: Shape) {
     const r = editor.selection.getBoundingRect();
-    drawBoundary(
-      editor.gc,
-      r[0][0],
-      r[0][1],
-      r[1][0],
-      r[1][1],
-      Color.SELECTION,
-    );
+    drawBox(editor.gc, r, Color.SELECTION);
   }
 }
 
@@ -127,14 +119,7 @@ export class BoxMoveController extends Controller {
 
   draw(editor: Editor, shape: Shape) {
     let r = getBoundingRect(shape);
-    drawBoundary(
-      editor.gc,
-      r[0][0],
-      r[0][1],
-      r[1][0],
-      r[1][1],
-      Color.SELECTION,
-    );
+    drawBox(editor.gc, r, Color.SELECTION);
   }
 }
 
@@ -295,29 +280,7 @@ export class LineMoveController extends Controller {
   draw(editor: Editor, shape: Shape) {
     const s = shape as LineShape;
     const r = getBoundingRect(s);
-    drawBoundary(
-      editor.gc,
-      r[0][0],
-      r[0][1],
-      r[1][0],
-      r[1][1],
-      Color.SELECTION,
-    );
-    const sp = editor.gc.toCanvasCoord(s.path[0], true);
-    const p2 = editor.gc.toCanvasCoord(s.path[s.path.length - 1], true);
-    const gc = editor.gc;
-    gc.context.save();
-    gc.context.scale(gc.ratio, gc.ratio);
-    gc.context.strokeStyle = Color.SELECTION;
-    gc.context.lineWidth = CONTROL_LINE_WIDTH;
-    gc.context.beginPath();
-    gc.context.moveTo(sp[0], sp[1]);
-    for (let i = 1; i < s.path.length; i++) {
-      const p = editor.gc.toCanvasCoord(s.path[i], true);
-      gc.context.lineTo(p[0], p[1]);
-    }
-    gc.context.stroke();
-    gc.context.restore();
+    drawBox(editor.gc, r, Color.SELECTION);
   }
 }
 
