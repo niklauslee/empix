@@ -225,6 +225,22 @@ export function overlapRect(shape: Shape, rect: number[][]): boolean {
 }
 
 /**
+ * Move a shape by a given delta in x and y directions
+ */
+export function move(shape: Shape, dx: number, dy: number): void {
+  if (dx === 0 && dy === 0) return;
+  shape.left += dx;
+  shape.top += dy;
+  switch (shape.type) {
+    case ShapeType.LINE: {
+      const line = shape as LineShape;
+      line.path = geometry.movePath(line.path, dx, dy);
+      break;
+    }
+  }
+}
+
+/**
  * Draw the shape on the graphic context
  */
 export function render(gc: GraphicContext, shape: Shape) {

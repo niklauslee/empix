@@ -150,6 +150,14 @@ export function Toolbar() {
         <button
           className="px-2 py-0 leading-6 border-[1.5px] border-white"
           onClick={() => {
+            window.editor.duplicate();
+          }}
+        >
+          Duplicate
+        </button>
+        <button
+          className="px-2 py-0 leading-6 border-[1.5px] border-white"
+          onClick={() => {
             window.editor.bringToFront();
           }}
         >

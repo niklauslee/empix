@@ -3,6 +3,7 @@ import { Color, Mouse } from "./consts";
 import {
   containsPoint,
   getBoundingRect,
+  move,
   overlapRect,
   render,
   renderOutline,
@@ -13,6 +14,7 @@ import * as geometry from "./geometry";
 import { Transform } from "./transform";
 import { Store } from "./store";
 import { getAvailableFonts, loadFont } from "./font";
+import { nanoid } from "nanoid";
 
 /**
  * Handler for editor events
@@ -935,9 +937,35 @@ export class Editor {
     const shapesToDelete = shapes.length > 0 ? shapes : this.selection.get();
     this.transform.begin();
     for (const shape of shapesToDelete) {
+      this.selection.deselect(shape);
       this.transform.delete(shape);
     }
     this.transform.end();
+    this.repaint();
+  }
+
+  /**
+   * Duplicate shapes in the editor. If no shapes are provided, it will duplicate the currently selected shapes.
+   */
+  duplicate(shapes: Shape[] = []) {
+    const shapesToDuplicate = shapes.length > 0 ? shapes : this.selection.get();
+    const newShapeIds: string[] = [];
+    this.transform.begin();
+    for (const shape of shapesToDuplicate) {
+      const newShape = structuredClone(shape) as Shape;
+      newShape.id = nanoid();
+      move(newShape, 4, 4);
+      this.transform.insert(newShape);
+      newShapeIds.push(newShape.id);
+    }
+    this.transform.end();
+    this.selection.clear();
+    for (const id of newShapeIds) {
+      const newShape = this.store.getShapeById(id);
+      if (newShape) {
+        this.selection.select(newShape);
+      }
+    }
     this.repaint();
   }
 
