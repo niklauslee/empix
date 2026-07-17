@@ -1,3 +1,4 @@
+import { app, AppContext } from "@/app-context";
 import { Editor } from "./editor/editor";
 import { EditorComponent } from "./editor/editor-component";
 import { Layout } from "./layout";
@@ -5,13 +6,13 @@ import { Toolbar } from "./toolbar";
 
 declare global {
   interface Window {
-    editor: Editor;
+    app: AppContext;
   }
 }
 
 function App() {
   const handleMount = (editor: Editor) => {
-    window.editor = editor;
+    app.setEditor(editor);
     editor.fit();
     editor.repaint();
   };
