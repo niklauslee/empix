@@ -35,7 +35,7 @@ export function Toolbar() {
               });
               const file = await fileHandle.getFile();
               const text = await file.text();
-              window.editor.loadFromJSON(JSON.parse(text));
+              window.app.editor.loadFromJSON(JSON.parse(text));
             } catch (e) {
               if ((e as any)?.name !== "AbortError") console.error(e);
             }
@@ -59,7 +59,7 @@ export function Toolbar() {
               });
               const writable = await fileHandle.createWritable();
               await writable.write(
-                JSON.stringify(window.editor.saveToJSON(), null, 2),
+                JSON.stringify(window.app.editor.saveToJSON(), null, 2),
               );
               await writable.close();
             } catch (e) {
@@ -72,58 +72,52 @@ export function Toolbar() {
       </div>
       <div className="text-xl flex flex-row items-start justify-center gap-2 py-1">
         <button
-          className="px-2 py-0 leading-6 border-[1.5px] border-white flex items-center gap-1"
+          className="px-1 py-1 leading-6 border-[1.5px] border-white flex items-center gap-1"
           onClick={() => {
-            window.editor.handlers.setActiveHandler("Select");
+            window.app.editor.handlers.setActiveHandler("Select");
           }}
         >
           <CursorIcon size={12} />
-          Select
         </button>
         <button
-          className="px-2 py-0 leading-6 border-[1.5px] border-white flex items-center gap-1"
+          className="px-1 py-1 leading-6 border-[1.5px] border-white flex items-center gap-1"
           onClick={() => {
-            window.editor.handlers.setActiveHandler("Rectangle");
+            window.app.editor.handlers.setActiveHandler("Rectangle");
           }}
         >
           <RectangleIcon size={12} />
-          Rectangle
         </button>
         <button
-          className="px-2 py-0 leading-6 border-[1.5px] border-white flex items-center gap-1"
+          className="px-1 py-1 leading-6 border-[1.5px] border-white flex items-center gap-1"
           onClick={() => {
-            window.editor.handlers.setActiveHandler("Ellipse");
+            window.app.editor.handlers.setActiveHandler("Ellipse");
           }}
         >
           <EllipseIcon size={12} />
-          Ellipse
         </button>
         <button
-          className="px-2 py-0 leading-6 border-[1.5px] border-white flex items-center gap-1"
+          className="px-1 py-1 leading-6 border-[1.5px] border-white flex items-center gap-1"
           onClick={() => {
-            window.editor.handlers.setActiveHandler("Line");
+            window.app.editor.handlers.setActiveHandler("Line");
           }}
         >
           <LineIcon size={12} />
-          Line
         </button>
         <button
-          className="px-2 py-0 leading-6 border-[1.5px] border-white flex items-center gap-1"
+          className="px-1 py-1 leading-6 border-[1.5px] border-white flex items-center gap-1"
           onClick={() => {
-            window.editor.handlers.setActiveHandler("Text");
+            window.app.editor.handlers.setActiveHandler("Text");
           }}
         >
           <TextIcon size={12} />
-          Text
         </button>
         <button
-          className="px-2 py-0 leading-6 border-[1.5px] border-white flex items-center gap-1"
+          className="px-1 py-1 leading-6 border-[1.5px] border-white flex items-center gap-1"
           onClick={() => {
-            window.editor.handlers.setActiveHandler("Bitmap");
+            window.app.editor.handlers.setActiveHandler("Bitmap");
           }}
         >
           <BitmapIcon size={12} />
-          Bitmap
         </button>
       </div>
 
@@ -131,8 +125,8 @@ export function Toolbar() {
         <button
           className="px-1 py-1 leading-6 border-[1.5px] border-white flex items-center gap-1"
           onClick={() => {
-            const scale = window.editor.getScale();
-            if (scale < 16) window.editor.setScale(scale + 1);
+            const scale = window.app.editor.getScale();
+            if (scale < 16) window.app.editor.setScale(scale + 1);
           }}
         >
           <PlusIcon size={12} />
@@ -140,8 +134,8 @@ export function Toolbar() {
         <button
           className="px-1 py-1 leading-6 border-[1.5px] border-white flex items-center gap-1"
           onClick={() => {
-            const scale = window.editor.getScale();
-            if (scale > 1) window.editor.setScale(scale - 1);
+            const scale = window.app.editor.getScale();
+            if (scale > 1) window.app.editor.setScale(scale - 1);
           }}
         >
           <MinusIcon size={12} />
@@ -149,7 +143,7 @@ export function Toolbar() {
         <button
           className="px-1 py-1 leading-6 border-[1.5px] border-white flex items-center gap-1"
           onClick={() => {
-            window.editor.undo();
+            window.app.editor.undo();
           }}
         >
           <UndoIcon size={12} />
@@ -157,7 +151,7 @@ export function Toolbar() {
         <button
           className="px-1 py-1 leading-6 border-[1.5px] border-white flex items-center gap-1"
           onClick={() => {
-            window.editor.redo();
+            window.app.editor.redo();
           }}
         >
           <RedoIcon size={12} />
@@ -165,7 +159,7 @@ export function Toolbar() {
         <button
           className="px-1 py-1 leading-6 border-[1.5px] border-white flex items-center gap-1"
           onClick={() => {
-            window.editor.delete();
+            window.app.editor.delete();
           }}
         >
           <DeleteIcon size={12} />
@@ -173,7 +167,7 @@ export function Toolbar() {
         <button
           className="px-1 py-1 leading-6 border-[1.5px] border-white flex items-center gap-1"
           onClick={() => {
-            window.editor.duplicate();
+            window.app.editor.duplicate();
           }}
         >
           <DuplicateIcon size={12} />
@@ -181,7 +175,7 @@ export function Toolbar() {
         <button
           className="px-1 py-1 leading-6 border-[1.5px] border-white flex items-center gap-1"
           onClick={() => {
-            window.editor.bringToFront();
+            window.app.editor.bringToFront();
           }}
         >
           <BringToFrontIcon size={12} />
@@ -189,7 +183,7 @@ export function Toolbar() {
         <button
           className="px-1 py-1 leading-6 border-[1.5px] border-white flex items-center gap-1"
           onClick={() => {
-            window.editor.sendToBack();
+            window.app.editor.sendToBack();
           }}
         >
           <SendToBackIcon size={12} />
