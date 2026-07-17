@@ -218,13 +218,12 @@ export class Store {
   /**
    * Loads the store from JSON
    */
-  loadFromJSON(json: string) {
+  fromJSON(json: any) {
     try {
-      const shapes = JSON.parse(json) as Shape[];
-      if (!Array.isArray(shapes)) {
+      if (!Array.isArray(json)) {
         throw new Error("Invalid JSON format: Expected an array of shapes.");
       }
-      this.shapes = shapes;
+      this.shapes = json;
       this.currentAction = null;
       this.undoHistory.clear();
       this.redoHistory.clear();
@@ -236,7 +235,7 @@ export class Store {
   /**
    * Saves the store to JSON
    */
-  saveToJSON(): string {
-    return JSON.stringify(structuredClone(this.shapes));
+  toJSON() {
+    return structuredClone(this.shapes);
   }
 }

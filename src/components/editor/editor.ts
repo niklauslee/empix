@@ -966,4 +966,32 @@ export class Editor {
     this.transform.end();
     this.repaint();
   }
+
+  /**
+   * Load the editor state from a JSON string.
+   */
+  loadFromJSON(json: any) {
+    const width = json.width ?? this.gc.width;
+    const height = json.height ?? this.gc.height;
+    const bpp = json.bpp ?? this.gc.bpp;
+    const scale = json.scale ?? this.gc.scale;
+    this.setSize(width, height);
+    this.gc.bpp = bpp;
+    this.gc.scale = scale;
+    this.store.fromJSON(json.shapes);
+    this.repaint();
+  }
+
+  /**
+   * Save the current state to a JSON string.
+   */
+  saveToJSON() {
+    return {
+      width: this.gc.width,
+      height: this.gc.height,
+      bpp: this.gc.bpp,
+      scale: this.gc.scale,
+      shapes: this.store.toJSON(),
+    };
+  }
 }
