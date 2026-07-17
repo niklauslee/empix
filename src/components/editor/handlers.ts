@@ -27,9 +27,6 @@ export class SelectHandler extends Handler {
 
     if (e.button === Mouse.BUTTON1) {
       const shape = editor.getShapeAt(point);
-
-      console.log("shapeAt", shape);
-
       if (
         editor.selection.size() === 1 &&
         selectedManipulator?.mouseIn(

@@ -1,5 +1,7 @@
 import { Editor } from "./editor/editor";
 import { EditorComponent } from "./editor/editor-component";
+import { Layout } from "./layout";
+import { Toolbar } from "./toolbar";
 
 declare global {
   interface Window {
@@ -15,127 +17,35 @@ function App() {
   };
 
   return (
-    <main className="bg-black text-white w-screen h-screen flex flex-col justify-start">
-      <h1 className="text-5xl font-bold text-green-600 text-center py-2">
-        Empix Studio
-      </h1>
-
-      <div className="text-xl flex flex-row items-start justify-center gap-2 py-1">
-        <button
-          className="px-2 py-0 leading-6 border-[1.5px] border-white"
-          onClick={() => {
-            window.editor.handlers.setActiveHandler("Select");
-          }}
-        >
-          Select
-        </button>
-        <button
-          className="px-2 py-0 leading-6 border-[1.5px] border-white"
-          onClick={() => {
-            window.editor.handlers.setActiveHandler("Rectangle");
-          }}
-        >
-          Rectangle
-        </button>
-        <button
-          className="px-2 py-0 leading-6 border-[1.5px] border-white"
-          onClick={() => {
-            window.editor.handlers.setActiveHandler("Ellipse");
-          }}
-        >
-          Ellipse
-        </button>
-        <button
-          className="px-2 py-0 leading-6 border-[1.5px] border-white"
-          onClick={() => {
-            window.editor.handlers.setActiveHandler("Line");
-          }}
-        >
-          Line
-        </button>
-        <button
-          className="px-2 py-0 leading-6 border-[1.5px] border-white"
-          onClick={() => {
-            window.editor.handlers.setActiveHandler("Text");
-          }}
-        >
-          Text
-        </button>
-        <button
-          className="px-2 py-0 leading-6 border-[1.5px] border-white"
-          onClick={() => {
-            window.editor.handlers.setActiveHandler("Bitmap");
-          }}
-        >
-          Bitmap
-        </button>
-      </div>
-
-      <div className="text-xl flex flex-row items-center justify-center gap-2 py-1">
-        <button
-          className="px-2 py-0 leading-6 border-[1.5px] border-white"
-          onClick={() => {
-            const scale = window.editor.getScale();
-            if (scale < 16) window.editor.setScale(scale + 1);
-          }}
-        >
-          +
-        </button>
-        <button
-          className="px-2 py-0 leading-6 border-[1.5px] border-white"
-          onClick={() => {
-            const scale = window.editor.getScale();
-            if (scale > 1) window.editor.setScale(scale - 1);
-          }}
-        >
-          -
-        </button>
-        <button
-          className="px-2 py-0 leading-6 border-[1.5px] border-white"
-          onClick={() => {
-            window.editor.undo();
-          }}
-        >
-          Undo
-        </button>
-        <button
-          className="px-2 py-0 leading-6 border-[1.5px] border-white"
-          onClick={() => {
-            window.editor.redo();
-          }}
-        >
-          Redo
-        </button>
-        <button
-          className="px-2 py-0 leading-6 border-[1.5px] border-white"
-          onClick={() => {
-            window.editor.delete();
-          }}
-        >
-          Delete
-        </button>
-        <button
-          className="px-2 py-0 leading-6 border-[1.5px] border-white"
-          onClick={() => {
-            window.editor.bringToFront();
-          }}
-        >
-          Bring to Front
-        </button>
-        <button
-          className="px-2 py-0 leading-6 border-[1.5px] border-white"
-          onClick={() => {
-            window.editor.sendToBack();
-          }}
-        >
-          Send to Back
-        </button>
-      </div>
-
-      <div className="flex flex-col items-center justify-start w-full h-full mt-0">
-        <EditorComponent onMount={handleMount} />
-      </div>
-    </main>
+    <>
+      <Layout
+        appbar={
+          <div className="flex items-center justify-start w-full h-full px-4">
+            <h1 className="text-5xl font-bold text-green-600 py-2">
+              Empix Studio
+            </h1>
+          </div>
+        }
+        leftSidebar={
+          <div className="w-full h-full px-4 py-2">
+            <div className="text-xl leading-0 my-4">Screens</div>
+            <div className="flex flex-col gap-4">
+              <div className="w-40 h-24 bg-slate-800 border"></div>
+              <div className="w-40 h-24 bg-slate-800 border"></div>
+            </div>
+          </div>
+        }
+        rightSidebar={<div>right sidebar</div>}
+        onContentResize={() => {
+          // setTimeout(() => window.app?.editor.fit());
+        }}
+      >
+        <div className="flex flex-col items-center justify-start w-full h-full mt-0">
+          <Toolbar />
+          <EditorComponent onMount={handleMount} />
+        </div>
+      </Layout>
+    </>
   );
 }
 
