@@ -3,6 +3,7 @@
   src: url("/fonts/Fixed6x10-Regular.ttf");
   font-weight: 400;
   font-style: normal;
+  size-adjust: 140%;
 }
 
 @font-face {
@@ -31,6 +32,7 @@
   src: url("/fonts/HelvetiPixel.ttf");
   font-weight: 400;
   font-style: normal;
+  size-adjust: 140%;
 }
 
 @font-face {
@@ -38,6 +40,7 @@
   src: url("/fonts/Handheld.ttf");
   font-weight: 400;
   font-style: normal;
+  size-adjust: 140%;
 }
 
 @font-face {
@@ -45,6 +48,7 @@
   src: url("/fonts/Born2bSporty.ttf");
   font-weight: 400;
   font-style: normal;
+  size-adjust: 140%;
 }
 
 @font-face {
@@ -52,6 +56,7 @@
   src: url("/fonts/BetterPixels.ttf");
   font-weight: 400;
   font-style: normal;
+  size-adjust: 140%;
 }
 
 @font-face {
@@ -59,4 +64,12 @@
   src: url("/fonts/Macintosh128K.ttf");
   font-weight: 400;
   font-style: normal;
+}
+
+@font-face {
+  font-family: "Simpleton";
+  src: url("/fonts/Simpleton.ttf");
+  font-weight: 400;
+  font-style: normal;
+  size-adjust: 140%;
 }

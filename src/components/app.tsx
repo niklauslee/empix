@@ -3,6 +3,8 @@ import { Editor } from "./editor/editor";
 import { EditorComponent } from "./editor/editor-component";
 import { Layout } from "./layout";
 import { Toolbar } from "./toolbar";
+import Logo from "./logo";
+import { ScrollArea } from "./ui/scroll-area";
 
 declare global {
   interface Window {
@@ -22,21 +24,26 @@ function App() {
       <Layout
         appbar={
           <div className="flex items-center justify-start w-full h-full px-4">
-            <h1 className="text-5xl font-bold text-green-600 py-2">
-              Empix Studio
-            </h1>
+            <Logo size={1.5} className="text-green-600" />
+            <div className="text-xl ml-3">studio</div>
           </div>
         }
         leftSidebar={
-          <div className="w-full h-full px-4 py-2">
-            <div className="text-xl leading-0 my-4">Screens / Layers</div>
-            <div className="flex flex-col gap-4">
-              <div className="w-40 h-24 bg-slate-800 border"></div>
-              <div className="w-40 h-24 bg-slate-800 border"></div>
+          <ScrollArea className="w-full h-full">
+            <div className="w-full h-full px-4 py-2">
+              <div className="text-sm leading-0 my-4">Scenes | Layers</div>
+              <div className="flex flex-col gap-4">
+                <div className="w-40 h-24 bg-slate-800 border"></div>
+                <div className="w-40 h-24 bg-slate-800 border"></div>
+              </div>
             </div>
+          </ScrollArea>
+        }
+        rightSidebar={
+          <div className="w-full h-full px-4 py-2">
+            <div className="text-sm leading-0 my-4">Properties</div>
           </div>
         }
-        rightSidebar={<div>right sidebar</div>}
         onContentResize={() => {
           // setTimeout(() => window.app?.editor.fit());
         }}

@@ -10,10 +10,10 @@ const SvgRectangle = ({ size = 24, strokeWidth = 2, ...props }: IconProps) => (
     fill="none"
     {...props}
   >
-    <rect width="3" height="21" fill="currentColor" />
-    <rect x="18" width="3" height="21" fill="currentColor" />
-    <rect x="3" width="15" height="3" fill="currentColor" />
-    <rect x="3" y="18" width="15" height="3" fill="currentColor" />
+    <rect width="3" height="24" fill="currentColor" />
+    <rect x="21" width="3" height="24" fill="currentColor" />
+    <rect x="3" width="18" height="3" fill="currentColor" />
+    <rect x="3" y="21" width="18" height="3" fill="currentColor" />
   </svg>
 );
 
