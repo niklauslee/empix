@@ -14,13 +14,14 @@ import {
   TextIcon,
   UndoIcon,
 } from "./icons";
+import { Button } from "./ui/button";
 
 export function Toolbar() {
   return (
-    <div className="bg-black text-white w-full flex flex-col justify-start mt-4">
+    <div className="w-full flex flex-col justify-start mt-4">
       <div className="text-xl flex flex-row items-start justify-center gap-2 py-1">
-        <button
-          className="px-2 py-0 leading-6 border-[1.5px] border-white"
+        <Button
+          variant="primary"
           onClick={async () => {
             // FIXME: Only works in Chromium-based browsers
             try {
@@ -42,9 +43,8 @@ export function Toolbar() {
           }}
         >
           Import
-        </button>
-        <button
-          className="px-2 py-0 leading-6 border-[1.5px] border-white"
+        </Button>
+        <Button
           onClick={async () => {
             // FIXME: Only works in Chromium-based browsers
             try {
@@ -68,126 +68,126 @@ export function Toolbar() {
           }}
         >
           Export
-        </button>
+        </Button>
       </div>
-      <div className="text-xl flex flex-row items-start justify-center gap-2 py-1">
-        <button
-          className="px-1 py-1 leading-6 border-[1.5px] border-white flex items-center gap-1"
+      <div className="text-xl flex flex-row items-start justify-center gap-1 py-1">
+        <Button
+          variant="icon"
           onClick={() => {
             window.app.editor.handlers.setActiveHandler("Select");
           }}
         >
           <CursorIcon size={12} />
-        </button>
-        <button
-          className="px-1 py-1 leading-6 border-[1.5px] border-white flex items-center gap-1"
+        </Button>
+        <Button
+          variant="icon"
           onClick={() => {
             window.app.editor.handlers.setActiveHandler("Rectangle");
           }}
         >
           <RectangleIcon size={12} />
-        </button>
-        <button
-          className="px-1 py-1 leading-6 border-[1.5px] border-white flex items-center gap-1"
+        </Button>
+        <Button
+          variant="icon"
           onClick={() => {
             window.app.editor.handlers.setActiveHandler("Ellipse");
           }}
         >
           <EllipseIcon size={12} />
-        </button>
-        <button
-          className="px-1 py-1 leading-6 border-[1.5px] border-white flex items-center gap-1"
+        </Button>
+        <Button
+          variant="icon"
           onClick={() => {
             window.app.editor.handlers.setActiveHandler("Line");
           }}
         >
           <LineIcon size={12} />
-        </button>
-        <button
-          className="px-1 py-1 leading-6 border-[1.5px] border-white flex items-center gap-1"
+        </Button>
+        <Button
+          variant="icon"
           onClick={() => {
             window.app.editor.handlers.setActiveHandler("Text");
           }}
         >
           <TextIcon size={12} />
-        </button>
-        <button
-          className="px-1 py-1 leading-6 border-[1.5px] border-white flex items-center gap-1"
+        </Button>
+        <Button
+          variant="icon"
           onClick={() => {
             window.app.editor.handlers.setActiveHandler("Bitmap");
           }}
         >
           <BitmapIcon size={12} />
-        </button>
+        </Button>
       </div>
 
-      <div className="text-xl flex flex-row items-center justify-center gap-2 py-1">
-        <button
-          className="px-1 py-1 leading-6 border-[1.5px] border-white flex items-center gap-1"
+      <div className="text-xl flex flex-row items-center justify-center gap-1 py-1">
+        <Button
+          variant="icon"
           onClick={() => {
             const scale = window.app.editor.getScale();
             if (scale < 16) window.app.editor.setScale(scale + 1);
           }}
         >
           <PlusIcon size={12} />
-        </button>
-        <button
-          className="px-1 py-1 leading-6 border-[1.5px] border-white flex items-center gap-1"
+        </Button>
+        <Button
+          variant="icon"
           onClick={() => {
             const scale = window.app.editor.getScale();
             if (scale > 1) window.app.editor.setScale(scale - 1);
           }}
         >
           <MinusIcon size={12} />
-        </button>
-        <button
-          className="px-1 py-1 leading-6 border-[1.5px] border-white flex items-center gap-1"
+        </Button>
+        <Button
+          variant="icon"
           onClick={() => {
             window.app.editor.undo();
           }}
         >
           <UndoIcon size={12} />
-        </button>
-        <button
-          className="px-1 py-1 leading-6 border-[1.5px] border-white flex items-center gap-1"
+        </Button>
+        <Button
+          variant="icon"
           onClick={() => {
             window.app.editor.redo();
           }}
         >
           <RedoIcon size={12} />
-        </button>
-        <button
-          className="px-1 py-1 leading-6 border-[1.5px] border-white flex items-center gap-1"
+        </Button>
+        <Button
+          variant="icon"
           onClick={() => {
             window.app.editor.delete();
           }}
         >
           <DeleteIcon size={12} />
-        </button>
-        <button
-          className="px-1 py-1 leading-6 border-[1.5px] border-white flex items-center gap-1"
+        </Button>
+        <Button
+          variant="icon"
           onClick={() => {
             window.app.editor.duplicate();
           }}
         >
           <DuplicateIcon size={12} />
-        </button>
-        <button
-          className="px-1 py-1 leading-6 border-[1.5px] border-white flex items-center gap-1"
+        </Button>
+        <Button
+          variant="icon"
           onClick={() => {
             window.app.editor.bringToFront();
           }}
         >
           <BringToFrontIcon size={12} />
-        </button>
-        <button
-          className="px-1 py-1 leading-6 border-[1.5px] border-white flex items-center gap-1"
+        </Button>
+        <Button
+          variant="icon"
           onClick={() => {
             window.app.editor.sendToBack();
           }}
         >
           <SendToBackIcon size={12} />
-        </button>
+        </Button>
       </div>
     </div>
   );
