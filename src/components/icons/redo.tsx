@@ -14,14 +14,9 @@ const SvgRedo = ({ size = 24, strokeWidth = 2, ...props }: IconProps) => (
     <rect x="18" y="9" width="3" height="3" fill="currentColor" />
     <rect x="18" y="3" width="3" height="3" fill="currentColor" />
     <rect x="15" y="12" width="3" height="3" fill="currentColor" />
-    <rect x="6" y="12" width="3" height="3" fill="currentColor" />
-    <rect x="9" y="9" width="3" height="3" fill="currentColor" />
-    <rect x="21" y="6" width="3" height="3" fill="currentColor" />
-    <rect x="18" y="6" width="3" height="3" fill="currentColor" />
-    <rect x="15" y="6" width="3" height="3" fill="currentColor" />
-    <rect x="12" y="6" width="3" height="3" fill="currentColor" />
-    <rect x="6" y="15" width="3" height="3" fill="currentColor" />
-    <rect x="6" y="18" width="3" height="3" fill="currentColor" />
+    <rect x="3" y="12" width="3" height="12" fill="currentColor" />
+    <rect x="6" y="9" width="3" height="3" fill="currentColor" />
+    <rect x="9" y="6" width="15" height="3" fill="currentColor" />
   </svg>
 );
 

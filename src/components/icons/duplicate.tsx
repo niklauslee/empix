@@ -10,33 +10,16 @@ const SvgDuplicate = ({ size = 24, strokeWidth = 2, ...props }: IconProps) => (
     fill="none"
     {...props}
   >
-    <rect x="18" y="18" width="3" height="3" fill="currentColor" />
-    <rect x="6" y="18" width="3" height="3" fill="currentColor" />
-    <rect x="6" y="15" width="3" height="3" fill="currentColor" />
-    <rect x="18" y="15" width="3" height="3" fill="currentColor" />
-    <rect x="18" y="12" width="3" height="3" fill="currentColor" />
-    <rect x="18" y="9" width="3" height="3" fill="currentColor" />
-    <rect x="18" y="6" width="3" height="3" fill="currentColor" />
-    <rect x="15" y="6" width="3" height="3" fill="currentColor" />
-    <rect x="9" y="18" width="3" height="3" fill="currentColor" />
-    <rect x="12" y="18" width="3" height="3" fill="currentColor" />
-    <rect x="15" y="18" width="3" height="3" fill="currentColor" />
-    <rect width="3" height="3" fill="currentColor" />
-    <rect y="3" width="3" height="3" fill="currentColor" />
-    <rect y="6" width="3" height="3" fill="currentColor" />
-    <rect x="9" y="12" width="3" height="3" fill="currentColor" />
-    <rect x="12" y="12" width="3" height="3" fill="currentColor" />
-    <rect y="12" width="3" height="3" fill="currentColor" />
-    <rect x="3" y="12" width="3" height="3" fill="currentColor" />
+    <rect x="9" y="21" width="3" height="3" fill="currentColor" />
+    <rect x="21" y="6" width="3" height="18" fill="currentColor" />
+    <rect x="6" y="6" width="3" height="18" fill="currentColor" />
+    <rect x="12" y="21" width="9" height="3" fill="currentColor" />
+    <rect width="3" height="18" fill="currentColor" />
+    <rect x="3" y="15" width="3" height="3" fill="currentColor" />
     <rect x="6" y="12" width="3" height="3" fill="currentColor" />
-    <rect x="12" y="9" width="3" height="3" fill="currentColor" />
-    <rect x="3" width="3" height="3" fill="currentColor" />
-    <rect x="6" width="3" height="3" fill="currentColor" />
-    <rect x="9" width="3" height="3" fill="currentColor" />
-    <rect x="12" width="3" height="3" fill="currentColor" />
-    <rect x="12" y="3" width="3" height="3" fill="currentColor" />
-    <rect x="12" y="6" width="3" height="3" fill="currentColor" />
-    <rect y="9" width="3" height="3" fill="currentColor" />
+    <rect x="3" width="15" height="3" fill="currentColor" />
+    <rect x="15" y="3" width="3" height="3" fill="currentColor" />
+    <rect x="9" y="6" width="12" height="3" fill="currentColor" />
   </svg>
 );
 
