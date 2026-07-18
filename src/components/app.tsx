@@ -40,12 +40,7 @@ function App() {
             </div>
           </ScrollArea>
         }
-        rightSidebar={
-          <div className="w-full h-full px-4 py-2">
-            <div className="text-sm leading-0 my-4">Properties</div>
-            <Inspector />
-          </div>
-        }
+        rightSidebar={<Inspector />}
         onContentResize={() => {
           // setTimeout(() => window.app?.editor.fit());
         }}

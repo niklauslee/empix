@@ -1,8 +1,9 @@
 import { nanoid } from "nanoid";
 import { GraphicContext } from "./graphics";
 import * as geometry from "./geometry";
-import { Color, CONTROL_POINT_APOTHEM } from "./consts";
+import { Color } from "./consts";
 import { drawBox, drawPath } from "./utils";
+import { TypedEvent } from "./std";
 
 /**
  * Shape types
@@ -75,9 +76,16 @@ export interface BitmapShape extends Shape {
  * ShapeFactory is responsible for creating shapes based on their type.
  */
 export class ShapeFactory {
+  onCreate: TypedEvent<Shape>;
+
+  constructor() {
+    this.onCreate = new TypedEvent<Shape>();
+  }
+
   create(shapeType: string): Shape {
-    const defaults = {
+    let newShape: Shape = {
       id: nanoid(),
+      type: ShapeType.RECTANGLE,
       name: "",
       left: 0,
       top: 0,
@@ -86,49 +94,51 @@ export class ShapeFactory {
       color: 1,
     };
     switch (shapeType) {
-      case ShapeType.RECTANGLE:
-        return {
-          ...defaults,
-          type: ShapeType.RECTANGLE,
-          fill: false,
-        } as RectangleShape;
-      case ShapeType.ELLIPSE:
-        return {
-          ...defaults,
-          type: ShapeType.ELLIPSE,
-          fill: false,
-        } as EllipseShape;
-      case ShapeType.LINE:
-        return {
-          ...defaults,
-          type: ShapeType.LINE,
-          path: [
-            [0, 0],
-            [1, 1],
-          ],
-        } as LineShape;
-      case ShapeType.TEXT:
-        return {
-          ...defaults,
-          type: ShapeType.TEXT,
-          font: "Leros",
-          text: "Hello, world!Ä",
-        } as TextShape;
-      case ShapeType.BITMAP:
-        return {
-          ...defaults,
-          type: ShapeType.BITMAP,
-          width: 8,
-          height: 8,
-          bpp: 1,
-          data: new Uint8Array([
-            0b00111100, 0b01000010, 0b10000001, 0b10100101, 0b10000001,
-            0b10011001, 0b01000010, 0b00111100,
-          ]),
-        } as BitmapShape;
+      case ShapeType.RECTANGLE: {
+        const s = newShape as RectangleShape;
+        s.type = ShapeType.RECTANGLE;
+        s.fill = false;
+        break;
+      }
+      case ShapeType.ELLIPSE: {
+        const s = newShape as EllipseShape;
+        s.type = ShapeType.ELLIPSE;
+        s.fill = false;
+        break;
+      }
+      case ShapeType.LINE: {
+        const s = newShape as LineShape;
+        s.type = ShapeType.LINE;
+        s.path = [
+          [0, 0],
+          [1, 1],
+        ];
+        break;
+      }
+      case ShapeType.TEXT: {
+        const s = newShape as TextShape;
+        s.type = ShapeType.TEXT;
+        s.font = "Leros";
+        s.text = "Hello, world!Ä";
+        break;
+      }
+      case ShapeType.BITMAP: {
+        const s = newShape as BitmapShape;
+        s.type = ShapeType.BITMAP;
+        s.width = 8;
+        s.height = 8;
+        s.bpp = 1;
+        s.data = new Uint8Array([
+          0b00111100, 0b01000010, 0b10000001, 0b10100101, 0b10000001,
+          0b10011001, 0b01000010, 0b00111100,
+        ]);
+        break;
+      }
       default:
         throw new Error(`Unknown shape type: ${shapeType}`);
     }
+    this.onCreate.emit(newShape);
+    return newShape;
   }
 }
 

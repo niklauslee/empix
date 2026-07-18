@@ -1,10 +1,11 @@
 import type { Editor } from "@/components/editor/editor";
 import { ProjectManager } from "./project-manager";
-import { detectPlatform } from "./lib/utils";
+import { detectPlatform, generateNewName } from "./lib/utils";
 import { CommandManager } from "./engine/command-manager";
 import { KeymapManager } from "./engine/keymap-manager";
 import { registerCommands } from "./commands";
 import keymapJson from "./keymap.json";
+import { useEditingStore } from "./store/editing-store";
 
 declare global {
   interface Window {
@@ -78,8 +79,11 @@ export class AppContext {
    * Wiring up events and listeners
    */
   wiring() {
+    this.editor.factory.onCreate.addListener((shape) => {
+      shape.name = generateNewName(shape, this.editor.store.shapes);
+    });
     this.editor.selection.onChange.addListener((shapes) => {
-      console.log("Selection changed:", shapes);
+      useEditingStore.getState().setSelection(shapes);
     });
   }
 
