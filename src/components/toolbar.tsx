@@ -21,7 +21,7 @@ export function Toolbar() {
     <div className="w-full flex flex-col justify-start mt-4">
       <div className="text-xl flex flex-row items-start justify-center gap-2 py-1">
         <Button
-          variant="primary"
+          variant="outline"
           onClick={async () => {
             // FIXME: Only works in Chromium-based browsers
             try {
@@ -45,6 +45,7 @@ export function Toolbar() {
           Import
         </Button>
         <Button
+          variant="outline"
           onClick={async () => {
             // FIXME: Only works in Chromium-based browsers
             try {
@@ -72,7 +73,8 @@ export function Toolbar() {
       </div>
       <div className="text-xl flex flex-row items-start justify-center gap-1 py-1">
         <Button
-          variant="icon"
+          variant="outline"
+          size="icon"
           onClick={() => {
             window.app.editor.handlers.setActiveHandler("Select");
           }}
@@ -80,7 +82,8 @@ export function Toolbar() {
           <CursorIcon size={12} />
         </Button>
         <Button
-          variant="icon"
+          variant="outline"
+          size="icon"
           onClick={() => {
             window.app.editor.handlers.setActiveHandler("Rectangle");
           }}
@@ -88,7 +91,8 @@ export function Toolbar() {
           <RectangleIcon size={12} />
         </Button>
         <Button
-          variant="icon"
+          variant="outline"
+          size="icon"
           onClick={() => {
             window.app.editor.handlers.setActiveHandler("Ellipse");
           }}
@@ -96,7 +100,8 @@ export function Toolbar() {
           <EllipseIcon size={12} />
         </Button>
         <Button
-          variant="icon"
+          variant="outline"
+          size="icon"
           onClick={() => {
             window.app.editor.handlers.setActiveHandler("Line");
           }}
@@ -104,7 +109,8 @@ export function Toolbar() {
           <LineIcon size={12} />
         </Button>
         <Button
-          variant="icon"
+          variant="outline"
+          size="icon"
           onClick={() => {
             window.app.editor.handlers.setActiveHandler("Text");
           }}
@@ -112,7 +118,8 @@ export function Toolbar() {
           <TextIcon size={12} />
         </Button>
         <Button
-          variant="icon"
+          variant="outline"
+          size="icon"
           onClick={() => {
             window.app.editor.handlers.setActiveHandler("Bitmap");
           }}
@@ -123,7 +130,8 @@ export function Toolbar() {
 
       <div className="text-xl flex flex-row items-center justify-center gap-1 py-1">
         <Button
-          variant="icon"
+          variant="outline"
+          size="icon"
           onClick={() => {
             const scale = window.app.editor.getScale();
             if (scale < 16) window.app.editor.setScale(scale + 1);
@@ -132,7 +140,8 @@ export function Toolbar() {
           <PlusIcon size={12} />
         </Button>
         <Button
-          variant="icon"
+          variant="outline"
+          size="icon"
           onClick={() => {
             const scale = window.app.editor.getScale();
             if (scale > 1) window.app.editor.setScale(scale - 1);
@@ -141,7 +150,8 @@ export function Toolbar() {
           <MinusIcon size={12} />
         </Button>
         <Button
-          variant="icon"
+          variant="outline"
+          size="icon"
           onClick={() => {
             window.app.editor.undo();
           }}
@@ -149,7 +159,8 @@ export function Toolbar() {
           <UndoIcon size={12} />
         </Button>
         <Button
-          variant="icon"
+          variant="outline"
+          size="icon"
           onClick={() => {
             window.app.editor.redo();
           }}
@@ -157,7 +168,8 @@ export function Toolbar() {
           <RedoIcon size={12} />
         </Button>
         <Button
-          variant="icon"
+          variant="outline"
+          size="icon"
           onClick={() => {
             window.app.editor.delete();
           }}
@@ -165,7 +177,8 @@ export function Toolbar() {
           <DeleteIcon size={12} />
         </Button>
         <Button
-          variant="icon"
+          variant="outline"
+          size="icon"
           onClick={() => {
             window.app.editor.duplicate();
           }}
@@ -173,7 +186,8 @@ export function Toolbar() {
           <DuplicateIcon size={12} />
         </Button>
         <Button
-          variant="icon"
+          variant="outline"
+          size="icon"
           onClick={() => {
             window.app.editor.bringToFront();
           }}
@@ -181,7 +195,8 @@ export function Toolbar() {
           <BringToFrontIcon size={12} />
         </Button>
         <Button
-          variant="icon"
+          variant="outline"
+          size="icon"
           onClick={() => {
             window.app.editor.sendToBack();
           }}
