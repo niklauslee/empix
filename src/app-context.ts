@@ -1,5 +1,5 @@
 import type { Editor } from "@/components/editor/editor";
-import { ProjectManager } from "./project-manager";
+import { ProjectManager } from "./engine/project-manager";
 import { detectPlatform, generateNewName } from "./lib/utils";
 import { CommandManager } from "./engine/command-manager";
 import { KeymapManager } from "./engine/keymap-manager";
