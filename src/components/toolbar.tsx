@@ -1,3 +1,4 @@
+import { useEditingStore } from "@/store/editing-store";
 import {
   BitmapIcon,
   BringToFrontIcon,
@@ -17,6 +18,8 @@ import {
 import { Button } from "./ui/button";
 
 export function Toolbar() {
+  const activeHandler = useEditingStore((state) => state.activeHandler);
+
   return (
     <div className="w-full flex flex-col justify-start mt-4">
       <div className="text-xl flex flex-row items-start justify-center gap-2 py-1">
@@ -73,7 +76,7 @@ export function Toolbar() {
       </div>
       <div className="text-xl flex flex-row items-start justify-center gap-1 py-1">
         <Button
-          variant="outline"
+          variant={activeHandler === "Select" ? "default" : "outline"}
           size="icon"
           onClick={() => {
             window.app.editor.handlers.setActiveHandler("Select");
@@ -82,7 +85,7 @@ export function Toolbar() {
           <CursorIcon size={12} />
         </Button>
         <Button
-          variant="outline"
+          variant={activeHandler === "Rectangle" ? "default" : "outline"}
           size="icon"
           onClick={() => {
             window.app.editor.handlers.setActiveHandler("Rectangle");
@@ -91,7 +94,7 @@ export function Toolbar() {
           <RectangleIcon size={12} />
         </Button>
         <Button
-          variant="outline"
+          variant={activeHandler === "Ellipse" ? "default" : "outline"}
           size="icon"
           onClick={() => {
             window.app.editor.handlers.setActiveHandler("Ellipse");
@@ -100,7 +103,7 @@ export function Toolbar() {
           <EllipseIcon size={12} />
         </Button>
         <Button
-          variant="outline"
+          variant={activeHandler === "Line" ? "default" : "outline"}
           size="icon"
           onClick={() => {
             window.app.editor.handlers.setActiveHandler("Line");
@@ -109,7 +112,7 @@ export function Toolbar() {
           <LineIcon size={12} />
         </Button>
         <Button
-          variant="outline"
+          variant={activeHandler === "Text" ? "default" : "outline"}
           size="icon"
           onClick={() => {
             window.app.editor.handlers.setActiveHandler("Text");
@@ -118,7 +121,7 @@ export function Toolbar() {
           <TextIcon size={12} />
         </Button>
         <Button
-          variant="outline"
+          variant={activeHandler === "Bitmap" ? "default" : "outline"}
           size="icon"
           onClick={() => {
             window.app.editor.handlers.setActiveHandler("Bitmap");
