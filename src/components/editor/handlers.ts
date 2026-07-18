@@ -47,8 +47,7 @@ export class SelectHandler extends Handler {
           }
         } else {
           if (!editor.selection.isSelected(shape)) {
-            editor.selection.clear();
-            editor.selection.select(shape);
+            editor.selection.select(shape, true);
           }
         }
       } else if (
@@ -59,9 +58,6 @@ export class SelectHandler extends Handler {
         // multi selection (do nothing, let the selection manipulator handle it)
       } else {
         // area selection
-        if (!e.shiftKey) {
-          editor.selection.clear();
-        }
         this.dragging = true;
         this.dragStartPoint = [point[0], point[1]];
       }
@@ -183,6 +179,7 @@ export class SelectHandler extends Handler {
         this.dragStartPoint[1],
         point[0],
         point[1],
+        true,
       );
     }
 

@@ -5,6 +5,7 @@ import { Layout } from "./layout";
 import { Toolbar } from "./toolbar";
 import Logo from "./logo";
 import { ScrollArea } from "./ui/scroll-area";
+import { Inspector } from "./inspector";
 
 declare global {
   interface Window {
@@ -42,6 +43,7 @@ function App() {
         rightSidebar={
           <div className="w-full h-full px-4 py-2">
             <div className="text-sm leading-0 my-4">Properties</div>
+            <Inspector />
           </div>
         }
         onContentResize={() => {

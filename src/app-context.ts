@@ -69,8 +69,18 @@ export class AppContext {
    */
   initialize(editor: Editor) {
     this.editor = editor;
+    this.wiring();
     this.loadKeymap();
     registerCommands();
+  }
+
+  /**
+   * Wiring up events and listeners
+   */
+  wiring() {
+    this.editor.selection.onChange.addListener((shapes) => {
+      console.log("Selection changed:", shapes);
+    });
   }
 
   loadKeymap() {

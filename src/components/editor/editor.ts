@@ -15,6 +15,7 @@ import { Transform } from "./transform";
 import { Store } from "./store";
 import { getAvailableFonts, loadFont } from "./font";
 import { nanoid } from "nanoid";
+import { TypedEvent } from "./std";
 
 /**
  * Handler for editor events
@@ -508,19 +509,35 @@ export class Controller {
  * Selection manager for editor
  */
 class SelectionManager {
+  /**
+   * The editor reference.
+   */
   editor: Editor;
+
+  /**
+   * The selected shapes.
+   */
   shapes: Set<Shape>;
+
+  /**
+   * Event triggered when the selection changes.
+   */
+  onChange: TypedEvent<Shape[]>;
 
   constructor(editor: Editor) {
     this.editor = editor;
     this.shapes = new Set();
+    this.onChange = new TypedEvent<Shape[]>();
   }
 
   /**
    * Clear the selection
    */
   clear() {
-    this.shapes.clear();
+    if (this.shapes.size > 0) {
+      this.shapes.clear();
+      this.onChange.emit(this.get());
+    }
   }
 
   /**
@@ -547,31 +564,68 @@ class SelectionManager {
   /**
    * Select a shape
    */
-  select(shape: Shape) {
-    this.shapes.add(shape);
+  select(shape: Shape, clear: boolean = false) {
+    if (clear) {
+      this.shapes.clear();
+    }
+    if (!this.shapes.has(shape)) {
+      this.shapes.add(shape);
+      this.onChange.emit(this.get());
+    }
+  }
+
+  /**
+   * Select multiple shapes
+   */
+  selectMultiple(shapes: Shape[], clear: boolean = false) {
+    if (clear) {
+      this.shapes.clear();
+    }
+    let changed = false;
+    for (const shape of shapes) {
+      if (!this.shapes.has(shape)) {
+        this.shapes.add(shape);
+        changed = true;
+      }
+    }
+    if (changed) {
+      this.onChange.emit(this.get());
+    }
   }
 
   /**
    * Select shapes in the given area
    */
-  selectArea(x1: number, y1: number, x2: number, y2: number) {
+  selectArea(
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    clear: boolean = false,
+  ) {
     const rect = geometry.normalizeRect([
       [x1, y1],
       [x2, y2],
     ]);
-    this.shapes.clear();
+    if (clear) {
+      this.shapes.clear();
+    }
     for (const shape of this.editor.store.shapes) {
       if (overlapRect(shape, rect)) {
         this.shapes.add(shape);
       }
     }
+    this.onChange.emit(this.get());
   }
 
   /**
    * Deselect a shape
    */
   deselect(shape: Shape) {
-    this.shapes.delete(shape);
+    if (this.shapes.has(shape)) {
+      this.shapes.delete(shape);
+      this.onChange.emit(this.get());
+    }
   }
 
   /**
@@ -959,13 +1013,10 @@ export class Editor {
       newShapeIds.push(newShape.id);
     }
     this.transform.end();
-    this.selection.clear();
-    for (const id of newShapeIds) {
-      const newShape = this.store.getShapeById(id);
-      if (newShape) {
-        this.selection.select(newShape);
-      }
-    }
+    const newShapes = newShapeIds
+      .map((id) => this.store.getShapeById(id))
+      .filter((shape): shape is Shape => shape !== undefined);
+    this.selection.selectMultiple(newShapes, true);
     this.repaint();
   }
 
