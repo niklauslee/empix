@@ -1,7 +1,9 @@
 import { nanoid } from "nanoid";
 import { type Shape } from "./shapes";
-import { TypedEvent } from "./std";
+import { TypedEvent, Stack } from "./std";
 import { Store } from "./store";
+
+const MAX_HISTORY_SIZE = 100;
 
 /**
  * Mutation kinds for shape transformations
@@ -66,6 +68,14 @@ export interface ReorderMutation extends Mutation {
 }
 
 /**
+ * Action type for grouping mutations
+ */
+interface Action {
+  id: string;
+  mutations: Mutation[];
+}
+
+/**
  * Transform for mutating shapes.
  */
 export class Transform {
@@ -80,14 +90,59 @@ export class Transform {
   actionId: string | null;
 
   /**
+   * The current action being performed.
+   */
+  currentAction: Action | null;
+
+  /**
+   * The undo history.
+   */
+  undoHistory: Stack<Action>;
+
+  /**
+   * The redo history.
+   */
+  redoHistory: Stack<Action>;
+
+  /**
    * The event emitter for mutation events.
    */
   onMutation: TypedEvent<Mutation>;
 
+  /**
+   * The event emitter for action events.
+   */
+  onAction: TypedEvent<Action>;
+
+  /**
+   * The event emitter for undo events.
+   */
+  onUndo: TypedEvent<Action>;
+
+  /**
+   * The event emitter for redo events.
+   */
+  onRedo: TypedEvent<Action>;
+
   constructor(store: Store) {
     this.store = store;
     this.actionId = null;
+    this.currentAction = null;
+    this.undoHistory = new Stack<Action>(MAX_HISTORY_SIZE);
+    this.redoHistory = new Stack<Action>(MAX_HISTORY_SIZE);
     this.onMutation = new TypedEvent<Mutation>();
+    this.onAction = new TypedEvent<Action>();
+    this.onUndo = new TypedEvent<Action>();
+    this.onRedo = new TypedEvent<Action>();
+  }
+
+  /**
+   * Clears the current action and history.
+   */
+  clear() {
+    this.currentAction = null;
+    this.undoHistory.clear();
+    this.redoHistory.clear();
   }
 
   /**
@@ -107,7 +162,7 @@ export class Transform {
       actionId: this.actionId,
       kind: MutationKind.ACTION_BEGIN,
     };
-    this.store.apply(mut);
+    this.apply(mut);
     this.trigger(mut);
   }
 
@@ -122,7 +177,7 @@ export class Transform {
       actionId: this.actionId,
       kind: MutationKind.ACTION_END,
     };
-    this.store.apply(mut);
+    this.apply(mut);
     this.trigger(mut);
     this.actionId = null;
   }
@@ -138,7 +193,7 @@ export class Transform {
       actionId: this.actionId,
       kind: MutationKind.ACTION_CANCEL,
     };
-    this.store.apply(mut);
+    this.apply(mut);
     this.trigger(mut);
     this.actionId = null;
   }
@@ -161,8 +216,8 @@ export class Transform {
       oldValue: (shape as any)[field],
       newValue: structuredClone(value),
     };
-    this.store.apply(mut);
-    this.store.appendToAction(mut);
+    this.apply(mut);
+    this.appendToAction(mut);
     this.trigger(mut);
     return mut;
   }
@@ -185,8 +240,8 @@ export class Transform {
       data: structuredClone(shape),
       position,
     };
-    this.store.apply(mut);
-    this.store.appendToAction(mut);
+    this.apply(mut);
+    this.appendToAction(mut);
     this.trigger(mut);
   }
 
@@ -204,8 +259,8 @@ export class Transform {
       data: structuredClone(shape),
       position: this.store.shapes.findIndex((s) => s.id === shape.id),
     };
-    this.store.apply(mut);
-    this.store.appendToAction(mut);
+    this.apply(mut);
+    this.appendToAction(mut);
     this.trigger(mut);
   }
 
@@ -230,8 +285,166 @@ export class Transform {
       oldIndex: oldPosition,
       newIndex: newPosition,
     };
-    this.store.apply(mut);
-    this.store.appendToAction(mut);
+    this.apply(mut);
+    this.appendToAction(mut);
     this.trigger(mut);
+  }
+
+  /**
+   * Applies a mutation to the store.
+   */
+  apply(mutation: Mutation) {
+    switch (mutation.kind) {
+      case MutationKind.ACTION_BEGIN: {
+        this.currentAction = { id: mutation.actionId, mutations: [] };
+        break;
+      }
+      case MutationKind.ACTION_END: {
+        if (this.currentAction && this.currentAction.mutations.length > 0) {
+          this.undoHistory.push(this.currentAction);
+          this.onAction.emit(this.currentAction);
+        }
+        this.currentAction = null;
+        break;
+      }
+      case MutationKind.ACTION_CANCEL: {
+        if (this.currentAction) {
+          for (let i = this.currentAction.mutations.length - 1; i >= 0; i--) {
+            this.unapply(this.currentAction.mutations[i]);
+          }
+          this.currentAction = null;
+        }
+        break;
+      }
+      case MutationKind.ASSIGN: {
+        const { shapeId, field, newValue } = mutation as AssignMutation;
+        const shape = this.store.getShapeById(shapeId);
+        if (!shape) {
+          throw new Error(`Shape with ID ${shapeId} not found.`);
+        }
+        (shape as any)[field] = newValue; // Update the shape's field
+        break;
+      }
+      case MutationKind.INSERT: {
+        const { shapeId, data, position } = mutation as InsertMutation;
+        const shape = structuredClone(data) as Shape;
+        shape.id = shapeId; // Ensure the shape has the correct ID
+        if (position < 0 || position > this.store.shapes.length) {
+          this.store.shapes.push(shape); // append to end
+        } else {
+          this.store.shapes.splice(position, 0, shape); // insert at the position
+        }
+        break;
+      }
+      case MutationKind.DELETE: {
+        const { shapeId } = mutation as DeleteMutation;
+        const index = this.store.shapes.findIndex(
+          (shape) => shape.id === shapeId,
+        );
+        if (index !== -1) {
+          this.store.shapes.splice(index, 1); // Remove the shape
+        }
+        break;
+      }
+      case MutationKind.REORDER: {
+        const { shapeId, oldIndex, newIndex } = mutation as ReorderMutation;
+        const shape = this.store.getShapeById(shapeId);
+        if (!shape) {
+          throw new Error(`Shape with ID ${shapeId} not found.`);
+        }
+        this.store.shapes.splice(oldIndex, 1);
+        this.store.shapes.splice(newIndex, 0, shape);
+        break;
+      }
+    }
+  }
+
+  /**
+   * Unapplies a mutation from the store.
+   */
+  unapply(mutation: Mutation) {
+    switch (mutation.kind) {
+      case MutationKind.ACTION_BEGIN:
+      case MutationKind.ACTION_END:
+      case MutationKind.ACTION_CANCEL:
+        // No action needed for these mutations when unapplying
+        break;
+      case MutationKind.ASSIGN: {
+        const { shapeId, field, oldValue } = mutation as AssignMutation;
+        const shape = this.store.getShapeById(shapeId);
+        if (!shape) {
+          throw new Error(`Shape with ID ${shapeId} not found.`);
+        }
+        (shape as any)[field] = oldValue; // Revert the shape's field
+        break;
+      }
+      case MutationKind.INSERT: {
+        const { shapeId } = mutation as InsertMutation;
+        const index = this.store.shapes.findIndex(
+          (shape) => shape.id === shapeId,
+        );
+        if (index !== -1) {
+          this.store.shapes.splice(index, 1); // Remove the shape
+        }
+        break;
+      }
+      case MutationKind.DELETE: {
+        const { shapeId, data, position } = mutation as DeleteMutation;
+        const shape = structuredClone(data) as Shape;
+        shape.id = shapeId; // Ensure the shape has the correct ID
+        if (position < 0 || position > this.store.shapes.length) {
+          this.store.shapes.push(shape); // append to end
+        } else {
+          this.store.shapes.splice(position, 0, shape); // insert at the position
+        }
+        break;
+      }
+      case MutationKind.REORDER: {
+        const { shapeId, oldIndex, newIndex } = mutation as ReorderMutation;
+        const shape = this.store.getShapeById(shapeId);
+        if (!shape) {
+          throw new Error(`Shape with ID ${shapeId} not found.`);
+        }
+        this.store.shapes.splice(newIndex, 1); // Remove from new position
+        this.store.shapes.splice(oldIndex, 0, shape); // Insert back to old position
+        break;
+      }
+    }
+  }
+
+  /**
+   * Appends a mutation to the current action.
+   */
+  appendToAction(mutation: Mutation) {
+    if (!this.currentAction) {
+      throw new Error("No active action. Call begin() first.");
+    }
+    this.currentAction.mutations.push(mutation);
+  }
+
+  /**
+   * Undo the last action.
+   */
+  undo() {
+    if (this.undoHistory.size() === 0) return;
+    const action = this.undoHistory.pop()!;
+    for (let i = action.mutations.length - 1; i >= 0; i--) {
+      this.unapply(action.mutations[i]);
+    }
+    this.redoHistory.push(action);
+    this.onUndo.emit(action);
+  }
+
+  /**
+   * Redo the last undone action.
+   */
+  redo() {
+    if (this.redoHistory.size() === 0) return;
+    const action = this.redoHistory.pop()!;
+    for (const mutation of action.mutations) {
+      this.apply(mutation);
+    }
+    this.undoHistory.push(action);
+    this.onRedo.emit(action);
   }
 }

@@ -972,7 +972,7 @@ export class Editor {
    * Undo the last action
    */
   undo() {
-    this.store.undo();
+    this.transform.undo();
     this.repaint();
   }
 
@@ -980,7 +980,7 @@ export class Editor {
    * Redo the last undone action
    */
   redo() {
-    this.store.redo();
+    this.transform.redo();
     this.repaint();
   }
 
