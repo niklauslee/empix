@@ -19,17 +19,23 @@ import { nanoid } from "nanoid";
 import { TypedEvent } from "./std";
 import { Clipboard } from "./clipboard";
 
+export interface HandlerOptions {
+  defaultLock: boolean;
+}
+
 /**
  * Handler for editor events
  */
 export abstract class Handler {
   id: string;
+  options: HandlerOptions;
   dragging: boolean;
   dragStartPoint: number[];
   dragPoint: number[];
 
-  constructor(id: string) {
+  constructor(id: string, options?: Partial<HandlerOptions>) {
     this.id = id;
+    this.options = { defaultLock: false, ...options };
     this.dragging = false;
     this.dragStartPoint = [0, 0];
     this.dragPoint = [0, 0];
@@ -48,9 +54,9 @@ export abstract class Handler {
    * Trigger when the handler action is complete
    */
   complete(editor: Editor) {
-    // if (!editor.getActiveHandlerLock()) {
-    //   editor.activateDefaultHandler();
-    // }
+    if (!editor.handlers.activeHandlerLock) {
+      editor.handlers.setActiveHandler(editor.handlers.defaultHandlerId);
+    }
   }
 
   /**
@@ -148,15 +154,46 @@ export abstract class Handler {
  * Manager for editor handlers
  */
 export class HandlerManager {
-  handlers: Record<string, Handler> = {};
-  activeHandler: Handler | null = null;
-  defaultHandlerId: string = "";
+  /**
+   * Handlers registered in the manager
+   */
+  handlers: Record<string, Handler>;
+
+  /**
+   * The default handler ID
+   */
+  defaultHandlerId: string;
+
+  /**
+   * The active handler
+   */
+  activeHandler: Handler | null;
+
+  /**
+   * Indicate whether the active handler is locked or not.
+   */
+  activeHandlerLock: boolean;
+
+  /**
+   * The event emitter for active handler change
+   */
+  onActiveHandlerChange: TypedEvent<string>;
+
+  /**
+   * The event emitter for active handler lock change
+   */
+  onActiveHandlerLockChange: TypedEvent<boolean>;
 
   constructor(handlers: Handler[] = [], defaultHandlerId: string = "") {
+    this.handlers = {};
+    this.defaultHandlerId = defaultHandlerId;
+    this.activeHandler = null;
+    this.activeHandlerLock = false;
+    this.onActiveHandlerChange = new TypedEvent<string>();
+    this.onActiveHandlerLockChange = new TypedEvent<boolean>();
     handlers.forEach((handler) => {
       this.handlers[handler.id] = handler;
     });
-    this.defaultHandlerId = defaultHandlerId;
     if (defaultHandlerId) {
       this.setActiveHandler(defaultHandlerId);
     }
@@ -171,6 +208,15 @@ export class HandlerManager {
       throw new Error(`Handler ${handlerId} not found`);
     }
     this.activeHandler = handler;
+    this.onActiveHandlerChange.emit(handlerId);
+  }
+
+  /**
+   * Set the active handler lock state.
+   */
+  setActiveHandlerLock(lock: boolean) {
+    this.activeHandlerLock = lock;
+    this.onActiveHandlerLockChange.emit(lock);
   }
 
   /**

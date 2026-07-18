@@ -69,7 +69,7 @@ export const EditorComponent: React.FC<EditorComponentProps> = ({
       (window as any).editor = editor; // for debugging
       if (onMount) onMount(editor);
     }
-    return () => {}; // TODO: dispose (remove listeners)
+    return () => {};
   }, []);
 
   return (

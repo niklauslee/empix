@@ -94,6 +94,10 @@ export class AppContext {
     this.editor.selection.onChange.addListener((shapes) => {
       useEditingStore.getState().setSelection(shapes);
     });
+    this.editor.handlers.onActiveHandlerChange.addListener((handlerId) => {
+      console.log("Active handler changed to:", handlerId);
+      useEditingStore.getState().setActiveHandler(handlerId);
+    });
   }
 
   loadKeymap() {
