@@ -17,6 +17,7 @@ import { Store } from "./store";
 import { getAvailableFonts, loadFont } from "./font";
 import { nanoid } from "nanoid";
 import { TypedEvent } from "./std";
+import { Clipboard } from "./clipboard";
 
 /**
  * Handler for editor events
@@ -620,6 +621,23 @@ class SelectionManager {
   }
 
   /**
+   * Select all shapes in the editor
+   */
+  selectAll() {
+    this.shapes.clear();
+    let changed = false;
+    for (const shape of this.editor.store.shapes) {
+      if (!this.shapes.has(shape)) {
+        this.shapes.add(shape);
+        changed = true;
+      }
+    }
+    if (changed) {
+      this.onChange.emit(this.get());
+    }
+  }
+
+  /**
    * Deselect a shape
    */
   deselect(shape: Shape) {
@@ -702,6 +720,11 @@ export class Editor {
   factory: ShapeFactory;
 
   /**
+   * The clipboard for the editor
+   */
+  clipboard: Clipboard;
+
+  /**
    * The handler manager for the editor
    */
   handlers: HandlerManager;
@@ -737,6 +760,7 @@ export class Editor {
     this.selection = new SelectionManager(this);
     this.store = new Store();
     this.factory = new ShapeFactory();
+    this.clipboard = new Clipboard();
     this.transform = new Transform(this.store);
     this.initializeCanvas();
     this.fit();
@@ -1002,6 +1026,46 @@ export class Editor {
     }
     this.transform.end();
     this.repaint();
+  }
+
+  /**
+   * Copy shapes to the clipboard. If no shapes are provided, it will copy the currently selected shapes.
+   */
+  async copy(shapes: Shape[] = []) {
+    const shapesToCopy = shapes.length > 0 ? shapes : this.selection.get();
+    await this.clipboard.write({ shapes: shapesToCopy });
+  }
+
+  /**
+   * Cut shapes to the clipboard. If no shapes are provided, it will cut the currently selected shapes.
+   */
+  async cut(shapes: Shape[] = []) {
+    const shapesToCut = shapes.length > 0 ? shapes : this.selection.get();
+    await this.copy(shapesToCut);
+    this.delete(shapesToCut);
+  }
+
+  /**
+   * Paste shapes from the clipboard into the editor.
+   */
+  async paste() {
+    const data = await this.clipboard.read();
+    if (Array.isArray(data.shapes) && data.shapes.length > 0) {
+      const newShapeIds: string[] = [];
+      this.transform.begin();
+      for (const shape of data.shapes) {
+        shape.id = nanoid();
+        move(shape, 4, 4);
+        this.transform.insert(shape);
+        newShapeIds.push(shape.id);
+      }
+      this.transform.end();
+      const newShapes = newShapeIds
+        .map((id) => this.store.getShapeById(id))
+        .filter((shape): shape is Shape => shape !== undefined);
+      this.selection.selectMultiple(newShapes, true);
+      this.repaint();
+    }
   }
 
   /**
