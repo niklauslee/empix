@@ -73,6 +73,17 @@ export interface BitmapShape extends Shape {
 }
 
 /**
+ * Shape properties type
+ */
+export type ShapeProps = Partial<
+  Omit<RectangleShape, "type"> &
+    Omit<EllipseShape, "type"> &
+    Omit<LineShape, "type"> &
+    Omit<TextShape, "type"> &
+    Omit<BitmapShape, "type">
+> & { type?: string };
+
+/**
  * ShapeFactory is responsible for creating shapes based on their type.
  */
 export class ShapeFactory {

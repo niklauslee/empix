@@ -6,6 +6,9 @@ import { Toolbar } from "./toolbar";
 import Logo from "./logo";
 import { ScrollArea } from "./ui/scroll-area";
 import { Inspector } from "./inspector";
+import type { ShapeProps } from "./editor/shapes";
+import { useEditingStore } from "@/store/editing-store";
+import { useState } from "react";
 
 declare global {
   interface Window {
@@ -14,10 +17,23 @@ declare global {
 }
 
 function App() {
+  const selection = useEditingStore((state) => state.selection);
+  // for ui update when actions are performed
+  const actionSequence = useEditingStore((state) => state.actionSequence);
+
   const handleMount = (editor: Editor) => {
     app.initialize(editor);
     editor.fit();
     editor.repaint();
+  };
+
+  const handlePropsChange = (props: ShapeProps) => {
+    try {
+      const app = window.app;
+      app.editor.updateProps(props);
+    } catch (error) {
+      console.error("Error handling props change:", error);
+    }
   };
 
   return (
@@ -40,7 +56,9 @@ function App() {
             </div>
           </ScrollArea>
         }
-        rightSidebar={<Inspector />}
+        rightSidebar={
+          <Inspector selection={selection} onChange={handlePropsChange} />
+        }
         onContentResize={() => {
           // setTimeout(() => window.app?.editor.fit());
         }}

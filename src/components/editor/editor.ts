@@ -9,6 +9,7 @@ import {
   renderOutline,
   type Shape,
   ShapeFactory,
+  type ShapeProps,
 } from "./shapes";
 import * as geometry from "./geometry";
 import { Transform } from "./transform";
@@ -981,6 +982,25 @@ export class Editor {
    */
   redo() {
     this.transform.redo();
+    this.repaint();
+  }
+
+  /**
+   * Update properties of shapes in the editor. If no shapes are provided, it will update the currently selected shapes.
+   */
+  updateProps(props: ShapeProps, shapes?: Shape[]) {
+    const shapesToUpdate =
+      shapes && shapes.length > 0 ? shapes : this.selection.get();
+    this.transform.begin();
+    for (let key in props) {
+      const value = (props as any)[key];
+      for (const shape of shapesToUpdate) {
+        if (shape.hasOwnProperty(key)) {
+          this.transform.assign(shape, key, value);
+        }
+      }
+    }
+    this.transform.end();
     this.repaint();
   }
 

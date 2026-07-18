@@ -83,13 +83,13 @@ export class AppContext {
       shape.name = generateNewName(shape, this.editor.store.shapes);
     });
     this.editor.transform.onAction.addListener((action) => {
-      console.log("Action performed:", action);
+      useEditingStore.getState().increaseActionSequence();
     });
     this.editor.transform.onUndo.addListener((shape) => {
-      console.log("Undo performed:", shape);
+      useEditingStore.getState().increaseActionSequence();
     });
     this.editor.transform.onRedo.addListener((shape) => {
-      console.log("Redo performed:", shape);
+      useEditingStore.getState().increaseActionSequence();
     });
     this.editor.selection.onChange.addListener((shapes) => {
       useEditingStore.getState().setSelection(shapes);
