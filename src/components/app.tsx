@@ -4,11 +4,10 @@ import { EditorComponent } from "./editor/editor-component";
 import { Layout } from "./layout";
 import { Toolbar } from "./toolbar";
 import Logo from "./logo";
-import { ScrollArea } from "./ui/scroll-area";
 import { Inspector } from "./inspector";
 import type { ShapeProps } from "./editor/shapes";
 import { useEditingStore } from "@/store/editing-store";
-import { useState } from "react";
+import { ScenesPanel } from "./scenes-panel";
 
 declare global {
   interface Window {
@@ -45,17 +44,7 @@ function App() {
             <div className="text-xl ml-3">studio</div>
           </div>
         }
-        leftSidebar={
-          <ScrollArea className="w-full h-full">
-            <div className="w-full h-full px-4 py-2">
-              <div className="text-sm leading-0 my-4">Scenes | Layers</div>
-              <div className="flex flex-col gap-4">
-                <div className="w-40 h-24 bg-slate-800 border"></div>
-                <div className="w-40 h-24 bg-slate-800 border"></div>
-              </div>
-            </div>
-          </ScrollArea>
-        }
+        leftSidebar={<ScenesPanel />}
         rightSidebar={
           <Inspector selection={selection} onChange={handlePropsChange} />
         }

@@ -14,17 +14,24 @@ export class Store {
   }
 
   /**
-   * Gets a shape by its Id.
-   */
-  getShapeById(shapeId: string) {
-    return this.shapes.find((shape) => shape.id === shapeId);
-  }
-
-  /**
    * Clears the store, removing all shapes and resetting history.
    */
   clear() {
     this.shapes = [];
+  }
+
+  /**
+   * Sets the shapes in the store.
+   */
+  setShapes(shapes: Shape[]) {
+    this.shapes = shapes;
+  }
+
+  /**
+   * Gets a shape by its Id.
+   */
+  getShapeById(shapeId: string) {
+    return this.shapes.find((shape) => shape.id === shapeId);
   }
 
   /**

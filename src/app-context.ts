@@ -6,6 +6,7 @@ import { KeymapManager } from "./engine/keymap-manager";
 import { registerCommands } from "./commands";
 import keymapJson from "./keymap.json";
 import { useEditingStore } from "./store/editing-store";
+import { useProjectStore } from "./store/project-store";
 
 declare global {
   interface Window {
@@ -72,6 +73,7 @@ export class AppContext {
     this.editor = editor;
     this.wiring();
     this.loadKeymap();
+    useProjectStore.getState().setProject(this.projectManager.project);
     registerCommands();
   }
 
@@ -79,8 +81,14 @@ export class AppContext {
    * Wiring up events and listeners
    */
   wiring() {
+    this.projectManager.onChange.addListener((project) => {
+      useProjectStore.getState().setProject({ ...project });
+    });
     this.editor.factory.onCreate.addListener((shape) => {
-      shape.name = generateNewName(shape, this.editor.store.shapes);
+      shape.name = generateNewName(
+        shape.type,
+        this.editor.store.shapes.map((s) => s.name),
+      );
     });
     this.editor.transform.onAction.addListener((action) => {
       useEditingStore.getState().increaseActionSequence();

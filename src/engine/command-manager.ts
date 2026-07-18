@@ -11,8 +11,8 @@
  * from MKLabs (niklaus.lee@gmail.com).
  */
 
-import { TypedEvent } from "@/lib/typed-event";
 import { type ZodRawShape, z, ZodObject } from "zod";
+import { TypedEvent } from "@/components/editor/std";
 
 /**
  * CommandHandler is a function type that takes command arguments and returns a Promise.
