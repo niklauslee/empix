@@ -12,3 +12,6 @@ export { default as DeleteIcon } from "./delete";
 export { default as DuplicateIcon } from "./duplicate";
 export { default as PlusIcon } from "./plus";
 export { default as MinusIcon } from "./minus";
+export { default as CaretUpIcon } from "./caret-up";
+export { default as CaretDownIcon } from "./caret-down";
+export { default as CheckIcon } from "./check";
