@@ -14,7 +14,7 @@ declare global {
 
 function App() {
   const handleMount = (editor: Editor) => {
-    app.setEditor(editor);
+    app.initialize(editor);
     editor.fit();
     editor.repaint();
   };

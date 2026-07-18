@@ -1,6 +1,10 @@
 import type { Editor } from "@/components/editor/editor";
 import { ProjectManager } from "./project-manager";
 import { detectPlatform } from "./lib/utils";
+import { CommandManager } from "./engine/command-manager";
+import { KeymapManager } from "./engine/keymap-manager";
+import { registerCommands } from "./commands";
+import keymapJson from "./keymap.json";
 
 declare global {
   interface Window {
@@ -31,6 +35,16 @@ export class AppContext {
   projectManager: ProjectManager;
 
   /**
+   * Command manager instance
+   */
+  commands: CommandManager;
+
+  /**
+   * Keymap manager instance
+   */
+  keymap: KeymapManager;
+
+  /**
    * Returns a singleton app context instance
    */
   static getInstance(): AppContext {
@@ -43,13 +57,32 @@ export class AppContext {
   constructor() {
     this.platform = detectPlatform();
     this.projectManager = new ProjectManager();
+    this.commands = new CommandManager();
+    this.keymap = new KeymapManager({
+      platform: this.platform,
+      commandManager: this.commands,
+    });
   }
 
   /**
-   * Sets the editor instance
+   * Initializes the app context
    */
-  setEditor(editor: Editor) {
+  initialize(editor: Editor) {
     this.editor = editor;
+    this.loadKeymap();
+    registerCommands();
+  }
+
+  loadKeymap() {
+    try {
+      this.keymap.add(keymapJson);
+      this.keymap.htmlReady();
+      // useKeymapStore
+      //   .getState()
+      //   .setFormattedKeys(this.keymaps.getAllFormattedKeyByCommand());
+    } catch (err) {
+      console.error("Failed to load keymaps", err);
+    }
   }
 }
 
