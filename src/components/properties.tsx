@@ -265,7 +265,7 @@ export const PropertiesPanel: React.FC<ShapeEditorProps> = ({
   return (
     <div className="absolute inset-0">
       <div className="absolute inset-x-0 top-0 h-8 flex items-center px-4">
-        <div className="text-muted-foreground">Properties</div>
+        <div className="">Properties</div>
       </div>
       <div className="absolute inset-x-0 top-8 bottom-0">
         <ScrollArea className="w-full h-full">

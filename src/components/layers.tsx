@@ -44,10 +44,15 @@ export const LayersPanel: React.FC<LayersPanelProps> = ({}) => {
   return (
     <div className="absolute inset-0">
       <div className="absolute inset-x-0 top-0 h-8 flex items-center px-4">
-        <div className="text-muted-foreground">Layers</div>
+        <div>Layers</div>
       </div>
       <div className="absolute inset-x-0 top-8 bottom-0">
         <ScrollArea className="w-full h-full">
+          {shapes.length === 0 && (
+            <div className="px-4 h-8 mt-2 text-sm text-muted-foreground">
+              No shapes
+            </div>
+          )}
           <div className="flex flex-col gap-0 py-2">
             {shapes.map((shape) => (
               <LayerItem
