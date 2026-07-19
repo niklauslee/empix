@@ -53,6 +53,7 @@ export interface EllipseShape extends Shape {
 export interface LineShape extends Shape {
   type: typeof ShapeType.LINE;
   path: number[][];
+  closed: boolean;
 }
 
 /**
@@ -134,6 +135,7 @@ export class ShapeFactory {
           [0, 0],
           [1, 1],
         ];
+        s.closed = false;
         break;
       }
       case ShapeType.TEXT: {
@@ -202,6 +204,9 @@ export function getOutline(shape: Shape): number[][] {
     }
     case ShapeType.LINE: {
       const s = shape as LineShape;
+      if (s.path.length > 2 && s.closed) {
+        return geometry.copyPath([...s.path, geometry.copy(s.path[0])]);
+      }
       return geometry.copyPath(s.path);
     }
     default:
@@ -329,6 +334,11 @@ export function render(gc: GraphicContext, shape: Shape) {
       for (let i = 0; i < s.path.length - 1; i++) {
         const [x1, y1] = s.path[i];
         const [x2, y2] = s.path[i + 1];
+        gc.drawLine(x1, y1, x2, y2, s.color);
+      }
+      if (s.path.length > 2 && s.closed) {
+        const [x1, y1] = s.path[s.path.length - 1];
+        const [x2, y2] = s.path[0];
         gc.drawLine(x1, y1, x2, y2, s.color);
       }
       break;

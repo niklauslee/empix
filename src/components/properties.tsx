@@ -2,6 +2,7 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import {
   ShapeType,
+  type LineShape,
   type Shape,
   type ShapeProps,
   type TextShape,
@@ -152,6 +153,31 @@ export const FillEdit: React.FC<ShapeEditorProps> = ({
   );
 };
 
+export const ClosedEdit: React.FC<ShapeEditorProps> = ({
+  selection,
+  onChange,
+}) => {
+  if (selection.length === 0) return null;
+  const shape = selection[0];
+  if (shape.type !== ShapeType.LINE) return null;
+
+  return (
+    <div>
+      <div className="flex items-center gap-2 w-full">
+        <Label className="text-sm w-16" htmlFor="input-name">
+          Closed
+        </Label>
+        <div className="flex gap-2 w-full">
+          <Checkbox
+            checked={(shape as LineShape).closed ?? false}
+            onCheckedChange={(value) => onChange({ closed: value })}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const ColorEdit: React.FC<ShapeEditorProps> = ({
   selection,
   onChange,
@@ -275,6 +301,7 @@ export const PropertiesPanel: React.FC<ShapeEditorProps> = ({
             <SizeEdit selection={selection} onChange={onChange} />
             <ColorEdit selection={selection} onChange={onChange} />
             <FillEdit selection={selection} onChange={onChange} />
+            <ClosedEdit selection={selection} onChange={onChange} />
             <TextEdit selection={selection} onChange={onChange} />
           </div>
         </ScrollArea>
