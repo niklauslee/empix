@@ -6,6 +6,7 @@ import {
   type BitmapShape,
   type EllipseShape,
   type LineShape,
+  type PenShape,
   type RectangleShape,
   ShapeType,
   type TextShape,
@@ -393,6 +394,138 @@ export class TextFactoryHandler extends Handler {
 
   finalize(editor: Editor, e: PointerEvent): void {
     editor.transform.end();
+  }
+}
+
+/**
+ * Pen Factory Handler
+ */
+export class PenFactoryHandler extends Handler {
+  shape: PenShape | null = null;
+  pressedButton: number = -1;
+
+  reset() {
+    super.reset();
+    this.pressedButton = -1;
+  }
+
+  onActivate(editor: Editor) {
+    this.shape = null;
+    editor.setCursor(Cursor.DEFAULT);
+  }
+
+  onDeactivate(editor: Editor) {
+    if (this.dragging) {
+      this.finalize(editor, {} as any);
+      this.reset();
+      editor.repaint();
+    }
+  }
+
+  initialize(editor: Editor, e: PointerEvent): void {
+    editor.transform.begin();
+    if (this.shape) return;
+    const newShape = editor.factory.create(ShapeType.PEN) as PenShape;
+    editor.transform.insert(newShape);
+    this.shape = editor.store.getShapeById(newShape.id) as PenShape;
+  }
+
+  update(editor: Editor, e: PointerEvent): void {
+    if (!this.shape) return;
+    if (!this.dragging) return;
+    if (this.pressedButton === Mouse.BUTTON1) {
+      const p = geometry.copy(this.dragPoint);
+      const newPoints = [...this.shape.points, p];
+      if (!this.shape.points.some((pt) => pt[0] === p[0] && pt[1] === p[1])) {
+        editor.transform.assign(this.shape, "points", newPoints);
+      }
+    } else if (this.pressedButton === Mouse.BUTTON3) {
+      const p = [this.dragPoint[0], this.dragPoint[1]];
+      editor.transform.assign(this.shape, "points", [
+        ...this.shape.points.filter((pt) => pt[0] !== p[0] || pt[1] !== p[1]),
+      ]);
+    }
+  }
+
+  finalize(editor: Editor, e: PointerEvent): void {
+    if (!this.shape) return;
+    const xs = this.shape.points.map((p) => p[0]);
+    const ys = this.shape.points.map((p) => p[1]);
+    const left = Math.min(...xs);
+    const top = Math.min(...ys);
+    const right = Math.max(...xs);
+    const bottom = Math.max(...ys);
+    editor.transform.assign(this.shape, "left", left);
+    editor.transform.assign(this.shape, "top", top);
+    editor.transform.assign(this.shape, "width", right - left + 1);
+    editor.transform.assign(this.shape, "height", bottom - top + 1);
+    editor.transform.end();
+  }
+
+  /**
+   * pointer down handler
+   */
+  pointerDown(editor: Editor, e: PointerEvent, point: number[]) {
+    if (e.button === Mouse.BUTTON1 || e.button === Mouse.BUTTON3) {
+      this.dragging = true;
+      this.dragStartPoint = [point[0], point[1]];
+      this.dragPoint = geometry.copy(this.dragStartPoint);
+      this.pressedButton = e.button;
+      this.initialize(editor, e);
+      this.update(editor, e);
+      editor.repaint();
+      // this.drawDragging(editor, e);
+    }
+  }
+
+  /**
+   * pointer move handler
+   */
+  pointerMove(editor: Editor, e: PointerEvent, point: number[]) {
+    if (this.dragging) {
+      this.dragPoint = [point[0], point[1]];
+      this.update(editor, e);
+      editor.repaint();
+      this.drawDragging(editor, e);
+    } else {
+      this.updateHovering(editor, e);
+      editor.repaint();
+      this.drawHovering(editor, e);
+    }
+  }
+
+  /**
+   * pointer up handler
+   */
+  pointerUp(editor: Editor, e: PointerEvent, point: number[]) {
+    if (
+      (this.pressedButton === Mouse.BUTTON1 ||
+        this.pressedButton === Mouse.BUTTON3) &&
+      this.dragging
+    ) {
+      this.finalize(editor, e);
+      this.reset();
+      editor.repaint();
+    }
+  }
+
+  /**
+   * keyDown
+   */
+  keyDown(editor: Editor, e: KeyboardEvent) {
+    if (e.key === "Escape" || e.key === "Enter") {
+      if (
+        this.shape &&
+        (this.pressedButton === Mouse.BUTTON1 ||
+          this.pressedButton === Mouse.BUTTON3) &&
+        this.dragging
+      )
+        this.finalize(editor, e as any);
+      this.reset();
+      editor.repaint();
+      this.complete(editor);
+    }
+    return false;
   }
 }
 

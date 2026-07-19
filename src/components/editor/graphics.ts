@@ -420,6 +420,15 @@ export class GraphicContext {
   }
 
   /**
+   * Draw a series of points on the canvas
+   */
+  drawPoints(points: number[][], color: number) {
+    for (const [x, y] of points) {
+      this.putPixel(x, y, color);
+    }
+  }
+
+  /**
    * Measure the width, height, and baseline of the text in pixels
    */
   metricText(text: string): {

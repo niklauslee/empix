@@ -6,6 +6,7 @@ import {
   LineAddPointController,
   LineMoveController,
   LineMovePointController,
+  PenMoveController,
   SelectionMoveController,
 } from "./controllers";
 
@@ -62,6 +63,16 @@ export class TextManipulator extends Manipulator {
   constructor() {
     super();
     this.controllers = [new BoxMoveController(this)];
+  }
+}
+
+/**
+ * Manipulator for pen shapes
+ */
+export class PenManipulator extends Manipulator {
+  constructor() {
+    super();
+    this.controllers = [new PenMoveController(this)];
   }
 }
 

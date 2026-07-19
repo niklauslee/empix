@@ -8,6 +8,7 @@ import {
   EllipseIcon,
   LineIcon,
   MinusIcon,
+  PenIcon,
   PlusIcon,
   RectangleIcon,
   RedoIcon,
@@ -185,6 +186,16 @@ export function Toolbar() {
           }}
         >
           <TextIcon size={12} />
+        </Button>
+        <Button
+          variant={activeHandler === "Pen" ? "default" : "outline"}
+          size="icon-xs"
+          className="size-7"
+          onClick={() => {
+            window.app.editor.handlers.setActiveHandler("Pen");
+          }}
+        >
+          <PenIcon size={12} />
         </Button>
         <Button
           variant={activeHandler === "Bitmap" ? "default" : "outline"}

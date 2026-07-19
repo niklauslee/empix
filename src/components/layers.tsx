@@ -6,6 +6,7 @@ import {
   LineIcon,
   TextIcon,
   BitmapIcon,
+  PenIcon,
 } from "./icons";
 import { ScrollArea } from "./ui/scroll-area";
 import { useEditorStore } from "@/store/editor-store";
@@ -28,6 +29,7 @@ const LayerItem: React.FC<{
         {shape.type === ShapeType.ELLIPSE && <EllipseIcon size={12} />}
         {shape.type === ShapeType.LINE && <LineIcon size={12} />}
         {shape.type === ShapeType.TEXT && <TextIcon size={12} />}
+        {shape.type === ShapeType.PEN && <PenIcon size={12} />}
         {shape.type === ShapeType.BITMAP && <BitmapIcon size={12} />}
       </div>
       <div className="truncate">{shape.name}</div>

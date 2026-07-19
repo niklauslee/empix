@@ -13,6 +13,7 @@ export const ShapeType = {
   ELLIPSE: "Ellipse",
   LINE: "Line",
   TEXT: "Text",
+  PEN: "Pen",
   BITMAP: "Bitmap",
 } as const;
 
@@ -64,6 +65,14 @@ export interface TextShape extends Shape {
 }
 
 /**
+ * Pen shape type
+ */
+export interface PenShape extends Shape {
+  type: typeof ShapeType.PEN;
+  points: number[][];
+}
+
+/**
  * Bitmap shape type
  */
 export interface BitmapShape extends Shape {
@@ -80,6 +89,7 @@ export type ShapeProps = Partial<
     Omit<EllipseShape, "type"> &
     Omit<LineShape, "type"> &
     Omit<TextShape, "type"> &
+    Omit<PenShape, "type"> &
     Omit<BitmapShape, "type">
 > & { type?: string };
 
@@ -133,6 +143,12 @@ export class ShapeFactory {
         s.text = "Hello, world!Ä";
         break;
       }
+      case ShapeType.PEN: {
+        const s = newShape as PenShape;
+        s.type = ShapeType.PEN;
+        s.points = [];
+        break;
+      }
       case ShapeType.BITMAP: {
         const s = newShape as BitmapShape;
         s.type = ShapeType.BITMAP;
@@ -170,6 +186,7 @@ export function getOutline(shape: Shape): number[][] {
   switch (shape.type) {
     case ShapeType.RECTANGLE:
     case ShapeType.TEXT:
+    case ShapeType.PEN:
     case ShapeType.BITMAP: {
       return geometry.rectToPolygon(getBoundingRect(shape), true);
     }
@@ -224,6 +241,7 @@ export function containsPoint(shape: Shape, point: number[]): boolean {
       return geometry.getNearSegment(point, o, distance) >= 0;
     }
     case ShapeType.TEXT:
+    case ShapeType.PEN:
     case ShapeType.BITMAP: {
       const r = getBoundingRect(shape);
       return geometry.inRect(point, r);
@@ -256,6 +274,11 @@ export function move(shape: Shape, dx: number, dy: number): void {
     case ShapeType.LINE: {
       const line = shape as LineShape;
       line.path = geometry.movePath(line.path, dx, dy);
+      break;
+    }
+    case ShapeType.PEN: {
+      const pen = shape as PenShape;
+      pen.points = geometry.movePath(pen.points, dx, dy);
       break;
     }
   }
@@ -316,6 +339,11 @@ export function render(gc: GraphicContext, shape: Shape) {
       gc.drawText(s.left, s.top, s.text, s.color);
       break;
     }
+    case ShapeType.PEN: {
+      const s = shape as PenShape;
+      gc.drawPoints(s.points, s.color);
+      break;
+    }
     case ShapeType.BITMAP: {
       const s = shape as BitmapShape;
       gc.drawBitmap(s.left, s.top, s.width, s.height, s.data, s.bpp);
@@ -335,6 +363,7 @@ export function renderOutline(gc: GraphicContext, shape: Shape) {
   switch (shape.type) {
     case ShapeType.RECTANGLE:
     case ShapeType.TEXT:
+    case ShapeType.PEN:
     case ShapeType.BITMAP: {
       const r = getBoundingRect(shape);
       drawBox(gc, r, Color.HOVER);

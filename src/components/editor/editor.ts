@@ -37,8 +37,8 @@ export abstract class Handler {
     this.id = id;
     this.options = { defaultLock: false, ...options };
     this.dragging = false;
-    this.dragStartPoint = [0, 0];
-    this.dragPoint = [0, 0];
+    this.dragStartPoint = [-1, -1];
+    this.dragPoint = [-1, -1];
   }
 
   /**
@@ -58,6 +58,31 @@ export abstract class Handler {
       editor.handlers.setActiveHandler(editor.handlers.defaultHandlerId);
     }
   }
+
+  /**
+   * Activate the handler
+   */
+  activate(editor: Editor) {
+    editor.handlers.setActiveHandlerLock(this.options.defaultLock);
+    this.onActivate(editor);
+  }
+
+  /**
+   * Deactivate the handler
+   */
+  deactivate(editor: Editor) {
+    this.onDeactivate(editor);
+  }
+
+  /**
+   * Triggered when activated
+   */
+  onActivate(editor: Editor) {}
+
+  /**
+   * Triggered when deactivate
+   */
+  onDeactivate(editor: Editor) {}
 
   /**
    * Initialize handler
@@ -155,6 +180,11 @@ export abstract class Handler {
  */
 export class HandlerManager {
   /**
+   * The editor reference.
+   */
+  editor: Editor;
+
+  /**
    * Handlers registered in the manager
    */
   handlers: Record<string, Handler>;
@@ -184,7 +214,12 @@ export class HandlerManager {
    */
   onActiveHandlerLockChange: TypedEvent<boolean>;
 
-  constructor(handlers: Handler[] = [], defaultHandlerId: string = "") {
+  constructor(
+    editor: Editor,
+    handlers: Handler[] = [],
+    defaultHandlerId: string = "",
+  ) {
+    this.editor = editor;
     this.handlers = {};
     this.defaultHandlerId = defaultHandlerId;
     this.activeHandler = null;
@@ -194,9 +229,6 @@ export class HandlerManager {
     handlers.forEach((handler) => {
       this.handlers[handler.id] = handler;
     });
-    if (defaultHandlerId) {
-      this.setActiveHandler(defaultHandlerId);
-    }
   }
 
   /**
@@ -207,8 +239,16 @@ export class HandlerManager {
     if (!handler) {
       throw new Error(`Handler ${handlerId} not found`);
     }
-    this.activeHandler = handler;
-    this.onActiveHandlerChange.emit(handlerId);
+    if (this.activeHandler !== handler) {
+      if (this.activeHandler) {
+        this.activeHandler.deactivate(this.editor);
+      }
+      if (handler) {
+        this.activeHandler = handler;
+        this.activeHandler.activate(this.editor);
+        this.onActiveHandlerChange.emit(handlerId);
+      }
+    }
   }
 
   /**
@@ -734,6 +774,11 @@ export interface EditorOptions extends GraphicContextOptions {
   manipulators: Record<string, Manipulator>;
 }
 
+export interface DblClickEvent {
+  shape: Shape | null;
+  point: number[];
+}
+
 /**
  * The editor
  */
@@ -800,10 +845,16 @@ export class Editor {
    */
   onChange: TypedEvent<Editor>;
 
+  /**
+   * Event triggered when the editor is double-clicked.
+   */
+  onDblClick: TypedEvent<DblClickEvent>;
+
   constructor(editorHolder: HTMLDivElement, options: EditorOptions) {
     this.parent = editorHolder;
     this.options = options;
     this.handlers = new HandlerManager(
+      this,
       this.options.handlers,
       this.options.defaultHandlerId,
     );
@@ -815,6 +866,7 @@ export class Editor {
     this.transform = new Transform(this.store);
     this.enabled = true;
     this.onChange = new TypedEvent<Editor>();
+    this.onDblClick = new TypedEvent<DblClickEvent>();
     this.initializeCanvas();
     this.fit();
     this.repaint();
@@ -866,11 +918,23 @@ export class Editor {
       }
     };
 
+    const dblClickHandler = (e: MouseEvent) => {
+      if (this.enabled) {
+        const point = this.gc.toPixelCoord([e.offsetX, e.offsetY]);
+        const shape = this.getShapeAt(point);
+        this.onDblClick.emit({ shape, point });
+      }
+    };
+
     // pointer event handlers
     this.canvas.addEventListener("pointerdown", pointerDownHandler);
     this.canvas.addEventListener("pointermove", pointerMoveHandler);
     this.canvas.addEventListener("pointerup", pointerUpHandler);
     this.canvas.addEventListener("keydown", keyDownHandler);
+    this.canvas.addEventListener("dblclick", dblClickHandler);
+    this.canvas.addEventListener("contextmenu", function (event) {
+      event.preventDefault();
+    });
   }
 
   /**

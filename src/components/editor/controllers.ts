@@ -9,6 +9,7 @@ import {
   getBoundingRect,
   ShapeType,
   type LineShape,
+  type PenShape,
   type Shape,
 } from "./shapes";
 import * as geometry from "./geometry";
@@ -69,6 +70,15 @@ export class SelectionMoveController extends Controller {
             line,
             "path",
             geometry.movePath(line.path, this.dxStep, this.dyStep),
+          );
+          break;
+        }
+        case ShapeType.PEN: {
+          const pen = s as PenShape;
+          editor.transform.assign(
+            pen,
+            "points",
+            geometry.movePath(pen.points, this.dxStep, this.dyStep),
           );
           break;
         }
@@ -461,5 +471,49 @@ export class LineAddPointController extends Controller {
         drawControlPoint(editor.gc, mid[0], mid[1], 4);
       }
     }
+  }
+}
+
+/**
+ * Moving controller for pen shape
+ */
+export class PenMoveController extends Controller {
+  active(editor: Editor, shape: Shape) {
+    return editor.selection.size() === 1 && editor.selection.isSelected(shape);
+  }
+
+  mouseCursor(
+    editor: Editor,
+    shape: Shape,
+    e: PointerEvent,
+    point: number[],
+  ): [string, number] {
+    return [Cursor.MOVE, 0];
+  }
+
+  initialize(editor: Editor, shape: Shape, e: PointerEvent, point: number[]) {
+    editor.transform.begin();
+  }
+
+  update(editor: Editor, shape: Shape, e: PointerEvent, point: number[]) {
+    if (this.dxStep === 0 && this.dyStep === 0) return;
+    const s = shape as PenShape;
+    editor.transform.assign(s, "left", s.left + this.dxStep);
+    editor.transform.assign(s, "top", s.top + this.dyStep);
+    editor.transform.assign(
+      s,
+      "points",
+      geometry.movePath(s.points, this.dxStep, this.dyStep),
+    );
+  }
+
+  finalize(editor: Editor, shape: Shape, e: PointerEvent, point: number[]) {
+    editor.transform.end();
+  }
+
+  draw(editor: Editor, shape: Shape) {
+    const s = shape as LineShape;
+    const r = getBoundingRect(s);
+    drawBox(editor.gc, r, Color.SELECTION);
   }
 }

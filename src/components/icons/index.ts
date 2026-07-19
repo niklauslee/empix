@@ -15,3 +15,4 @@ export { default as MinusIcon } from "./minus";
 export { default as CaretUpIcon } from "./caret-up";
 export { default as CaretDownIcon } from "./caret-down";
 export { default as CheckIcon } from "./check";
+export { default as PenIcon } from "./pen";

@@ -5,6 +5,8 @@ import { KeymapManager } from "./engine/keymap-manager";
 import { registerCommands } from "./commands";
 import keymapJson from "./keymap.json";
 import { useEditorStore } from "./store/editor-store";
+import { ShapeType } from "./components/editor/shapes";
+import { Cursor } from "./components/editor/consts";
 
 declare global {
   interface Window {
@@ -78,6 +80,13 @@ export class AppContext {
       useEditorStore.getState().setSize(size[0], size[1]);
       useEditorStore.getState().setScale(editor.getScale());
       this.saveData();
+    });
+    this.editor.onDblClick.addListener(({ shape, point }) => {
+      console.log("dblclick", shape, point);
+      if (shape && shape.type === ShapeType.PEN) {
+        this.editor.handlers.setActiveHandler("Pen");
+        (this.editor.handlers.activeHandler as any).shape = shape;
+      }
     });
     this.editor.factory.onCreate.addListener((shape) => {
       shape.name = generateNewName(

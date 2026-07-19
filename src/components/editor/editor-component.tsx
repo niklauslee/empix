@@ -4,6 +4,7 @@ import {
   BitmapFactoryHandler,
   EllipseFactoryHandler,
   LineFactoryHandler,
+  PenFactoryHandler,
   RectangleFactoryHandler,
   SelectHandler,
   TextFactoryHandler,
@@ -12,6 +13,7 @@ import {
   BitmapManipulator,
   BoxManipulator,
   LineManipulator,
+  PenManipulator,
   SelectionManipulator,
   TextManipulator,
 } from "./manipulators";
@@ -32,6 +34,7 @@ function basicSetup(): EditorOptions {
       new LineFactoryHandler("Line"),
       new TextFactoryHandler("Text"),
       new BitmapFactoryHandler("Bitmap"),
+      new PenFactoryHandler("Pen"),
     ],
     defaultHandlerId: "Select",
     manipulators: {
@@ -41,6 +44,7 @@ function basicSetup(): EditorOptions {
       Line: new LineManipulator(),
       Text: new TextManipulator(),
       Bitmap: new BitmapManipulator(),
+      Pen: new PenManipulator(),
     },
     width: 128,
     height: 64,
@@ -64,6 +68,9 @@ export const EditorComponent: React.FC<EditorComponentProps> = ({
     if (!editorRef.current) {
       const editor = new Editor(editorHolderRef.current!, basicSetup());
       editorRef.current = editor;
+      if (editor.handlers.defaultHandlerId) {
+        editor.handlers.setActiveHandler(editor.handlers.defaultHandlerId);
+      }
       editor.fit();
       editor.repaint();
       (window as any).editor = editor; // for debugging
