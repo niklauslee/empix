@@ -121,11 +121,8 @@ export class GraphicContext {
    */
   clear() {
     this.buffer.fill(0);
-    // this.context.save();
-    // this.context.scale(this.ratio, this.ratio);
     this.context.fillStyle = this.toCssColor(0);
     this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    // this.context.restore();
   }
 
   /**
@@ -175,7 +172,9 @@ export class GraphicContext {
     if (color < 0) {
       /* -1 means XOR: toggle all bits of the pixel */
       this.buffer[byteIndex] ^= maxVal << shift;
-    } else {
+    } else if (color === 0) {
+      this.buffer[byteIndex] &= ~(maxVal << shift);
+    } else if (color === 1) {
       this.buffer[byteIndex] |= (color & maxVal) << shift;
     }
   }

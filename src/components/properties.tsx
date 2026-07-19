@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { availableFonts } from "./editor/font";
+import { Button } from "./ui/button";
 
 export interface ShapeEditorProps {
   selection: Shape[];
@@ -35,7 +36,7 @@ export const NameEdit: React.FC<ShapeEditorProps> = ({
   return (
     <div>
       <div className="flex gap-2 w-full">
-        <Label className="text-sm w-12" htmlFor="input-name">
+        <Label className="text-sm w-16" htmlFor="input-name">
           Name
         </Label>
         <TextField
@@ -137,13 +138,15 @@ export const FillEdit: React.FC<ShapeEditorProps> = ({
   return (
     <div>
       <div className="flex items-center gap-2 w-full">
-        <Label className="text-sm" htmlFor="input-name">
+        <Label className="text-sm w-16" htmlFor="input-name">
           Fill
         </Label>
-        <Checkbox
-          checked={(shape as any).fill ?? false}
-          onCheckedChange={(value) => onChange({ fill: value })}
-        />
+        <div className="flex gap-2 w-full">
+          <Checkbox
+            checked={(shape as any).fill ?? false}
+            onCheckedChange={(value) => onChange({ fill: value })}
+          />
+        </div>
       </div>
     </div>
   );
@@ -155,14 +158,46 @@ export const ColorEdit: React.FC<ShapeEditorProps> = ({
 }) => {
   if (selection.length === 0) return null;
   const shape = selection[0];
+  const color = shape.color ?? 0;
 
   return (
     <div>
       <div className="flex items-center gap-2 w-full">
-        <Label className="text-sm" htmlFor="input-name">
+        <Label className="text-sm w-16" htmlFor="input-color">
           Color
         </Label>
-        <div>...</div>
+        <div className="flex gap-1 w-full justify-between">
+          <Button
+            variant={color === 0 ? "default" : "outline"}
+            size="icon-xs"
+            className="size-7"
+            onClick={() => {
+              onChange({ color: 0 });
+            }}
+          >
+            0
+          </Button>
+          <Button
+            variant={color === 1 ? "default" : "outline"}
+            size="icon-xs"
+            className="size-7"
+            onClick={() => {
+              onChange({ color: 1 });
+            }}
+          >
+            1
+          </Button>
+          <Button
+            variant={color === -1 ? "default" : "outline"}
+            size="icon-xs"
+            className="w-10 h-7 p-0"
+            onClick={() => {
+              onChange({ color: -1 });
+            }}
+          >
+            XOR
+          </Button>
+        </div>
       </div>
     </div>
   );
@@ -184,7 +219,7 @@ export const TextEdit: React.FC<ShapeEditorProps> = ({
   return (
     <div className="flex flex-col gap-2 w-full">
       <div className="flex items-center gap-2 w-full">
-        <Label className="text-sm w-12" htmlFor="input-text">
+        <Label className="text-sm w-16" htmlFor="input-text">
           Font
         </Label>
         <Select
@@ -207,7 +242,7 @@ export const TextEdit: React.FC<ShapeEditorProps> = ({
         </Select>
       </div>
       <div className="flex items-center gap-2 w-full">
-        <Label className="text-sm w-12" htmlFor="input-text">
+        <Label className="text-sm w-16" htmlFor="input-text">
           Text
         </Label>
         <TextField

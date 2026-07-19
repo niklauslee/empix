@@ -15,24 +15,12 @@ import {
   SendToBackIcon,
   TextIcon,
   UndoIcon,
+  ZoomInIcon,
+  ZoomOutIcon,
 } from "./icons";
 import { Button } from "./ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Label } from "./ui/label";
 import { NumberField } from "./ui/number-field";
-
-const items = [
-  { label: "Light", value: "light" },
-  { label: "Dark", value: "dark" },
-  { label: "System", value: "system" },
-];
 
 export function Toolbar() {
   const activeHandler = useEditorStore((state) => state.activeHandler);
@@ -121,20 +109,6 @@ export function Toolbar() {
         >
           Export
         </Button>
-        <Select items={items}>
-          <SelectTrigger className="w-24">
-            <SelectValue placeholder="Theme" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              {items.map((item) => (
-                <SelectItem key={item.value} value={item.value}>
-                  {item.label}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
       </div>
       <div className="text-xl flex flex-row items-start justify-center gap-1 py-1">
         <Button

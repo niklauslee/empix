@@ -25,12 +25,12 @@ const LayerItem: React.FC<{
       )}
     >
       <div className="min-w-4 min-h-4 flex items-center justify-center">
-        {shape.type === ShapeType.RECTANGLE && <RectangleIcon size={12} />}
-        {shape.type === ShapeType.ELLIPSE && <EllipseIcon size={12} />}
-        {shape.type === ShapeType.LINE && <LineIcon size={12} />}
-        {shape.type === ShapeType.TEXT && <TextIcon size={12} />}
-        {shape.type === ShapeType.PEN && <PenIcon size={12} />}
-        {shape.type === ShapeType.BITMAP && <BitmapIcon size={12} />}
+        {shape.type === ShapeType.RECTANGLE && <RectangleIcon size={14} />}
+        {shape.type === ShapeType.ELLIPSE && <EllipseIcon size={14} />}
+        {shape.type === ShapeType.LINE && <LineIcon size={14} />}
+        {shape.type === ShapeType.TEXT && <TextIcon size={14} />}
+        {shape.type === ShapeType.PEN && <PenIcon size={14} />}
+        {shape.type === ShapeType.BITMAP && <BitmapIcon size={14} />}
       </div>
       <div className="truncate">{shape.name}</div>
     </div>

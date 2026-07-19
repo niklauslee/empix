@@ -1051,7 +1051,6 @@ export class Editor {
    * Draw the background of the editor
    */
   clearBackground() {
-    // this.gc.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.gc.clear();
   }
 

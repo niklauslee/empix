@@ -16,3 +16,5 @@ export { default as CaretUpIcon } from "./caret-up";
 export { default as CaretDownIcon } from "./caret-down";
 export { default as CheckIcon } from "./check";
 export { default as PenIcon } from "./pen";
+export { default as ZoomInIcon } from "./zoom-in";
+export { default as ZoomOutIcon } from "./zoom-out";
