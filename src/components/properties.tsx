@@ -1,9 +1,10 @@
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import type { Shape, ShapeProps } from "./editor/shapes";
+import { ShapeType, type Shape, type ShapeProps } from "./editor/shapes";
 import { TextField } from "./ui/text-field";
 import { NumberField } from "./ui/number-field";
 import { ScrollArea } from "./ui/scroll-area";
+import { Checkbox } from "./ui/checkbox";
 
 export interface ShapeEditorProps {
   selection: Shape[];
@@ -68,10 +69,33 @@ export const PositionEdit: React.FC<ShapeEditorProps> = ({
   );
 };
 
+export const FillEdit: React.FC<ShapeEditorProps> = ({
+  selection,
+  onChange,
+}) => {
+  const shape = selection[0];
+
+  return (
+    <div>
+      <div className="flex gap-2 w-full">
+        <Label className="text-sm" htmlFor="input-name">
+          Fill
+        </Label>
+        <Checkbox
+          checked={(shape as any).fill ?? false}
+          onCheckedChange={(value) => onChange({ fill: value })}
+        />
+      </div>
+    </div>
+  );
+};
+
 export const PropertiesPanel: React.FC<ShapeEditorProps> = ({
   selection,
   onChange,
 }) => {
+  const shape = selection.length === 1 ? selection[0] : null;
+
   return (
     <div className="absolute inset-0">
       <div className="absolute inset-x-0 top-0 h-8 flex items-center px-4">
@@ -86,6 +110,11 @@ export const PropertiesPanel: React.FC<ShapeEditorProps> = ({
                 <PositionEdit selection={selection} onChange={onChange} />
               </>
             )}
+            {shape &&
+              (shape.type === ShapeType.RECTANGLE ||
+                shape.type === ShapeType.ELLIPSE) && (
+                <FillEdit selection={selection} onChange={onChange} />
+              )}
           </div>
         </ScrollArea>
       </div>
