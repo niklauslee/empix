@@ -43,11 +43,11 @@ export function Toolbar() {
     <div className="w-full flex flex-col justify-start mt-4">
       <div className="text-xl flex flex-row items-start justify-center gap-2 py-1">
         <div className="flex gap-2">
-          <Label className="text-sm" htmlFor="input-width">
+          <Label className="text-sm" htmlFor="input-editor-width">
             W
           </Label>
           <NumberField
-            id="input-width"
+            id="input-editor-width"
             className="text-sm w-12"
             type="number"
             value={width}
@@ -57,11 +57,11 @@ export function Toolbar() {
           />
         </div>
         <div className="flex gap-2">
-          <Label className="text-sm" htmlFor="input-height">
+          <Label className="text-sm" htmlFor="input-editor-height">
             H
           </Label>
           <NumberField
-            id="input-height"
+            id="input-editor-height"
             className="text-sm w-12"
             type="number"
             value={height}

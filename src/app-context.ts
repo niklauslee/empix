@@ -82,7 +82,6 @@ export class AppContext {
       this.saveData();
     });
     this.editor.onDblClick.addListener(({ shape, point }) => {
-      console.log("dblclick", shape, point);
       if (shape && shape.type === ShapeType.PEN) {
         this.editor.handlers.setActiveHandler("Pen");
         (this.editor.handlers.activeHandler as any).shape = shape;

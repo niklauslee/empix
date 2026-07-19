@@ -1,10 +1,23 @@
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { ShapeType, type Shape, type ShapeProps } from "./editor/shapes";
+import {
+  ShapeType,
+  type Shape,
+  type ShapeProps,
+  type TextShape,
+} from "./editor/shapes";
 import { TextField } from "./ui/text-field";
 import { NumberField } from "./ui/number-field";
 import { ScrollArea } from "./ui/scroll-area";
 import { Checkbox } from "./ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export interface ShapeEditorProps {
   selection: Shape[];
@@ -15,6 +28,7 @@ export const NameEdit: React.FC<ShapeEditorProps> = ({
   selection,
   onChange,
 }) => {
+  if (selection.length === 0) return null;
   const shape = selection[0];
 
   return (
@@ -38,7 +52,9 @@ export const PositionEdit: React.FC<ShapeEditorProps> = ({
   selection,
   onChange,
 }) => {
+  if (selection.length === 0) return null;
   const shape = selection[0];
+
   return (
     <div className="flex w-full gap-4">
       <div className="flex gap-2 w-full">
@@ -69,21 +85,143 @@ export const PositionEdit: React.FC<ShapeEditorProps> = ({
   );
 };
 
+export const SizeEdit: React.FC<ShapeEditorProps> = ({
+  selection,
+  onChange,
+}) => {
+  if (selection.length === 0) return null;
+  const shape = selection[0];
+  if (shape.type !== ShapeType.RECTANGLE && shape.type !== ShapeType.ELLIPSE)
+    return null;
+
+  return (
+    <div className="flex w-full gap-4">
+      <div className="flex gap-2 w-full">
+        <Label className="text-sm" htmlFor="input-width">
+          W
+        </Label>
+        <NumberField
+          id="input-width"
+          className="text-sm"
+          type="number"
+          value={shape?.width ?? 0}
+          onChange={(value) => onChange({ width: value })}
+        />
+      </div>
+      <div className="flex gap-2 w-full">
+        <Label className="text-sm" htmlFor="input-height">
+          H
+        </Label>
+        <NumberField
+          id="input-height"
+          className="text-sm"
+          type="number"
+          value={shape?.height ?? 0}
+          onChange={(value) => onChange({ height: value })}
+        />
+      </div>
+    </div>
+  );
+};
+
 export const FillEdit: React.FC<ShapeEditorProps> = ({
   selection,
   onChange,
 }) => {
+  if (selection.length === 0) return null;
   const shape = selection[0];
+  if (shape.type !== ShapeType.RECTANGLE && shape.type !== ShapeType.ELLIPSE)
+    return null;
 
   return (
     <div>
-      <div className="flex gap-2 w-full">
+      <div className="flex items-center gap-2 w-full">
         <Label className="text-sm" htmlFor="input-name">
           Fill
         </Label>
         <Checkbox
           checked={(shape as any).fill ?? false}
           onCheckedChange={(value) => onChange({ fill: value })}
+        />
+      </div>
+    </div>
+  );
+};
+
+export const ColorEdit: React.FC<ShapeEditorProps> = ({
+  selection,
+  onChange,
+}) => {
+  if (selection.length === 0) return null;
+  const shape = selection[0];
+
+  return (
+    <div>
+      <div className="flex items-center gap-2 w-full">
+        <Label className="text-sm" htmlFor="input-name">
+          Color
+        </Label>
+        <div>...</div>
+      </div>
+    </div>
+  );
+};
+
+export const TextEdit: React.FC<ShapeEditorProps> = ({
+  selection,
+  onChange,
+}) => {
+  if (selection.length === 0) return null;
+  const shape = selection[0];
+  if (shape.type !== ShapeType.TEXT) return null;
+
+  const items = [
+    { label: "6x10", value: "6x10" },
+    { label: "ProFont11", value: "ProFont11" },
+    { label: "Terminus", value: "Terminus" },
+  ];
+
+  return (
+    <div className="flex flex-col gap-2 w-full">
+      <div className="flex items-center gap-2 w-full">
+        <Label className="text-sm" htmlFor="input-text">
+          Font
+        </Label>
+        <Select items={items}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Font" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              {items.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="flex items-center gap-2 w-full">
+        <Label className="text-sm" htmlFor="input-text">
+          Size
+        </Label>
+        <NumberField
+          id="input-text-size"
+          className="text-sm"
+          type="number"
+          value={0}
+        />
+      </div>
+      <div className="flex items-center gap-2 w-full">
+        <Label className="text-sm" htmlFor="input-text">
+          Text
+        </Label>
+        <TextField
+          id="input-text"
+          className="text-sm"
+          value={(shape as TextShape).text ?? ""}
+          onChange={(value) => onChange({ text: value })}
         />
       </div>
     </div>
@@ -104,17 +242,12 @@ export const PropertiesPanel: React.FC<ShapeEditorProps> = ({
       <div className="absolute inset-x-0 top-8 bottom-0">
         <ScrollArea className="w-full h-full">
           <div className="flex flex-col gap-3 px-4 py-2">
-            {selection.length === 1 && (
-              <>
-                <NameEdit selection={selection} onChange={onChange} />
-                <PositionEdit selection={selection} onChange={onChange} />
-              </>
-            )}
-            {shape &&
-              (shape.type === ShapeType.RECTANGLE ||
-                shape.type === ShapeType.ELLIPSE) && (
-                <FillEdit selection={selection} onChange={onChange} />
-              )}
+            <NameEdit selection={selection} onChange={onChange} />
+            <PositionEdit selection={selection} onChange={onChange} />
+            <SizeEdit selection={selection} onChange={onChange} />
+            <ColorEdit selection={selection} onChange={onChange} />
+            <FillEdit selection={selection} onChange={onChange} />
+            <TextEdit selection={selection} onChange={onChange} />
           </div>
         </ScrollArea>
       </div>

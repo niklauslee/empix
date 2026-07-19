@@ -60,8 +60,9 @@ export interface LineShape extends Shape {
  */
 export interface TextShape extends Shape {
   type: typeof ShapeType.TEXT;
-  text: string;
   font: string;
+  size: number;
+  text: string;
 }
 
 /**

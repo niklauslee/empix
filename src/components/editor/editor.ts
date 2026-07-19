@@ -3,13 +3,16 @@ import { Color, Mouse } from "./consts";
 import {
   containsPoint,
   getBoundingRect,
+  type LineShape,
   move,
   overlapRect,
+  type PenShape,
   render,
   renderOutline,
   type Shape,
   ShapeFactory,
   type ShapeProps,
+  ShapeType,
 } from "./shapes";
 import * as geometry from "./geometry";
 import { Transform } from "./transform";
@@ -891,6 +894,7 @@ export class Editor {
 
     const pointerDownHandler = (e: PointerEvent) => {
       if (this.enabled) {
+        this.focus();
         const p = this.gc.toPixelCoord([e.offsetX, e.offsetY]);
         this.handlers.pointerDown(this, e, p);
       }
@@ -935,6 +939,13 @@ export class Editor {
     this.canvas.addEventListener("contextmenu", function (event) {
       event.preventDefault();
     });
+  }
+
+  /**
+   * Set focus on this editor
+   */
+  focus() {
+    this.canvas.focus();
   }
 
   /**
@@ -1141,6 +1152,35 @@ export class Editor {
       const value = (props as any)[key];
       for (const shape of shapesToUpdate) {
         if (shape.hasOwnProperty(key)) {
+          if (key === "left") {
+            if (shape.type === ShapeType.LINE) {
+              const s = shape as LineShape;
+              const oldLeft = s.left;
+              const dx = value - oldLeft;
+              const ps = geometry.movePath(s.path, dx, 0);
+              this.transform.assign(shape, "path", ps);
+            } else if (shape.type === ShapeType.PEN) {
+              const s = shape as PenShape;
+              const oldLeft = s.left;
+              const dx = value - oldLeft;
+              const ps = geometry.movePath(s.points, dx, 0);
+              this.transform.assign(shape, "points", ps);
+            }
+          } else if (key === "top") {
+            if (shape.type === ShapeType.LINE) {
+              const s = shape as LineShape;
+              const oldTop = s.top;
+              const dy = value - oldTop;
+              const ps = geometry.movePath(s.path, 0, dy);
+              this.transform.assign(shape, "path", ps);
+            } else if (shape.type === ShapeType.PEN) {
+              const s = shape as PenShape;
+              const oldTop = s.top;
+              const dy = value - oldTop;
+              const ps = geometry.movePath(s.points, 0, dy);
+              this.transform.assign(shape, "points", ps);
+            }
+          }
           this.transform.assign(shape, key, value);
         }
       }
