@@ -1,12 +1,10 @@
 import type { Editor } from "@/components/editor/editor";
-import { ProjectManager } from "./engine/project-manager";
 import { detectPlatform, generateNewName } from "./lib/utils";
 import { CommandManager } from "./engine/command-manager";
 import { KeymapManager } from "./engine/keymap-manager";
 import { registerCommands } from "./commands";
 import keymapJson from "./keymap.json";
-import { useEditingStore } from "./store/editing-store";
-import { useProjectStore } from "./store/project-store";
+import { useEditorStore } from "./store/editor-store";
 
 declare global {
   interface Window {
@@ -32,11 +30,6 @@ export class AppContext {
   editor!: Editor;
 
   /**
-   * Project manager instance
-   */
-  projectManager: ProjectManager;
-
-  /**
    * Command manager instance
    */
   commands: CommandManager;
@@ -58,7 +51,6 @@ export class AppContext {
 
   constructor() {
     this.platform = detectPlatform();
-    this.projectManager = new ProjectManager();
     this.commands = new CommandManager();
     this.keymap = new KeymapManager({
       platform: this.platform,
@@ -73,7 +65,7 @@ export class AppContext {
     this.editor = editor;
     this.wiring();
     this.loadKeymap();
-    useProjectStore.getState().setProject(this.projectManager.project);
+    this.loadData();
     registerCommands();
   }
 
@@ -81,8 +73,11 @@ export class AppContext {
    * Wiring up events and listeners
    */
   wiring() {
-    this.projectManager.onChange.addListener((project) => {
-      useProjectStore.getState().setProject({ ...project });
+    this.editor.onChange.addListener((editor) => {
+      const size = editor.getSize();
+      useEditorStore.getState().setSize(size[0], size[1]);
+      useEditorStore.getState().setScale(editor.getScale());
+      this.saveData();
     });
     this.editor.factory.onCreate.addListener((shape) => {
       shape.name = generateNewName(
@@ -91,35 +86,60 @@ export class AppContext {
       );
     });
     this.editor.transform.onAction.addListener((action) => {
-      useEditingStore.getState().increaseActionSequence();
+      useEditorStore.getState().increaseActionSequence();
+      useEditorStore.getState().setShapes([...this.editor.store.shapes]);
+      this.saveData();
     });
     this.editor.transform.onUndo.addListener((shape) => {
-      useEditingStore.getState().increaseActionSequence();
+      useEditorStore.getState().increaseActionSequence();
+      useEditorStore.getState().setShapes([...this.editor.store.shapes]);
+      this.saveData();
     });
     this.editor.transform.onRedo.addListener((shape) => {
-      useEditingStore.getState().increaseActionSequence();
+      useEditorStore.getState().increaseActionSequence();
+      useEditorStore.getState().setShapes([...this.editor.store.shapes]);
+      this.saveData();
     });
     this.editor.selection.onChange.addListener((shapes) => {
-      useEditingStore.getState().setSelection(shapes);
+      useEditorStore.getState().setSelection([...shapes]);
     });
     this.editor.handlers.onActiveHandlerChange.addListener((handlerId) => {
-      useEditingStore.getState().setActiveHandler(handlerId);
+      useEditorStore.getState().setActiveHandler(handlerId);
     });
-    useEditingStore
-      .getState()
-      .setActiveHandler(this.editor.handlers.defaultHandlerId);
   }
 
   loadKeymap() {
     try {
       this.keymap.add(keymapJson);
       this.keymap.htmlReady();
-      // useKeymapStore
-      //   .getState()
-      //   .setFormattedKeys(this.keymaps.getAllFormattedKeyByCommand());
     } catch (err) {
       console.error("Failed to load keymaps", err);
     }
+  }
+
+  loadData() {
+    const data = localStorage.getItem("app-data");
+    if (data) {
+      try {
+        const json = JSON.parse(data);
+        this.editor.loadFromJSON(json);
+      } catch (err) {
+        console.error("Failed to load app data", err);
+      }
+    }
+    useEditorStore
+      .getState()
+      .setSize(this.editor.getSize()[0], this.editor.getSize()[1]);
+    useEditorStore.getState().setScale(this.editor.getScale());
+    useEditorStore
+      .getState()
+      .setActiveHandler(this.editor.handlers.defaultHandlerId);
+    useEditorStore.getState().setShapes([...this.editor.store.shapes]);
+  }
+
+  saveData() {
+    const json = this.editor.saveToJSON();
+    localStorage.setItem("app-data", JSON.stringify(json));
   }
 }
 

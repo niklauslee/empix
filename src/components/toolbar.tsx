@@ -1,4 +1,4 @@
-import { useEditingStore } from "@/store/editing-store";
+import { useEditorStore } from "@/store/editor-store";
 import {
   BitmapIcon,
   BringToFrontIcon,
@@ -24,6 +24,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Label } from "./ui/label";
+import { NumberField } from "./ui/number-field";
 
 const items = [
   { label: "Light", value: "light" },
@@ -32,11 +34,42 @@ const items = [
 ];
 
 export function Toolbar() {
-  const activeHandler = useEditingStore((state) => state.activeHandler);
+  const activeHandler = useEditorStore((state) => state.activeHandler);
+  const width = useEditorStore((state) => state.width);
+  const height = useEditorStore((state) => state.height);
 
   return (
     <div className="w-full flex flex-col justify-start mt-4">
       <div className="text-xl flex flex-row items-start justify-center gap-2 py-1">
+        <div className="flex gap-2">
+          <Label className="text-sm" htmlFor="input-width">
+            W
+          </Label>
+          <NumberField
+            id="input-width"
+            className="text-sm w-12"
+            type="number"
+            value={width}
+            onChange={(value) => {
+              window.app.editor.setSize(value, height);
+            }}
+          />
+        </div>
+        <div className="flex gap-2">
+          <Label className="text-sm" htmlFor="input-height">
+            H
+          </Label>
+          <NumberField
+            id="input-height"
+            className="text-sm w-12"
+            type="number"
+            value={height}
+            onChange={(value) => {
+              window.app.editor.setSize(width, value);
+            }}
+          />
+        </div>
+
         <Button
           variant="outline"
           onClick={async () => {

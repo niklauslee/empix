@@ -4,10 +4,10 @@ import { EditorComponent } from "./editor/editor-component";
 import { Layout } from "./layout";
 import { Toolbar } from "./toolbar";
 import Logo from "./logo";
-import { Inspector } from "./inspector";
+import { PropertiesPanel } from "./properties";
 import type { ShapeProps } from "./editor/shapes";
-import { useEditingStore } from "@/store/editing-store";
-import { ScenesPanel } from "./scenes-panel";
+import { useEditorStore } from "@/store/editor-store";
+import { LayersPanel } from "./layers";
 
 declare global {
   interface Window {
@@ -16,9 +16,9 @@ declare global {
 }
 
 function App() {
-  const selection = useEditingStore((state) => state.selection);
+  const selection = useEditorStore((state) => state.selection);
   // for ui update when actions are performed
-  const actionSequence = useEditingStore((state) => state.actionSequence);
+  const actionSequence = useEditorStore((state) => state.actionSequence);
 
   const handleMount = (editor: Editor) => {
     app.initialize(editor);
@@ -44,9 +44,9 @@ function App() {
             <div className="text-xl ml-3">studio</div>
           </div>
         }
-        leftSidebar={<ScenesPanel />}
+        leftSidebar={<LayersPanel />}
         rightSidebar={
-          <Inspector selection={selection} onChange={handlePropsChange} />
+          <PropertiesPanel selection={selection} onChange={handlePropsChange} />
         }
         onContentResize={() => {
           // setTimeout(() => window.app?.editor.fit());

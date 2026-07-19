@@ -793,7 +793,12 @@ export class Editor {
   /**
    * Indicates whether the editor is enabled or not. If disabled, the editor will not respond to user interactions.
    */
-  enabled: boolean = true;
+  enabled: boolean;
+
+  /**
+   * Event triggered when the editor state (size, scale, margin) changes.
+   */
+  onChange: TypedEvent<Editor>;
 
   constructor(editorHolder: HTMLDivElement, options: EditorOptions) {
     this.parent = editorHolder;
@@ -808,6 +813,8 @@ export class Editor {
     this.factory = new ShapeFactory();
     this.clipboard = new Clipboard();
     this.transform = new Transform(this.store);
+    this.enabled = true;
+    this.onChange = new TypedEvent<Editor>();
     this.initializeCanvas();
     this.fit();
     this.repaint();
@@ -884,6 +891,8 @@ export class Editor {
   setMargin(margin: number) {
     this.gc.margin = margin;
     this.fit();
+    this.repaint();
+    this.onChange.emit(this);
   }
 
   /**
@@ -893,6 +902,7 @@ export class Editor {
     this.gc.setSize(width, height);
     this.fit();
     this.repaint();
+    this.onChange.emit(this);
   }
 
   /**
@@ -909,6 +919,7 @@ export class Editor {
     this.gc.scale = scale;
     this.fit();
     this.repaint();
+    this.onChange.emit(this);
   }
 
   /**
@@ -1182,11 +1193,11 @@ export class Editor {
   loadFromJSON(json: any) {
     const width = json.width ?? this.gc.width;
     const height = json.height ?? this.gc.height;
-    const bpp = json.bpp ?? this.gc.bpp;
     const scale = json.scale ?? this.gc.scale;
+    const bpp = json.bpp ?? this.gc.bpp;
     this.setSize(width, height);
+    this.setScale(scale);
     this.gc.bpp = bpp;
-    this.gc.scale = scale;
     this.store.fromJSON(json.shapes);
     this.repaint();
   }
