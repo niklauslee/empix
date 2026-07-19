@@ -13,11 +13,12 @@ import {
   ShapeFactory,
   type ShapeProps,
   ShapeType,
+  type TextShape,
 } from "./shapes";
 import * as geometry from "./geometry";
 import { Transform } from "./transform";
 import { Store } from "./store";
-import { getAvailableFonts, loadFont } from "./font";
+import { getFonts, loadFont } from "./font";
 import { nanoid } from "nanoid";
 import { TypedEvent } from "./std";
 import { Clipboard } from "./clipboard";
@@ -1030,7 +1031,7 @@ export class Editor {
    * Get a list of available font names
    */
   getAvailableFonts(): string[] {
-    return getAvailableFonts();
+    return getFonts();
   }
 
   /**
@@ -1179,6 +1180,22 @@ export class Editor {
               const dy = value - oldTop;
               const ps = geometry.movePath(s.points, 0, dy);
               this.transform.assign(shape, "points", ps);
+            }
+          } else if (key === "font") {
+            if (shape.type === ShapeType.TEXT) {
+              const s = shape as TextShape;
+              this.gc.setFont(value);
+              const m = this.gc.metricText(s.text);
+              this.transform.assign(shape, "width", m.width);
+              this.transform.assign(shape, "height", m.height);
+            }
+          } else if (key === "text") {
+            if (shape.type === ShapeType.TEXT) {
+              const s = shape as TextShape;
+              this.gc.setFont(s.font);
+              const m = this.gc.metricText(value);
+              this.transform.assign(shape, "width", m.width);
+              this.transform.assign(shape, "height", m.height);
             }
           }
           this.transform.assign(shape, key, value);

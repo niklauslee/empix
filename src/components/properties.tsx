@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { availableFonts } from "./editor/font";
 
 export interface ShapeEditorProps {
   selection: Shape[];
@@ -34,7 +35,7 @@ export const NameEdit: React.FC<ShapeEditorProps> = ({
   return (
     <div>
       <div className="flex gap-2 w-full">
-        <Label className="text-sm" htmlFor="input-name">
+        <Label className="text-sm w-12" htmlFor="input-name">
           Name
         </Label>
         <TextField
@@ -175,19 +176,22 @@ export const TextEdit: React.FC<ShapeEditorProps> = ({
   const shape = selection[0];
   if (shape.type !== ShapeType.TEXT) return null;
 
-  const items = [
-    { label: "6x10", value: "6x10" },
-    { label: "ProFont11", value: "ProFont11" },
-    { label: "Terminus", value: "Terminus" },
-  ];
+  const items = availableFonts.map((font) => ({
+    label: font.name,
+    value: font.name,
+  }));
 
   return (
     <div className="flex flex-col gap-2 w-full">
       <div className="flex items-center gap-2 w-full">
-        <Label className="text-sm" htmlFor="input-text">
+        <Label className="text-sm w-12" htmlFor="input-text">
           Font
         </Label>
-        <Select items={items}>
+        <Select
+          items={items}
+          value={(shape as TextShape).font ?? ""}
+          onValueChange={(value) => onChange({ font: value ?? "" })}
+        >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Font" />
           </SelectTrigger>
@@ -203,18 +207,7 @@ export const TextEdit: React.FC<ShapeEditorProps> = ({
         </Select>
       </div>
       <div className="flex items-center gap-2 w-full">
-        <Label className="text-sm" htmlFor="input-text">
-          Size
-        </Label>
-        <NumberField
-          id="input-text-size"
-          className="text-sm"
-          type="number"
-          value={0}
-        />
-      </div>
-      <div className="flex items-center gap-2 w-full">
-        <Label className="text-sm" htmlFor="input-text">
+        <Label className="text-sm w-12" htmlFor="input-text">
           Text
         </Label>
         <TextField

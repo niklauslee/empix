@@ -78,7 +78,7 @@ export class GraphicContext {
     ).fill(0);
     this.scale = options.scale;
     this.margin = options.margin;
-    this.font = "Leros";
+    this.font = "6x10";
   }
 
   /**

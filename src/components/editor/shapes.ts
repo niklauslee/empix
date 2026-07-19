@@ -61,7 +61,6 @@ export interface LineShape extends Shape {
 export interface TextShape extends Shape {
   type: typeof ShapeType.TEXT;
   font: string;
-  size: number;
   text: string;
 }
 
@@ -140,7 +139,7 @@ export class ShapeFactory {
       case ShapeType.TEXT: {
         const s = newShape as TextShape;
         s.type = ShapeType.TEXT;
-        s.font = "Leros";
+        s.font = "6x10";
         s.text = "Hello, world!Ä";
         break;
       }
