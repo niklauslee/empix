@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { useEffect, useRef } from "react";
 
 interface LayoutProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -8,6 +9,7 @@ interface LayoutProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export function Layout({
+  className,
   appbar,
   leftSidebar,
   rightSidebar,
@@ -31,7 +33,10 @@ export function Layout({
 
   return (
     <main
-      className="dark absolute inset-0 bg-background text-foreground"
+      className={cn(
+        "dark absolute inset-0 bg-background text-foreground",
+        className,
+      )}
       {...others}
     >
       <header className="fixed inset-x-0 top-0 h-12">{appbar}</header>

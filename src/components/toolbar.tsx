@@ -18,6 +18,7 @@ import {
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { NumberField } from "./ui/number-field";
+import { useConfirmDialog } from "./dialogs/confirm-dialog";
 
 export function Toolbar() {
   const activeHandler = useEditorStore((state) => state.activeHandler);
@@ -58,6 +59,23 @@ export function Toolbar() {
           </div>
         </div>
         <div className="flex flex-row items-center justify-end gap-2 px-4">
+          <Button
+            variant="outline"
+            onClick={() => {
+              console.log("showing alert dialog");
+              useConfirmDialog
+                .getState()
+                .show(
+                  "Clear Canvas",
+                  "Are you sure you want to clear the canvas? This action cannot be undone.",
+                  () => {
+                    window.app.editor.clear();
+                  },
+                );
+            }}
+          >
+            Clear
+          </Button>
           <Button
             variant="outline"
             onClick={async () => {

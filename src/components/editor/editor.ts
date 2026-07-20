@@ -950,6 +950,16 @@ export class Editor {
   }
 
   /**
+   * Clear the editor, removing all shapes and resetting the selection
+   */
+  clear() {
+    this.store.clear();
+    this.selection.clear();
+    this.transform.clear();
+    this.repaint();
+  }
+
+  /**
    * Set focus on this editor
    */
   focus() {
