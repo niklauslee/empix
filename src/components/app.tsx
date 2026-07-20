@@ -8,6 +8,7 @@ import { PropertiesPanel } from "./properties";
 import type { ShapeProps } from "./editor/shapes";
 import { useEditorStore } from "@/store/editor-store";
 import { LayersPanel } from "./layers";
+import { ScrollAreaBoth } from "./ui/scroll-area-both";
 
 declare global {
   interface Window {
@@ -39,22 +40,34 @@ function App() {
     <>
       <Layout
         appbar={
-          <div className="flex items-center justify-start w-full h-full px-4">
+          <div className="flex items-center justify-start w-full h-full px-4 border-b-[1.5px]">
             <Logo size={1.5} className="text-green-600" />
             <div className="text-xl ml-3">studio</div>
           </div>
         }
-        leftSidebar={<LayersPanel />}
+        leftSidebar={<LayersPanel className="border-r-[1.5px]" />}
         rightSidebar={
-          <PropertiesPanel selection={selection} onChange={handlePropsChange} />
+          <PropertiesPanel
+            className="border-l-[1.5px]"
+            selection={selection}
+            onChange={handlePropsChange}
+          />
         }
         onContentResize={() => {
           // setTimeout(() => window.app?.editor.fit());
         }}
       >
-        <div className="flex flex-col items-center justify-start w-full h-full mt-0">
-          <Toolbar />
-          <EditorComponent onMount={handleMount} />
+        <div className="absolute inset-0 flex flex-col items-center justify-start w-full h-full">
+          <div className="border-b-[1.5px] absolute inset-x-0 top-0 h-28 w-full flex flex-col justify-start">
+            <Toolbar />
+          </div>
+          <div className="absolute inset-x-0 top-28 bottom-0 flex items-center justify-center">
+            <ScrollAreaBoth className="w-full h-full flex items-center justify-center">
+              <div className="w-full h-full flex items-start justify-center">
+                <EditorComponent onMount={handleMount} />
+              </div>
+            </ScrollAreaBoth>
+          </div>
         </div>
       </Layout>
     </>

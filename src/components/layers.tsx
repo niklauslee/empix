@@ -11,7 +11,7 @@ import {
 import { ScrollArea } from "./ui/scroll-area";
 import { useEditorStore } from "@/store/editor-store";
 
-interface LayersPanelProps {}
+interface LayersPanelProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 const LayerItem: React.FC<{
   shape: Shape;
@@ -37,13 +37,13 @@ const LayerItem: React.FC<{
   );
 };
 
-export const LayersPanel: React.FC<LayersPanelProps> = ({}) => {
+export const LayersPanel: React.FC<LayersPanelProps> = ({ className }) => {
   const shapes = useEditorStore((state) => state.shapes).toReversed();
   const selection = useEditorStore((state) => state.selection);
 
   return (
-    <div className="absolute inset-0">
-      <div className="absolute inset-x-0 top-0 h-8 flex items-center px-4">
+    <div className={cn("absolute inset-0", className)}>
+      <div className="absolute inset-x-0 top-0 h-10 flex items-center px-4">
         <div>Layers</div>
       </div>
       <div className="absolute inset-x-0 top-8 bottom-0">

@@ -1,4 +1,4 @@
-import { Input } from "./ui/input";
+import { cn } from "@/lib/utils";
 import { Label } from "./ui/label";
 import {
   ShapeType,
@@ -22,7 +22,7 @@ import {
 import { availableFonts } from "./editor/font";
 import { Button } from "./ui/button";
 
-export interface ShapeEditorProps {
+export interface ShapeEditorProps extends React.HTMLAttributes<HTMLDivElement> {
   selection: Shape[];
   onChange: (values: ShapeProps) => void;
 }
@@ -315,12 +315,13 @@ export const TextEdit: React.FC<ShapeEditorProps> = ({
 export const PropertiesPanel: React.FC<ShapeEditorProps> = ({
   selection,
   onChange,
+  className,
 }) => {
   const shape = selection.length === 1 ? selection[0] : null;
 
   return (
-    <div className="absolute inset-0">
-      <div className="absolute inset-x-0 top-0 h-8 flex items-center px-4">
+    <div className={cn("absolute inset-0", className)}>
+      <div className="absolute inset-x-0 top-0 h-10 flex items-center px-4">
         <div className="">Properties</div>
       </div>
       <div className="absolute inset-x-0 top-8 bottom-0">

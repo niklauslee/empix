@@ -34,8 +34,8 @@ export function Layout({
       className="dark absolute inset-0 bg-background text-foreground"
       {...others}
     >
-      <header className="fixed inset-x-0 top-0 h-16">{appbar}</header>
-      <section className="fixed top-16 bottom-0 left-0 right-0">
+      <header className="fixed inset-x-0 top-0 h-12">{appbar}</header>
+      <section className="fixed top-12 bottom-0 left-0 right-0">
         <aside className="z-10 absolute inset-y-0 left-0 w-48">
           {leftSidebar}
         </aside>

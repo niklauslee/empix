@@ -17,6 +17,7 @@ import {
   SelectionManipulator,
   TextManipulator,
 } from "./manipulators";
+import { cn } from "@/lib/utils";
 
 export interface EditorComponentProps extends Omit<
   React.HTMLAttributes<HTMLDivElement>,
@@ -58,6 +59,7 @@ function basicSetup(): EditorOptions {
  * React component that wraps the editor.
  */
 export const EditorComponent: React.FC<EditorComponentProps> = ({
+  className,
   onMount,
   ...others
 }) => {
@@ -79,11 +81,5 @@ export const EditorComponent: React.FC<EditorComponentProps> = ({
     return () => {};
   }, []);
 
-  return (
-    <div
-      className="flex flex-col items-center justify-center gap-4 h-fit w-fit"
-      ref={editorHolderRef}
-      {...others}
-    />
-  );
+  return <div ref={editorHolderRef} {...others} />;
 };
