@@ -143,7 +143,7 @@ export class ShapeFactory {
         const s = newShape as TextShape;
         s.type = ShapeType.TEXT;
         s.font = "6x10";
-        s.text = "Hello, world!Ä";
+        s.text = "Text";
         s.direction = 0;
         break;
       }

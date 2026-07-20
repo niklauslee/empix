@@ -1,6 +1,5 @@
 import { useEditorStore } from "@/store/editor-store";
 import {
-  BitmapIcon,
   BringToFrontIcon,
   CursorIcon,
   DeleteIcon,
@@ -15,8 +14,6 @@ import {
   SendToBackIcon,
   TextIcon,
   UndoIcon,
-  ZoomInIcon,
-  ZoomOutIcon,
 } from "./icons";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
@@ -67,8 +64,8 @@ export function Toolbar() {
               const [fileHandle] = await (window as any).showOpenFilePicker({
                 types: [
                   {
-                    description: "JSON file",
-                    accept: { "application/json": [".json"] },
+                    description: "Empix file",
+                    accept: { "application/json": [".empix"] },
                   },
                 ],
                 multiple: false,
@@ -89,11 +86,11 @@ export function Toolbar() {
             // FIXME: Only works in Chromium-based browsers
             try {
               const fileHandle = await (window as any).showSaveFilePicker({
-                suggestedName: "untitled.json",
+                suggestedName: "untitled.empix",
                 types: [
                   {
-                    description: "JSON file",
-                    accept: { "application/json": [".json"] },
+                    description: "Empix file",
+                    accept: { "application/json": [".empix"] },
                   },
                 ],
               });
