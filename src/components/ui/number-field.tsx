@@ -27,6 +27,10 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(
       }
     };
 
+    const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+      e.target.select();
+    };
+
     const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
       if (typeof state === "number" && value !== state && onChange) {
         onChange(state);
@@ -39,6 +43,7 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(
         value={state}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
+        onFocus={handleFocus}
         onBlur={handleBlur}
         ref={ref}
         {...props}

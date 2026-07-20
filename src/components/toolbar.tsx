@@ -171,7 +171,7 @@ export function Toolbar() {
         >
           <PenIcon size={12} />
         </Button>
-        <Button
+        {/* <Button
           variant={activeHandler === "Bitmap" ? "default" : "outline"}
           size="icon-xs"
           className="size-7"
@@ -180,7 +180,7 @@ export function Toolbar() {
           }}
         >
           <BitmapIcon size={12} />
-        </Button>
+        </Button> */}
       </div>
 
       <div className="text-xl flex flex-row items-center justify-center gap-1 py-1">
@@ -231,7 +231,7 @@ export function Toolbar() {
           size="icon-xs"
           className="size-7"
           onClick={() => {
-            window.app.editor.delete();
+            window.app.editor.actions.delete();
           }}
         >
           <DeleteIcon size={12} />
@@ -241,7 +241,7 @@ export function Toolbar() {
           size="icon-xs"
           className="size-7"
           onClick={() => {
-            window.app.editor.duplicate();
+            window.app.editor.actions.duplicate();
           }}
         >
           <DuplicateIcon size={12} />
@@ -251,7 +251,7 @@ export function Toolbar() {
           size="icon-xs"
           className="size-7"
           onClick={() => {
-            window.app.editor.bringToFront();
+            window.app.editor.actions.bringToFront();
           }}
         >
           <BringToFrontIcon size={12} />
@@ -261,7 +261,7 @@ export function Toolbar() {
           size="icon-xs"
           className="size-7"
           onClick={() => {
-            window.app.editor.sendToBack();
+            window.app.editor.actions.sendToBack();
           }}
         >
           <SendToBackIcon size={12} />

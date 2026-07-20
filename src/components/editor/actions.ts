@@ -1,5 +1,7 @@
+import { nanoid } from "nanoid";
 import type { Editor } from "./editor";
 import {
+  move,
   ShapeType,
   type LineShape,
   type PenShape,
@@ -165,6 +167,86 @@ export class PredefinedActions {
       }
     }
     if (asAction) this.editor.transform.end();
+    if (asAction) this.editor.repaint();
+  }
+
+  /**
+   * Copy shapes to the clipboard. If no shapes are provided, it will copy the currently selected shapes.
+   */
+  async copy(shapes: Shape[] = []) {
+    const shapesToCopy =
+      shapes.length > 0 ? shapes : this.editor.selection.get();
+    await this.editor.clipboard.write({ shapes: shapesToCopy });
+  }
+
+  /**
+   * Cut shapes to the clipboard. If no shapes are provided, it will cut the currently selected shapes.
+   */
+  async cut(shapes: Shape[] = [], asAction: boolean = true) {
+    const shapesToCut =
+      shapes.length > 0 ? shapes : this.editor.selection.get();
+    await this.copy(shapesToCut);
+    this.delete(shapesToCut, asAction);
+  }
+
+  /**
+   * Paste shapes from the clipboard into the editor.
+   */
+  async paste(asAction: boolean = true) {
+    const data = await this.editor.clipboard.read();
+    if (Array.isArray(data.shapes) && data.shapes.length > 0) {
+      const newShapeIds: string[] = [];
+      if (asAction) this.editor.transform.begin();
+      for (const shape of data.shapes) {
+        shape.id = nanoid();
+        move(shape, 4, 4);
+        this.editor.transform.insert(shape);
+        newShapeIds.push(shape.id);
+      }
+      if (asAction) this.editor.transform.end();
+      const newShapes = newShapeIds
+        .map((id) => this.editor.store.getShapeById(id))
+        .filter((shape): shape is Shape => shape !== undefined);
+      this.editor.selection.selectMultiple(newShapes, true);
+      if (asAction) this.editor.repaint();
+    }
+  }
+
+  /**
+   * Delete shapes from the editor. If no shapes are provided, it will delete the currently selected shapes.
+   */
+  delete(shapes: Shape[] = [], asAction: boolean = true) {
+    const shapesToDelete =
+      shapes.length > 0 ? shapes : this.editor.selection.get();
+    if (asAction) this.editor.transform.begin();
+    for (const shape of shapesToDelete) {
+      this.editor.selection.deselect(shape);
+      this.editor.transform.delete(shape);
+    }
+    if (asAction) this.editor.transform.end();
+    if (asAction) this.editor.repaint();
+  }
+
+  /**
+   * Duplicate shapes in the editor. If no shapes are provided, it will duplicate the currently selected shapes.
+   */
+  duplicate(shapes: Shape[] = [], asAction: boolean = true) {
+    const shapesToDuplicate =
+      shapes.length > 0 ? shapes : this.editor.selection.get();
+    const newShapeIds: string[] = [];
+    if (asAction) this.editor.transform.begin();
+    for (const shape of shapesToDuplicate) {
+      const newShape = structuredClone(shape) as Shape;
+      newShape.id = nanoid();
+      move(newShape, 4, 4);
+      this.editor.transform.insert(newShape);
+      newShapeIds.push(newShape.id);
+    }
+    if (asAction) this.editor.transform.end();
+    const newShapes = newShapeIds
+      .map((id) => this.editor.store.getShapeById(id))
+      .filter((shape): shape is Shape => shape !== undefined);
+    this.editor.selection.selectMultiple(newShapes, true);
     if (asAction) this.editor.repaint();
   }
 

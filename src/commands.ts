@@ -21,12 +21,12 @@ export function registerCommands() {
     "Copy the selected shapes",
     {},
     async () => {
-      app.editor.copy();
+      app.editor.actions.copy();
     },
   );
 
   app.commands.register("edit:cut", "Cut the selected shapes", {}, async () => {
-    app.editor.cut();
+    app.editor.actions.cut();
   });
 
   app.commands.register(
@@ -34,7 +34,7 @@ export function registerCommands() {
     "Paste the copied shapes",
     {},
     async () => {
-      app.editor.paste();
+      app.editor.actions.paste();
     },
   );
 
@@ -43,7 +43,7 @@ export function registerCommands() {
     "Delete the selected shapes",
     {},
     async () => {
-      app.editor.delete();
+      app.editor.actions.delete();
     },
   );
 
@@ -52,7 +52,7 @@ export function registerCommands() {
     "Duplicate the selected shapes",
     {},
     async () => {
-      app.editor.duplicate();
+      app.editor.actions.duplicate();
     },
   );
 
@@ -177,4 +177,45 @@ export function registerCommands() {
       app.editor.actions.sendToBack();
     },
   );
+
+  // tool commands -------------------------------------------------------------
+
+  app.commands.register(
+    "tool:select",
+    "Activate the select tool",
+    {},
+    async () => {
+      app.editor.handlers.setActiveHandler("Select");
+    },
+  );
+
+  app.commands.register(
+    "tool:rectangle",
+    "Activate the rectangle tool",
+    {},
+    async () => {
+      app.editor.handlers.setActiveHandler("Rectangle");
+    },
+  );
+
+  app.commands.register(
+    "tool:ellipse",
+    "Activate the ellipse tool",
+    {},
+    async () => {
+      app.editor.handlers.setActiveHandler("Ellipse");
+    },
+  );
+
+  app.commands.register("tool:line", "Activate the line tool", {}, async () => {
+    app.editor.handlers.setActiveHandler("Line");
+  });
+
+  app.commands.register("tool:text", "Activate the text tool", {}, async () => {
+    app.editor.handlers.setActiveHandler("Text");
+  });
+
+  app.commands.register("tool:pen", "Activate the pen tool", {}, async () => {
+    app.editor.handlers.setActiveHandler("Pen");
+  });
 }

@@ -12,14 +12,6 @@
   "]": "align:send-backward",
   "mod-[": "align:bring-to-front",
   "mod-]": "align:send-to-back",
-  "alt-w": "align:align-top",
-  "alt-s": "align:align-bottom",
-  "alt-a": "align:align-left",
-  "alt-d": "align:align-right",
-  "alt-h": "align:align-center",
-  "alt-v": "align:align-middle",
-  "alt-shift-h": "align:distribute-horizontally",
-  "alt-shift-v": "align:distribute-vertically",
 
   "up": "shape:move-up",
   "down": "shape:move-down",
@@ -31,14 +23,9 @@
   "shift-right": "shape:move-right-8px",
 
   "v": "tool:select",
-  "h": "tool:hand",
-  "e": "tool:eraser",
   "r": "tool:rectangle",
   "o": "tool:ellipse",
-  "t": "tool:text",
-  "i": "tool:image",
-  "c": "tool:connector",
   "l": "tool:line",
-  "f": "tool:freehand",
-  "g": "tool:highlighter"
+  "t": "tool:text",
+  "p": "tool:pen"
 }
