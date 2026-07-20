@@ -256,10 +256,20 @@ export class PredefinedActions {
   bringForward(shapes: Shape[] = [], asAction: boolean = true) {
     const shapesToBring =
       shapes.length > 0 ? shapes : this.editor.selection.get();
+    const selectedSet = new Set(shapesToBring);
+    const sorted = [...shapesToBring].sort(
+      (a, b) =>
+        this.editor.store.shapes.indexOf(b) -
+        this.editor.store.shapes.indexOf(a),
+    );
     if (asAction) this.editor.transform.begin();
-    for (const shape of shapesToBring) {
+    for (const shape of sorted) {
       const index = this.editor.store.shapes.indexOf(shape);
-      if (index < this.editor.store.shapes.length - 1) {
+      const above = this.editor.store.shapes[index + 1];
+      if (
+        index < this.editor.store.shapes.length - 1 &&
+        !selectedSet.has(above)
+      ) {
         this.editor.transform.reorder(shape, index + 1);
       }
     }
@@ -273,10 +283,17 @@ export class PredefinedActions {
   sendBackward(shapes: Shape[] = [], asAction: boolean = true) {
     const shapesToSend =
       shapes.length > 0 ? shapes : this.editor.selection.get();
+    const selectedSet = new Set(shapesToSend);
+    const sorted = [...shapesToSend].sort(
+      (a, b) =>
+        this.editor.store.shapes.indexOf(a) -
+        this.editor.store.shapes.indexOf(b),
+    );
     if (asAction) this.editor.transform.begin();
-    for (const shape of shapesToSend) {
+    for (const shape of sorted) {
       const index = this.editor.store.shapes.indexOf(shape);
-      if (index > 0) {
+      const below = this.editor.store.shapes[index - 1];
+      if (index > 0 && !selectedSet.has(below)) {
         this.editor.transform.reorder(shape, index - 1);
       }
     }
@@ -290,8 +307,13 @@ export class PredefinedActions {
   bringToFront(shapes: Shape[] = [], asAction: boolean = true) {
     const shapesToBring =
       shapes.length > 0 ? shapes : this.editor.selection.get();
+    const sorted = [...shapesToBring].sort(
+      (a, b) =>
+        this.editor.store.shapes.indexOf(a) -
+        this.editor.store.shapes.indexOf(b),
+    );
     if (asAction) this.editor.transform.begin();
-    for (const shape of shapesToBring) {
+    for (const shape of sorted) {
       this.editor.transform.reorder(shape, this.editor.store.shapes.length - 1);
     }
     if (asAction) this.editor.transform.end();
@@ -304,8 +326,13 @@ export class PredefinedActions {
   sendToBack(shapes: Shape[] = [], asAction: boolean = true) {
     const shapesToSend =
       shapes.length > 0 ? shapes : this.editor.selection.get();
+    const sorted = [...shapesToSend].sort(
+      (a, b) =>
+        this.editor.store.shapes.indexOf(b) -
+        this.editor.store.shapes.indexOf(a),
+    );
     if (asAction) this.editor.transform.begin();
-    for (const shape of shapesToSend) {
+    for (const shape of sorted) {
       this.editor.transform.reorder(shape, 0);
     }
     if (asAction) this.editor.transform.end();
