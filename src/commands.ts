@@ -62,6 +62,7 @@ export function registerCommands() {
     {},
     async () => {
       app.editor.selection.selectAll();
+      app.editor.repaint();
     },
   );
 
@@ -136,6 +137,44 @@ export function registerCommands() {
     {},
     async () => {
       app.editor.actions.move([], 8, 0);
+    },
+  );
+
+  // align commands -------------------------------------------------------------
+
+  app.commands.register(
+    "align:bring-forward",
+    "Bring the selected shapes forward",
+    {},
+    async () => {
+      app.editor.actions.bringForward();
+    },
+  );
+
+  app.commands.register(
+    "align:send-backward",
+    "Send the selected shapes backward",
+    {},
+    async () => {
+      app.editor.actions.sendBackward();
+    },
+  );
+
+  app.commands.register(
+    "align:bring-to-front",
+    "Bring the selected shapes to front",
+    {},
+    async () => {
+      app.editor.actions.bringToFront();
+    },
+  );
+
+  app.commands.register(
+    "align:send-to-back",
+    "Send the selected shapes to back",
+    {},
+    async () => {
+      app.editor.actions.sendToBack();
     },
   );
 }

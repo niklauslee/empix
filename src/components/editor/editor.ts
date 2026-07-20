@@ -1209,32 +1209,6 @@ export class Editor {
   }
 
   /**
-   * Bring shapes to the front.
-   */
-  bringToFront(shapes: Shape[] = []) {
-    const shapesToBring = shapes.length > 0 ? shapes : this.selection.get();
-    this.transform.begin();
-    for (const shape of shapesToBring) {
-      this.transform.reorder(shape, this.store.shapes.length - 1);
-    }
-    this.transform.end();
-    this.repaint();
-  }
-
-  /**
-   * Send shapes to the back.
-   */
-  sendToBack(shapes: Shape[] = []) {
-    const shapesToSend = shapes.length > 0 ? shapes : this.selection.get();
-    this.transform.begin();
-    for (const shape of shapesToSend) {
-      this.transform.reorder(shape, 0);
-    }
-    this.transform.end();
-    this.repaint();
-  }
-
-  /**
    * Load the editor state from a JSON string.
    */
   loadFromJSON(json: any) {

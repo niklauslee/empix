@@ -167,4 +167,66 @@ export class PredefinedActions {
     if (asAction) this.editor.transform.end();
     if (asAction) this.editor.repaint();
   }
+
+  /**
+   * Bring shapes forward in the z-order.
+   */
+  bringForward(shapes: Shape[] = [], asAction: boolean = true) {
+    const shapesToBring =
+      shapes.length > 0 ? shapes : this.editor.selection.get();
+    if (asAction) this.editor.transform.begin();
+    for (const shape of shapesToBring) {
+      const index = this.editor.store.shapes.indexOf(shape);
+      if (index < this.editor.store.shapes.length - 1) {
+        this.editor.transform.reorder(shape, index + 1);
+      }
+    }
+    if (asAction) this.editor.transform.end();
+    if (asAction) this.editor.repaint();
+  }
+
+  /**
+   * Send shapes backward in the z-order.
+   */
+  sendBackward(shapes: Shape[] = [], asAction: boolean = true) {
+    const shapesToSend =
+      shapes.length > 0 ? shapes : this.editor.selection.get();
+    if (asAction) this.editor.transform.begin();
+    for (const shape of shapesToSend) {
+      const index = this.editor.store.shapes.indexOf(shape);
+      if (index > 0) {
+        this.editor.transform.reorder(shape, index - 1);
+      }
+    }
+    if (asAction) this.editor.transform.end();
+    if (asAction) this.editor.repaint();
+  }
+
+  /**
+   * Bring shapes to the front.
+   */
+  bringToFront(shapes: Shape[] = [], asAction: boolean = true) {
+    const shapesToBring =
+      shapes.length > 0 ? shapes : this.editor.selection.get();
+    if (asAction) this.editor.transform.begin();
+    for (const shape of shapesToBring) {
+      this.editor.transform.reorder(shape, this.editor.store.shapes.length - 1);
+    }
+    if (asAction) this.editor.transform.end();
+    if (asAction) this.editor.repaint();
+  }
+
+  /**
+   * Send shapes to the back.
+   */
+  sendToBack(shapes: Shape[] = [], asAction: boolean = true) {
+    const shapesToSend =
+      shapes.length > 0 ? shapes : this.editor.selection.get();
+    if (asAction) this.editor.transform.begin();
+    for (const shape of shapesToSend) {
+      this.editor.transform.reorder(shape, 0);
+    }
+    if (asAction) this.editor.transform.end();
+    if (asAction) this.editor.repaint();
+  }
 }
