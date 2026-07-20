@@ -29,7 +29,7 @@ function App() {
   const handlePropsChange = (props: ShapeProps) => {
     try {
       const app = window.app;
-      app.editor.updateProps(props);
+      app.editor.actions.update(props);
     } catch (error) {
       console.error("Error handling props change:", error);
     }

@@ -211,7 +211,7 @@ export function Toolbar() {
           size="icon-xs"
           className="size-7"
           onClick={() => {
-            window.app.editor.undo();
+            window.app.editor.actions.undo();
           }}
         >
           <UndoIcon size={12} />
@@ -221,7 +221,7 @@ export function Toolbar() {
           size="icon-xs"
           className="size-7"
           onClick={() => {
-            window.app.editor.redo();
+            window.app.editor.actions.redo();
           }}
         >
           <RedoIcon size={12} />

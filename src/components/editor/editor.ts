@@ -22,6 +22,7 @@ import { getFonts, loadFont } from "./font";
 import { nanoid } from "nanoid";
 import { TypedEvent } from "./std";
 import { Clipboard } from "./clipboard";
+import { PredefinedActions } from "./actions";
 
 export interface HandlerOptions {
   defaultLock: boolean;
@@ -840,6 +841,11 @@ export class Editor {
   transform: Transform;
 
   /**
+   * The predefined actions for the editor
+   */
+  actions: PredefinedActions;
+
+  /**
    * Indicates whether the editor is enabled or not. If disabled, the editor will not respond to user interactions.
    */
   enabled: boolean;
@@ -868,6 +874,7 @@ export class Editor {
     this.factory = new ShapeFactory();
     this.clipboard = new Clipboard();
     this.transform = new Transform(this.store);
+    this.actions = new PredefinedActions(this);
     this.enabled = true;
     this.onChange = new TypedEvent<Editor>();
     this.onDblClick = new TypedEvent<DblClickEvent>();
@@ -1123,122 +1130,6 @@ export class Editor {
       }
     }
     return null;
-  }
-
-  /**
-   * Undo the last action
-   */
-  undo() {
-    this.transform.undo();
-    this.repaint();
-  }
-
-  /**
-   * Redo the last undone action
-   */
-  redo() {
-    this.transform.redo();
-    this.repaint();
-  }
-
-  /**
-   * Update properties of shapes in the editor. If no shapes are provided, it will update the currently selected shapes.
-   */
-  updateProps(props: ShapeProps, shapes?: Shape[]) {
-    const shapesToUpdate =
-      shapes && shapes.length > 0 ? shapes : this.selection.get();
-    this.transform.begin();
-    for (let key in props) {
-      const value = (props as any)[key];
-      for (const shape of shapesToUpdate) {
-        if (shape.hasOwnProperty(key)) {
-          if (key === "left") {
-            if (shape.type === ShapeType.LINE) {
-              const s = shape as LineShape;
-              const oldLeft = s.left;
-              const dx = value - oldLeft;
-              const ps = geometry.movePath(s.path, dx, 0);
-              this.transform.assign(shape, "path", ps);
-            } else if (shape.type === ShapeType.PEN) {
-              const s = shape as PenShape;
-              const oldLeft = s.left;
-              const dx = value - oldLeft;
-              const ps = geometry.movePath(s.points, dx, 0);
-              this.transform.assign(shape, "points", ps);
-            }
-          } else if (key === "top") {
-            if (shape.type === ShapeType.LINE) {
-              const s = shape as LineShape;
-              const oldTop = s.top;
-              const dy = value - oldTop;
-              const ps = geometry.movePath(s.path, 0, dy);
-              this.transform.assign(shape, "path", ps);
-            } else if (shape.type === ShapeType.PEN) {
-              const s = shape as PenShape;
-              const oldTop = s.top;
-              const dy = value - oldTop;
-              const ps = geometry.movePath(s.points, 0, dy);
-              this.transform.assign(shape, "points", ps);
-            }
-          } else if (key === "font") {
-            if (shape.type === ShapeType.TEXT) {
-              const s = shape as TextShape;
-              this.gc.setFont(value);
-              const m = this.gc.metricText(s.text);
-              this.transform.assign(shape, "width", m.width);
-              this.transform.assign(shape, "height", m.height);
-            }
-          } else if (key === "text") {
-            if (shape.type === ShapeType.TEXT) {
-              const s = shape as TextShape;
-              this.gc.setFont(s.font);
-              const m = this.gc.metricText(value);
-              this.transform.assign(shape, "width", m.width);
-              this.transform.assign(shape, "height", m.height);
-            }
-          } else if (key === "direction") {
-            if (shape.type === ShapeType.TEXT) {
-              const s = shape as TextShape;
-              const m = this.gc.metricText(s.text);
-              const cx = s.left + s.width / 2;
-              const cy = s.top + s.height / 2;
-              if (value === 0 || value === 2) {
-                // horizontal
-                this.transform.assign(shape, "width", m.width);
-                this.transform.assign(shape, "height", m.height);
-                this.transform.assign(
-                  shape,
-                  "left",
-                  Math.round(cx - m.width / 2),
-                );
-                this.transform.assign(
-                  shape,
-                  "top",
-                  Math.round(cy - m.height / 2),
-                );
-              } else if (value === 1 || value === 3) {
-                // vertical
-                this.transform.assign(shape, "width", m.height);
-                this.transform.assign(shape, "height", m.width);
-                this.transform.assign(
-                  shape,
-                  "left",
-                  Math.round(cx - m.height / 2),
-                );
-                this.transform.assign(
-                  shape,
-                  "top",
-                  Math.round(cy - m.width / 2),
-                );
-              }
-            }
-          }
-          this.transform.assign(shape, key, value);
-        }
-      }
-    }
-    this.transform.end();
-    this.repaint();
   }
 
   /**

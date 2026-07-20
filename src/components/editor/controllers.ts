@@ -60,30 +60,32 @@ export class SelectionMoveController extends Controller {
   update(editor: Editor, shape: Shape, e: PointerEvent, point: number[]) {
     if (this.dxStep === 0 && this.dyStep === 0) return;
     const selections = editor.selection.get();
-    for (let s of selections) {
-      editor.transform.assign(s, "left", s.left + this.dxStep);
-      editor.transform.assign(s, "top", s.top + this.dyStep);
-      switch (s.type) {
-        case ShapeType.LINE: {
-          const line = s as LineShape;
-          editor.transform.assign(
-            line,
-            "path",
-            geometry.movePath(line.path, this.dxStep, this.dyStep),
-          );
-          break;
-        }
-        case ShapeType.PEN: {
-          const pen = s as PenShape;
-          editor.transform.assign(
-            pen,
-            "points",
-            geometry.movePath(pen.points, this.dxStep, this.dyStep),
-          );
-          break;
-        }
-      }
-    }
+    editor.actions.move(selections, this.dxStep, this.dyStep, false);
+    // const selections = editor.selection.get();
+    // for (let s of selections) {
+    //   editor.transform.assign(s, "left", s.left + this.dxStep);
+    //   editor.transform.assign(s, "top", s.top + this.dyStep);
+    //   switch (s.type) {
+    //     case ShapeType.LINE: {
+    //       const line = s as LineShape;
+    //       editor.transform.assign(
+    //         line,
+    //         "path",
+    //         geometry.movePath(line.path, this.dxStep, this.dyStep),
+    //       );
+    //       break;
+    //     }
+    //     case ShapeType.PEN: {
+    //       const pen = s as PenShape;
+    //       editor.transform.assign(
+    //         pen,
+    //         "points",
+    //         geometry.movePath(pen.points, this.dxStep, this.dyStep),
+    //       );
+    //       break;
+    //     }
+    //   }
+    // }
   }
 
   finalize(editor: Editor, shape: Shape, e: PointerEvent, point: number[]) {

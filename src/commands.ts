@@ -1,10 +1,10 @@
 export function registerCommands() {
   const app = window.app;
 
-  // file commands -------------------------------------------------------------
+  // edit commands -------------------------------------------------------------
 
   app.commands.register("edit:undo", "Undo the last action", {}, async () => {
-    app.editor.undo();
+    app.editor.actions.undo();
   });
 
   app.commands.register(
@@ -12,7 +12,7 @@ export function registerCommands() {
     "Redo the last undone action",
     {},
     async () => {
-      app.editor.redo();
+      app.editor.actions.redo();
     },
   );
 
@@ -62,6 +62,80 @@ export function registerCommands() {
     {},
     async () => {
       app.editor.selection.selectAll();
+    },
+  );
+
+  // shape commands -------------------------------------------------------------
+
+  app.commands.register(
+    "shape:move-up",
+    "Move the selected shapes up",
+    {},
+    async () => {
+      app.editor.actions.move([], 0, -1);
+    },
+  );
+
+  app.commands.register(
+    "shape:move-down",
+    "Move the selected shapes down",
+    {},
+    async () => {
+      app.editor.actions.move([], 0, 1);
+    },
+  );
+
+  app.commands.register(
+    "shape:move-left",
+    "Move the selected shapes left",
+    {},
+    async () => {
+      app.editor.actions.move([], -1, 0);
+    },
+  );
+
+  app.commands.register(
+    "shape:move-right",
+    "Move the selected shapes right",
+    {},
+    async () => {
+      app.editor.actions.move([], 1, 0);
+    },
+  );
+
+  app.commands.register(
+    "shape:move-up-8px",
+    "Move the selected shapes up by 8px",
+    {},
+    async () => {
+      app.editor.actions.move([], 0, -8);
+    },
+  );
+
+  app.commands.register(
+    "shape:move-down-8px",
+    "Move the selected shapes down by 8px",
+    {},
+    async () => {
+      app.editor.actions.move([], 0, 8);
+    },
+  );
+
+  app.commands.register(
+    "shape:move-left-8px",
+    "Move the selected shapes left by 8px",
+    {},
+    async () => {
+      app.editor.actions.move([], -8, 0);
+    },
+  );
+
+  app.commands.register(
+    "shape:move-right-8px",
+    "Move the selected shapes right by 8px",
+    {},
+    async () => {
+      app.editor.actions.move([], 8, 0);
     },
   );
 }
