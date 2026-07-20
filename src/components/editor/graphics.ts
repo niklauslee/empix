@@ -390,11 +390,20 @@ export class GraphicContext {
 
   /**
    * Draw text on the canvas
+   * @param direction 0=0°, 1=90° CW, 2=180°, 3=270° CW
    */
-  drawText(x: number, y: number, text: string, color: number) {
+  drawText(
+    x: number,
+    y: number,
+    text: string,
+    color: number,
+    direction: number = 0,
+  ) {
     if (!this.font) throw new Error("Font is not set");
     const font = getFont(this.font);
     if (!font) throw new Error(`Font "${this.font}" not found`);
+    let cx = x;
+    let cy = y;
     for (let i = 0; i < text.length; i++) {
       const char = text[i];
       const glyph = font.glyph(char);
@@ -408,13 +417,46 @@ export class GraphicContext {
           const bitPosFromRight = 8 * numBytesPerRow - 1 - b;
           const bit = (rowValue >> bitPosFromRight) & 1;
           if (bit) {
-            const gx = x + bbxoff + b;
-            const gy = y + r;
+            const dc = bbxoff + b;
+            const dr = r;
+            let gx: number, gy: number;
+            switch (direction) {
+              case 1:
+                gx = cx - dr;
+                gy = cy + dc;
+                break;
+              case 2:
+                gx = cx - dc;
+                gy = cy - dr;
+                break;
+              case 3:
+                gx = cx + dr;
+                gy = cy - dc;
+                break;
+              default:
+                gx = cx + dc;
+                gy = cy + dr;
+                break;
+            }
             this.putPixel(gx, gy, color);
           }
         }
       }
-      x += dwx0 ?? bbw;
+      const advance = dwx0 ?? bbw;
+      switch (direction) {
+        case 1:
+          cy += advance;
+          break;
+        case 2:
+          cx -= advance;
+          break;
+        case 3:
+          cy -= advance;
+          break;
+        default:
+          cx += advance;
+          break;
+      }
     }
   }
 

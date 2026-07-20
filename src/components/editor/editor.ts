@@ -1196,6 +1196,42 @@ export class Editor {
               this.transform.assign(shape, "width", m.width);
               this.transform.assign(shape, "height", m.height);
             }
+          } else if (key === "direction") {
+            if (shape.type === ShapeType.TEXT) {
+              const s = shape as TextShape;
+              const m = this.gc.metricText(s.text);
+              const cx = s.left + s.width / 2;
+              const cy = s.top + s.height / 2;
+              if (value === 0 || value === 2) {
+                // horizontal
+                this.transform.assign(shape, "width", m.width);
+                this.transform.assign(shape, "height", m.height);
+                this.transform.assign(
+                  shape,
+                  "left",
+                  Math.round(cx - m.width / 2),
+                );
+                this.transform.assign(
+                  shape,
+                  "top",
+                  Math.round(cy - m.height / 2),
+                );
+              } else if (value === 1 || value === 3) {
+                // vertical
+                this.transform.assign(shape, "width", m.height);
+                this.transform.assign(shape, "height", m.width);
+                this.transform.assign(
+                  shape,
+                  "left",
+                  Math.round(cx - m.height / 2),
+                );
+                this.transform.assign(
+                  shape,
+                  "top",
+                  Math.round(cy - m.width / 2),
+                );
+              }
+            }
           }
           this.transform.assign(shape, key, value);
         }

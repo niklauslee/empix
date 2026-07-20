@@ -242,6 +242,13 @@ export const TextEdit: React.FC<ShapeEditorProps> = ({
     value: font.name,
   }));
 
+  const directions = [
+    { label: "0°", value: 0 },
+    { label: "90°", value: 1 },
+    { label: "180°", value: 2 },
+    { label: "270°", value: 3 },
+  ];
+
   return (
     <div className="flex flex-col gap-2 w-full">
       <div className="flex items-center gap-2 w-full">
@@ -277,6 +284,29 @@ export const TextEdit: React.FC<ShapeEditorProps> = ({
           value={(shape as TextShape).text ?? ""}
           onChange={(value) => onChange({ text: value })}
         />
+      </div>
+      <div className="flex items-center gap-2 w-full">
+        <Label className="text-sm w-40" htmlFor="input-text">
+          Direction
+        </Label>
+        <Select
+          items={directions}
+          value={(shape as TextShape).direction ?? 0}
+          onValueChange={(value) => onChange({ direction: value ?? 0 })}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Direction" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              {directions.map((item) => (
+                <SelectItem key={String(item.value)} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );

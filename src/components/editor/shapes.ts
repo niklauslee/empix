@@ -63,6 +63,7 @@ export interface TextShape extends Shape {
   type: typeof ShapeType.TEXT;
   font: string;
   text: string;
+  direction: number; // 0: 0°, 1: 90°, 2: 180°, 3: 270°
 }
 
 /**
@@ -143,6 +144,7 @@ export class ShapeFactory {
         s.type = ShapeType.TEXT;
         s.font = "6x10";
         s.text = "Hello, world!Ä";
+        s.direction = 0;
         break;
       }
       case ShapeType.PEN: {
@@ -346,7 +348,23 @@ export function render(gc: GraphicContext, shape: Shape) {
     case ShapeType.TEXT: {
       const s = shape as TextShape;
       gc.setFont(s.font);
-      gc.drawText(s.left, s.top, s.text, s.color);
+      const left = s.left;
+      const top = s.top;
+      const right = s.left + s.width - 1;
+      const bottom = s.top + s.height - 1;
+      switch (s.direction) {
+        case 1:
+          gc.drawText(right, top, s.text, s.color, 1);
+          break;
+        case 2:
+          gc.drawText(right, bottom, s.text, s.color, 2);
+          break;
+        case 3:
+          gc.drawText(left, bottom, s.text, s.color, 3);
+          break;
+        default:
+          gc.drawText(left, top, s.text, s.color);
+      }
       break;
     }
     case ShapeType.PEN: {
