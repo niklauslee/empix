@@ -55,10 +55,15 @@ export function CodeDialog() {
           <div className="flex justify-between py-2">
             <div className="flex gap-2">
               <Button>u8g2</Button>
-              <Button variant="outline">Bitmap</Button>
+              {/* <Button variant="outline">Bitmap</Button> */}
             </div>
             <div>
-              <Button variant="outline">Copy Code</Button>
+              <Button
+                variant="outline"
+                onClick={() => navigator.clipboard.writeText(code)}
+              >
+                Copy Code
+              </Button>
             </div>
           </div>
         </DialogHeader>
