@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn, odd } from "@/lib/utils";
 import { Label } from "./ui/label";
 import {
   ShapeType,
@@ -37,11 +37,12 @@ export const NameEdit: React.FC<ShapeEditorProps> = ({
   return (
     <div>
       <div className="flex gap-2 w-full">
-        <Label className="text-sm w-16" htmlFor="input-name">
+        <Label className="text-sm w-16" htmlFor="input-name" title="Name">
           Name
         </Label>
         <TextField
           id="input-name"
+          title="Name"
           className="text-sm"
           value={shape?.name ?? ""}
           onChange={(value) => onChange({ name: value })}
@@ -61,11 +62,12 @@ export const PositionEdit: React.FC<ShapeEditorProps> = ({
   return (
     <div className="flex w-full gap-4">
       <div className="flex gap-2 w-full">
-        <Label className="text-sm" htmlFor="input-x">
+        <Label className="text-sm" htmlFor="input-x" title="X">
           X
         </Label>
         <NumberField
           id="input-x"
+          title="X"
           className="text-sm"
           type="number"
           value={shape?.left ?? 0}
@@ -73,11 +75,12 @@ export const PositionEdit: React.FC<ShapeEditorProps> = ({
         />
       </div>
       <div className="flex gap-2 w-full">
-        <Label className="text-sm" htmlFor="input-y">
+        <Label className="text-sm" htmlFor="input-y" title="Y">
           Y
         </Label>
         <NumberField
           id="input-y"
+          title="Y"
           className="text-sm"
           type="number"
           value={shape?.top ?? 0}
@@ -98,31 +101,42 @@ export const SizeEdit: React.FC<ShapeEditorProps> = ({
     return null;
 
   return (
-    <div className="flex w-full gap-4">
-      <div className="flex gap-2 w-full">
-        <Label className="text-sm" htmlFor="input-width">
-          W
-        </Label>
-        <NumberField
-          id="input-width"
-          className="text-sm"
-          type="number"
-          value={shape?.width ?? 0}
-          onChange={(value) => onChange({ width: value })}
-        />
+    <div className="flex flex-col gap-2 w-full">
+      <div className="flex w-full gap-4">
+        <div className="flex gap-2 w-full">
+          <Label className="text-sm" htmlFor="input-width" title="Width">
+            W
+          </Label>
+          <NumberField
+            id="input-width"
+            title="Width"
+            className="text-sm"
+            type="number"
+            value={shape?.width ?? 0}
+            onChange={(value) => onChange({ width: value })}
+          />
+        </div>
+        <div className="flex gap-2 w-full">
+          <Label className="text-sm" htmlFor="input-height" title="Height">
+            H
+          </Label>
+          <NumberField
+            id="input-height"
+            title="Height"
+            className="text-sm"
+            type="number"
+            value={shape?.height ?? 0}
+            onChange={(value) => onChange({ height: value })}
+          />
+        </div>
       </div>
-      <div className="flex gap-2 w-full">
-        <Label className="text-sm" htmlFor="input-height">
-          H
-        </Label>
-        <NumberField
-          id="input-height"
-          className="text-sm"
-          type="number"
-          value={shape?.height ?? 0}
-          onChange={(value) => onChange({ height: value })}
-        />
-      </div>
+      {shape.type === ShapeType.ELLIPSE &&
+        (!odd(shape.width) || !odd(shape.height)) && (
+          <div className="text-xs bg-neutral-700 px-3 py-2">
+            ⚠ Ellipse with even width or height may not render correctly in
+            u8g2.
+          </div>
+        )}
     </div>
   );
 };
@@ -139,11 +153,12 @@ export const FillEdit: React.FC<ShapeEditorProps> = ({
   return (
     <div>
       <div className="flex items-center gap-2 w-full">
-        <Label className="text-sm w-16" htmlFor="input-name">
+        <Label className="text-sm w-16" htmlFor="input-name" title="Fill">
           Fill
         </Label>
         <div className="flex gap-2 w-full">
           <Checkbox
+            title="Fill"
             checked={(shape as any).fill ?? false}
             onCheckedChange={(value) => onChange({ fill: value })}
           />
@@ -164,11 +179,12 @@ export const ClosedEdit: React.FC<ShapeEditorProps> = ({
   return (
     <div>
       <div className="flex items-center gap-2 w-full">
-        <Label className="text-sm w-16" htmlFor="input-name">
+        <Label className="text-sm w-16" htmlFor="input-name" title="Closed">
           Closed
         </Label>
         <div className="flex gap-2 w-full">
           <Checkbox
+            title="Closed"
             checked={(shape as LineShape).closed ?? false}
             onCheckedChange={(value) => onChange({ closed: value })}
           />
@@ -194,6 +210,7 @@ export const ColorEdit: React.FC<ShapeEditorProps> = ({
         </Label>
         <div className="flex gap-1 w-full justify-between">
           <Button
+            title="Black"
             variant={color === 0 ? "default" : "outline"}
             size="icon-xs"
             className="size-7"
@@ -204,6 +221,7 @@ export const ColorEdit: React.FC<ShapeEditorProps> = ({
             0
           </Button>
           <Button
+            title="White"
             variant={color === 1 ? "default" : "outline"}
             size="icon-xs"
             className="size-7"
@@ -214,6 +232,7 @@ export const ColorEdit: React.FC<ShapeEditorProps> = ({
             1
           </Button>
           <Button
+            title="XOR"
             variant={color === -1 ? "default" : "outline"}
             size="icon-xs"
             className="w-10 h-7 p-0"
@@ -252,7 +271,7 @@ export const TextEdit: React.FC<ShapeEditorProps> = ({
   return (
     <div className="flex flex-col gap-2 w-full">
       <div className="flex items-center gap-2 w-full">
-        <Label className="text-sm w-16" htmlFor="input-text">
+        <Label className="text-sm w-16" htmlFor="input-text" title="Font">
           Font
         </Label>
         <Select
@@ -260,7 +279,7 @@ export const TextEdit: React.FC<ShapeEditorProps> = ({
           value={(shape as TextShape).font ?? ""}
           onValueChange={(value) => onChange({ font: value ?? "" })}
         >
-          <SelectTrigger className="w-full">
+          <SelectTrigger className="w-full" title="Font">
             <SelectValue placeholder="Font" />
           </SelectTrigger>
           <SelectContent>
@@ -275,18 +294,19 @@ export const TextEdit: React.FC<ShapeEditorProps> = ({
         </Select>
       </div>
       <div className="flex items-center gap-2 w-full">
-        <Label className="text-sm w-16" htmlFor="input-text">
+        <Label className="text-sm w-16" htmlFor="input-text" title="Text">
           Text
         </Label>
         <TextField
           id="input-text"
+          title="Text"
           className="text-sm"
           value={(shape as TextShape).text ?? ""}
           onChange={(value) => onChange({ text: value })}
         />
       </div>
       <div className="flex items-center gap-2 w-full">
-        <Label className="text-sm w-40" htmlFor="input-text">
+        <Label className="text-sm w-40" htmlFor="input-text" title="Direction">
           Direction
         </Label>
         <Select
@@ -294,7 +314,7 @@ export const TextEdit: React.FC<ShapeEditorProps> = ({
           value={(shape as TextShape).direction ?? 0}
           onValueChange={(value) => onChange({ direction: value ?? 0 })}
         >
-          <SelectTrigger className="w-full">
+          <SelectTrigger className="w-full" title="Direction">
             <SelectValue placeholder="Direction" />
           </SelectTrigger>
           <SelectContent>

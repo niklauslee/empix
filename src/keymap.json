@@ -27,5 +27,9 @@
   "o": "tool:ellipse",
   "l": "tool:line",
   "t": "tool:text",
-  "p": "tool:pen"
+  "p": "tool:pen",
+
+  "mod-plus": "view:zoom-in",
+  "mod-=": "view:zoom-in",
+  "mod-minus": "view:zoom-out"
 }

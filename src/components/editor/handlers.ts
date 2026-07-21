@@ -251,9 +251,6 @@ export class RectangleFactoryHandler extends Handler {
     this.shape = editor.factory.create(ShapeType.RECTANGLE) as RectangleShape;
     this.shape.left = this.dragStartPoint[0];
     this.shape.top = this.dragStartPoint[1];
-    this.shape.width = 1;
-    this.shape.height = 1;
-    this.shape.color = 1;
     editor.transform.insert(this.shape);
   }
 
@@ -265,10 +262,11 @@ export class RectangleFactoryHandler extends Handler {
     const t = normalized[0][1];
     const w = normalized[1][0] - normalized[0][0] + 1;
     const h = normalized[1][1] - normalized[0][1] + 1;
+    const minSize = 2;
     editor.transform.assign(this.shape, "left", l);
     editor.transform.assign(this.shape, "top", t);
-    editor.transform.assign(this.shape, "width", w);
-    editor.transform.assign(this.shape, "height", h);
+    editor.transform.assign(this.shape, "width", Math.max(w, minSize));
+    editor.transform.assign(this.shape, "height", Math.max(h, minSize));
   }
 
   finalize(editor: Editor, e: PointerEvent): void {
@@ -292,9 +290,6 @@ export class EllipseFactoryHandler extends Handler {
     this.shape = editor.factory.create(ShapeType.ELLIPSE) as EllipseShape;
     this.shape.left = this.dragStartPoint[0];
     this.shape.top = this.dragStartPoint[1];
-    this.shape.width = 1;
-    this.shape.height = 1;
-    this.shape.color = 1;
     editor.transform.insert(this.shape);
   }
 
@@ -306,10 +301,11 @@ export class EllipseFactoryHandler extends Handler {
     const t = normalized[0][1];
     const w = normalized[1][0] - normalized[0][0] + 1;
     const h = normalized[1][1] - normalized[0][1] + 1;
+    const minSize = 3;
     editor.transform.assign(this.shape, "left", l);
     editor.transform.assign(this.shape, "top", t);
-    editor.transform.assign(this.shape, "width", w);
-    editor.transform.assign(this.shape, "height", h);
+    editor.transform.assign(this.shape, "width", Math.max(w, minSize));
+    editor.transform.assign(this.shape, "height", Math.max(h, minSize));
   }
 
   finalize(editor: Editor, e: PointerEvent): void {

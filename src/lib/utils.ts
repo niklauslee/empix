@@ -38,3 +38,10 @@ export function generateNewName(
   }
   return newName;
 }
+
+/**
+ * Test if a number is odd
+ */
+export function odd(value: number): boolean {
+  return value % 2 !== 0;
+}
