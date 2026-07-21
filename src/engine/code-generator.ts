@@ -3,6 +3,8 @@ import {
   ShapeType,
   type RectangleShape,
   type EllipseShape,
+  type LineShape,
+  type TextShape,
 } from "@/components/editor/shapes";
 import { odd } from "@/lib/utils";
 
@@ -12,21 +14,50 @@ interface U8g2State {
   fontDirection: number;
 }
 
+const u8g2FontMap: Record<string, string> = {
+  "4x6": "u8g2_font_4x6_tr",
+  "5x7": "u8g2_font_5x7_tr",
+  "5x8": "u8g2_font_5x8_tr",
+  "6x10": "u8g2_font_6x10_tr",
+  "6x12": "u8g2_font_6x12_tr",
+  "6x13": "u8g2_font_6x13_tr",
+  "6x13B": "u8g2_font_6x13B_tr",
+  "6x13O": "u8g2_font_6x13O_tr",
+};
+
+/**
+ * Escapes a string for use in a C string literal
+ */
+function escapeCString(str: string): string {
+  return str
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, "\\n")
+    .replace(/\r/g, "\\r")
+    .replace(/\t/g, "\\t")
+    .replace(
+      /[\x00-\x1f\x7f]/g,
+      (c) => "\\x" + c.charCodeAt(0).toString(16).padStart(2, "0"),
+    );
+}
+
 /**
  * Code generator class
  */
 export class CodeGenerator {
-  editor: Editor;
-
-  constructor(editor: Editor) {
-    this.editor = editor;
-  }
-
   toU8g2Color(color: number): number {
     return color < 0 ? 2 : color;
   }
 
-  generateU8g2Rectangle(state: U8g2State, shape: RectangleShape): string[] {
+  toU8g2Font(font: string): string {
+    return u8g2FontMap[font] ?? "u8g2_font_6x10_tr";
+  }
+
+  generateU8g2Rectangle(
+    editor: Editor,
+    state: U8g2State,
+    shape: RectangleShape,
+  ): string[] {
     const lines: string[] = [];
     lines.push(`// ${shape.name}`);
     const { left, top, width, height, color } = shape;
@@ -42,7 +73,11 @@ export class CodeGenerator {
     return lines;
   }
 
-  generateU8g2Ellipse(state: U8g2State, shape: EllipseShape): string[] {
+  generateU8g2Ellipse(
+    editor: Editor,
+    state: U8g2State,
+    shape: EllipseShape,
+  ): string[] {
     const lines: string[] = [];
     lines.push(`// ${shape.name}`);
     const { left, top, width, height, color } = shape;
@@ -67,6 +102,62 @@ export class CodeGenerator {
     return lines;
   }
 
+  generateU8g2Line(
+    editor: Editor,
+    state: U8g2State,
+    shape: LineShape,
+  ): string[] {
+    const lines: string[] = [];
+    lines.push(`// ${shape.name}`);
+    const { color } = shape;
+    if (state.drawColor !== color) {
+      lines.push(`u8g2.setDrawColor(${this.toU8g2Color(color)});`);
+      state.drawColor = color;
+    }
+    if (shape.path.length > 1) {
+      for (let i = 0; i < shape.path.length - 1; i++) {
+        const [x1, y1] = shape.path[i];
+        const [x2, y2] = shape.path[i + 1];
+        lines.push(`u8g2.drawLine(${x1}, ${y1}, ${x2}, ${y2});`);
+      }
+      if (shape.closed) {
+        const [x1, y1] = shape.path[shape.path.length - 1];
+        const [x2, y2] = shape.path[0];
+        lines.push(`u8g2.drawLine(${x1}, ${y1}, ${x2}, ${y2});`);
+      }
+    }
+    return lines;
+  }
+
+  generateU8g2Text(
+    editor: Editor,
+    state: U8g2State,
+    shape: TextShape,
+  ): string[] {
+    const lines: string[] = [];
+    lines.push(`// ${shape.name}`);
+    const { left, top, color, font, direction, text } = shape;
+    const metric = editor.gc.metricText(text);
+    const baseline = metric.baseline + 1;
+    console.log("metric", metric);
+    if (state.drawColor !== color) {
+      lines.push(`u8g2.setDrawColor(${this.toU8g2Color(color)});`);
+      state.drawColor = color;
+    }
+    if (state.font !== shape.font) {
+      lines.push(`u8g2.setFont(${this.toU8g2Font(shape.font)});`);
+      state.font = shape.font;
+    }
+    if (state.fontDirection !== shape.direction) {
+      lines.push(`u8g2.setFontDirection(${shape.direction});`);
+      state.fontDirection = shape.direction;
+    }
+    lines.push(
+      `u8g2.drawStr(${left}, ${top + baseline}, "${escapeCString(text)}");`,
+    );
+    return lines;
+  }
+
   /**
    * Generates U8g2 code
    */
@@ -84,20 +175,26 @@ export class CodeGenerator {
       switch (shape.type) {
         case ShapeType.RECTANGLE:
           lines.push(
-            ...this.generateU8g2Rectangle(state, shape as RectangleShape),
+            ...this.generateU8g2Rectangle(
+              editor,
+              state,
+              shape as RectangleShape,
+            ),
           );
           break;
         case ShapeType.ELLIPSE:
-          lines.push(...this.generateU8g2Ellipse(state, shape as EllipseShape));
+          lines.push(
+            ...this.generateU8g2Ellipse(editor, state, shape as EllipseShape),
+          );
           break;
         case ShapeType.LINE:
           lines.push(
-            `drawLine(${shape.left}, ${shape.top}, ${shape.width}, ${shape.height}, ${shape.color});`,
+            ...this.generateU8g2Line(editor, state, shape as LineShape),
           );
           break;
         case ShapeType.TEXT:
           lines.push(
-            `drawText(${shape.left}, ${shape.top}, "${(shape as any).text}", ${shape.color});`,
+            ...this.generateU8g2Text(editor, state, shape as TextShape),
           );
           break;
         case ShapeType.PEN:

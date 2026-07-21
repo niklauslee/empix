@@ -64,7 +64,7 @@ export class AppContext {
       platform: this.platform,
       commandManager: this.commands,
     });
-    this.codeGenerator = new CodeGenerator(this.editor);
+    this.codeGenerator = new CodeGenerator();
   }
 
   /**

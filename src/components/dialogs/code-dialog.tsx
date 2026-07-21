@@ -38,10 +38,12 @@ export function CodeDialog() {
   const { open, code, setOpen, setCode } = useCodeDialog();
 
   useEffect(() => {
-    const app = window.app;
-    if (app) {
-      const generatedCode = app.codeGenerator.generateU8g2(app.editor);
-      setCode(generatedCode);
+    if (open) {
+      const app = window.app;
+      if (app) {
+        const generatedCode = app.codeGenerator.generateU8g2(app.editor);
+        setCode(generatedCode);
+      }
     }
   }, [open]);
 
