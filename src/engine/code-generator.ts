@@ -15,6 +15,10 @@ interface U8g2State {
   fontDirection: number;
 }
 
+interface U8g2Options {
+  useProgmem: boolean;
+}
+
 const u8g2FontMap: Record<string, string> = {
   "4x6": "u8g2_font_4x6_tr",
   "5x7": "u8g2_font_5x7_tr",
@@ -87,6 +91,7 @@ export class CodeGenerator {
     editor: Editor,
     state: U8g2State,
     shape: RectangleShape,
+    options: U8g2Options,
   ): string[] {
     const lines: string[] = [];
     lines.push(`// ${shape.name}`);
@@ -107,6 +112,7 @@ export class CodeGenerator {
     editor: Editor,
     state: U8g2State,
     shape: EllipseShape,
+    options: U8g2Options,
   ): string[] {
     const lines: string[] = [];
     lines.push(`// ${shape.name}`);
@@ -136,6 +142,7 @@ export class CodeGenerator {
     editor: Editor,
     state: U8g2State,
     shape: LineShape,
+    options: U8g2Options,
   ): string[] {
     const lines: string[] = [];
     lines.push(`// ${shape.name}`);
@@ -163,6 +170,7 @@ export class CodeGenerator {
     editor: Editor,
     state: U8g2State,
     shape: TextShape,
+    options: U8g2Options,
   ): string[] {
     const lines: string[] = [];
     lines.push(`// ${shape.name}`);
@@ -188,7 +196,12 @@ export class CodeGenerator {
     return lines;
   }
 
-  generateU8g2Pen(editor: Editor, state: U8g2State, shape: PenShape): string[] {
+  generateU8g2Pen(
+    editor: Editor,
+    state: U8g2State,
+    shape: PenShape,
+    options: U8g2Options,
+  ): string[] {
     const lines: string[] = [];
     lines.push(`// ${shape.name}`);
     const { left, top, width, height, color } = shape;
@@ -198,7 +211,7 @@ export class CodeGenerator {
     }
     const bitmapArray = this.toU8g2BitmapCode(shape);
     lines.push(
-      `u8g2.drawXBMP(${left}, ${top}, ${width}, ${height}, ${toCIdentifier(shape.name)}_bits);`,
+      `u8g2.${options.useProgmem ? "drawXBMP" : "drawXBM"}(${left}, ${top}, ${width}, ${height}, ${toCIdentifier(shape.name)}_bits);`,
     );
     return lines;
   }
@@ -206,7 +219,7 @@ export class CodeGenerator {
   /**
    * Generates U8g2 code
    */
-  generateU8g2(editor: Editor): string {
+  generateU8g2(editor: Editor, options: U8g2Options): string {
     const state: U8g2State = {
       drawColor: 1,
       font: "u8g2_font_ncenB14_tr",
@@ -221,7 +234,7 @@ export class CodeGenerator {
       if (shape.type === ShapeType.PEN) {
         const bitmapArray = this.toU8g2BitmapCode(shape as PenShape);
         lines.push(
-          `static const unsigned char ${toCIdentifier(shape.name)}_bits[] U8X8_PROGMEM = [${bitmapArray.join(",")}];`,
+          `static const unsigned char ${toCIdentifier(shape.name)}_bits[]${options.useProgmem ? " U8X8_PROGMEM" : ""} = [${bitmapArray.join(",")}];`,
         );
       }
     }
@@ -235,26 +248,44 @@ export class CodeGenerator {
               editor,
               state,
               shape as RectangleShape,
+              options,
             ),
           );
           break;
         case ShapeType.ELLIPSE:
           lines.push(
-            ...this.generateU8g2Ellipse(editor, state, shape as EllipseShape),
+            ...this.generateU8g2Ellipse(
+              editor,
+              state,
+              shape as EllipseShape,
+              options,
+            ),
           );
           break;
         case ShapeType.LINE:
           lines.push(
-            ...this.generateU8g2Line(editor, state, shape as LineShape),
+            ...this.generateU8g2Line(
+              editor,
+              state,
+              shape as LineShape,
+              options,
+            ),
           );
           break;
         case ShapeType.TEXT:
           lines.push(
-            ...this.generateU8g2Text(editor, state, shape as TextShape),
+            ...this.generateU8g2Text(
+              editor,
+              state,
+              shape as TextShape,
+              options,
+            ),
           );
           break;
         case ShapeType.PEN:
-          lines.push(...this.generateU8g2Pen(editor, state, shape as PenShape));
+          lines.push(
+            ...this.generateU8g2Pen(editor, state, shape as PenShape, options),
+          );
           break;
         default:
           console.warn(`Unknown shape type: ${shape.type}`);

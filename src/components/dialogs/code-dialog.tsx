@@ -41,7 +41,9 @@ export function CodeDialog() {
     if (open) {
       const app = window.app;
       if (app) {
-        const generatedCode = app.codeGenerator.generateU8g2(app.editor);
+        const generatedCode = app.codeGenerator.generateU8g2(app.editor, {
+          useProgmem: false,
+        });
         setCode(generatedCode);
       }
     }
