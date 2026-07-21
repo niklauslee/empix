@@ -37,25 +37,16 @@ export const useCodeDialog = create<CodeDialogState>()(
 export function CodeDialog() {
   const { open, code, setOpen, setCode } = useCodeDialog();
 
-  //   const codeString = `function add(a, b) {
-  //   return a + b;
-  // }
-
-  // const result = add(2, 3);
-  // console.log(result); // Output: 5`;
-
   useEffect(() => {
-    const appContext = window.app;
-    if (appContext) {
-      const generatedCode = appContext.codeGenerator.generate(
-        appContext.editor,
-      );
+    const app = window.app;
+    if (app) {
+      const generatedCode = app.codeGenerator.generateU8g2(app.editor);
       setCode(generatedCode);
     }
-  }, [setCode]);
+  }, [open]);
 
   return (
-    <Dialog open={true /* open */} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="fixed w-3xl h-130 max-w-full sm:max-w-full max-h-full sm:max-h-full">
         <DialogHeader className="absolute inset-x-0 top-0 w-full h-24 p-4 border-b-[1.5px]">
           <DialogTitle>Code</DialogTitle>
