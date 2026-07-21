@@ -2,7 +2,7 @@
 
 # Empix Studio
 
-👉 https://empix.niklaus-lee.workers.dev/
+👉 https://empix.niklauslee.workers.dev/
 
 An open-source minimal design tool for embedded devices with monochrome displays.
 
