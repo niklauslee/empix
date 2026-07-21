@@ -18,3 +18,4 @@ export { default as CheckIcon } from "./check";
 export { default as PenIcon } from "./pen";
 export { default as ZoomInIcon } from "./zoom-in";
 export { default as ZoomOutIcon } from "./zoom-out";
+export { default as XIcon } from "./x";

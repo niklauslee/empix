@@ -19,6 +19,7 @@ import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { NumberField } from "./ui/number-field";
 import { useConfirmDialog } from "./dialogs/confirm-dialog";
+import { useCodeDialog } from "./dialogs/code-dialog";
 
 export function Toolbar() {
   const activeHandler = useEditorStore((state) => state.activeHandler);
@@ -62,7 +63,6 @@ export function Toolbar() {
           <Button
             variant="outline"
             onClick={() => {
-              console.log("showing alert dialog");
               useConfirmDialog
                 .getState()
                 .show(
@@ -75,6 +75,14 @@ export function Toolbar() {
             }}
           >
             Clear
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              useCodeDialog.getState().setOpen(true);
+            }}
+          >
+            Code
           </Button>
           <Button
             variant="outline"

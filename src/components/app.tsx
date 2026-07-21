@@ -10,6 +10,7 @@ import type { ShapeProps } from "./editor/shapes";
 import { useEditorStore } from "@/store/editor-store";
 import { LayersPanel } from "./layers";
 import { ScrollAreaBoth } from "./ui/scroll-area-both";
+import { CodeDialog } from "./dialogs/code-dialog";
 
 declare global {
   interface Window {
@@ -85,6 +86,7 @@ function App() {
         </div>
       </Layout>
       <ConfirmDialog />
+      <CodeDialog />
     </>
   );
 }

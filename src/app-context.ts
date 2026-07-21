@@ -6,7 +6,7 @@ import { registerCommands } from "./commands";
 import keymapJson from "./keymap.json";
 import { useEditorStore } from "./store/editor-store";
 import { ShapeType } from "./components/editor/shapes";
-import { Cursor } from "./components/editor/consts";
+import { CodeGenerator } from "./engine/code-generator";
 
 declare global {
   interface Window {
@@ -42,6 +42,11 @@ export class AppContext {
   keymap: KeymapManager;
 
   /**
+   * Code generator instance
+   */
+  codeGenerator: CodeGenerator;
+
+  /**
    * Returns a singleton app context instance
    */
   static getInstance(): AppContext {
@@ -58,6 +63,7 @@ export class AppContext {
       platform: this.platform,
       commandManager: this.commands,
     });
+    this.codeGenerator = new CodeGenerator(this.editor);
   }
 
   /**
