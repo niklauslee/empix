@@ -9,13 +9,13 @@ import {
 } from "@/components/editor/shapes";
 import { odd } from "@/lib/utils";
 
-interface U8g2State {
+export interface U8g2State {
   drawColor: number;
   font: string;
   fontDirection: number;
 }
 
-interface U8g2Options {
+export interface U8g2Options {
   useProgmem: boolean;
 }
 
