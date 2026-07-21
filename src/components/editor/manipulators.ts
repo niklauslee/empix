@@ -21,22 +21,92 @@ export class SelectionManipulator extends Manipulator {
 }
 
 /**
- * Manipulator for box-type shapes (e.g. rectangle)
+ * Manipulator for rectangle shapes
  */
-export class BoxManipulator extends Manipulator {
+export class RectangleManipulator extends Manipulator {
   constructor() {
     super();
     this.controllers = [
-      new BoxSizeController(this, { position: ControllerPosition.TOP }),
-      new BoxSizeController(this, { position: ControllerPosition.BOTTOM }),
-      new BoxSizeController(this, { position: ControllerPosition.LEFT }),
-      new BoxSizeController(this, { position: ControllerPosition.RIGHT }),
-      new BoxSizeController(this, { position: ControllerPosition.LEFT_TOP }),
-      new BoxSizeController(this, { position: ControllerPosition.RIGHT_TOP }),
+      new BoxSizeController(this, {
+        position: ControllerPosition.TOP,
+        minSize: 2,
+      }),
+      new BoxSizeController(this, {
+        position: ControllerPosition.BOTTOM,
+        minSize: 2,
+      }),
+      new BoxSizeController(this, {
+        position: ControllerPosition.LEFT,
+        minSize: 2,
+      }),
+      new BoxSizeController(this, {
+        position: ControllerPosition.RIGHT,
+        minSize: 2,
+      }),
+      new BoxSizeController(this, {
+        position: ControllerPosition.LEFT_TOP,
+        minSize: 2,
+      }),
+      new BoxSizeController(this, {
+        position: ControllerPosition.RIGHT_TOP,
+        minSize: 2,
+      }),
       new BoxSizeController(this, {
         position: ControllerPosition.RIGHT_BOTTOM,
+        minSize: 2,
       }),
-      new BoxSizeController(this, { position: ControllerPosition.LEFT_BOTTOM }),
+      new BoxSizeController(this, {
+        position: ControllerPosition.LEFT_BOTTOM,
+        minSize: 2,
+      }),
+      new BoxMoveController(this),
+    ];
+  }
+}
+
+/**
+ * Manipulator for ellipse shapes
+ */
+export class EllipseManipulator extends Manipulator {
+  constructor() {
+    super();
+    this.controllers = [
+      new BoxSizeController(this, {
+        position: ControllerPosition.TOP,
+        minSize: 3,
+      }),
+      new BoxSizeController(this, {
+        position: ControllerPosition.BOTTOM,
+        minSize: 3,
+      }),
+      new BoxSizeController(this, {
+        position: ControllerPosition.LEFT,
+        minSize: 3,
+      }),
+      new BoxSizeController(this, {
+        position: ControllerPosition.RIGHT,
+        minSize: 3,
+      }),
+      new BoxSizeController(this, {
+        position: ControllerPosition.RIGHT,
+        minSize: 3,
+      }),
+      new BoxSizeController(this, {
+        position: ControllerPosition.LEFT_TOP,
+        minSize: 3,
+      }),
+      new BoxSizeController(this, {
+        position: ControllerPosition.RIGHT_TOP,
+        minSize: 3,
+      }),
+      new BoxSizeController(this, {
+        position: ControllerPosition.RIGHT_BOTTOM,
+        minSize: 3,
+      }),
+      new BoxSizeController(this, {
+        position: ControllerPosition.LEFT_BOTTOM,
+        minSize: 3,
+      }),
       new BoxMoveController(this),
     ];
   }

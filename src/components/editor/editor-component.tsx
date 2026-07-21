@@ -11,11 +11,12 @@ import {
 } from "./handlers";
 import {
   BitmapManipulator,
-  BoxManipulator,
+  RectangleManipulator,
   LineManipulator,
   PenManipulator,
   SelectionManipulator,
   TextManipulator,
+  EllipseManipulator,
 } from "./manipulators";
 import { cn } from "@/lib/utils";
 
@@ -40,8 +41,8 @@ function basicSetup(): EditorOptions {
     defaultHandlerId: "Select",
     manipulators: {
       Selection: new SelectionManipulator(),
-      Rectangle: new BoxManipulator(),
-      Ellipse: new BoxManipulator(),
+      Rectangle: new RectangleManipulator(),
+      Ellipse: new EllipseManipulator(),
       Line: new LineManipulator(),
       Text: new TextManipulator(),
       Bitmap: new BitmapManipulator(),

@@ -112,8 +112,8 @@ export class ShapeFactory {
       name: "",
       left: 0,
       top: 0,
-      width: 1,
-      height: 1,
+      width: 2,
+      height: 2,
       color: 1,
     };
     switch (shapeType) {
@@ -121,12 +121,16 @@ export class ShapeFactory {
         const s = newShape as RectangleShape;
         s.type = ShapeType.RECTANGLE;
         s.fill = false;
+        s.width = 2;
+        s.height = 2;
         break;
       }
       case ShapeType.ELLIPSE: {
         const s = newShape as EllipseShape;
         s.type = ShapeType.ELLIPSE;
         s.fill = false;
+        s.width = 3;
+        s.height = 3;
         break;
       }
       case ShapeType.LINE: {

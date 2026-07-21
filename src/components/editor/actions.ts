@@ -10,6 +10,7 @@ import {
   type TextShape,
 } from "./shapes";
 import * as geometry from "./geometry";
+import { generateNewName } from "@/lib/utils";
 
 export class PredefinedActions {
   editor: Editor;
@@ -243,6 +244,10 @@ export class PredefinedActions {
     for (const shape of shapesToDuplicate) {
       const newShape = structuredClone(shape) as Shape;
       newShape.id = nanoid();
+      newShape.name = generateNewName(
+        shape.type,
+        this.editor.store.shapes.map((s) => s.name),
+      );
       move(newShape, 4, 4);
       this.editor.transform.insert(newShape);
       newShapeIds.push(newShape.id);

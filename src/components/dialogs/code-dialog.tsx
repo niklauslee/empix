@@ -38,10 +38,14 @@ export function CodeDialog() {
   const { open, code, setOpen, setCode } = useCodeDialog();
 
   useEffect(() => {
-    const app = window.app;
-    if (app) {
-      const generatedCode = app.codeGenerator.generateU8g2(app.editor);
-      setCode(generatedCode);
+    if (open) {
+      const app = window.app;
+      if (app) {
+        const generatedCode = app.codeGenerator.generateU8g2(app.editor, {
+          useProgmem: false,
+        });
+        setCode(generatedCode);
+      }
     }
   }, [open]);
 
@@ -53,10 +57,15 @@ export function CodeDialog() {
           <div className="flex justify-between py-2">
             <div className="flex gap-2">
               <Button>u8g2</Button>
-              <Button variant="outline">Bitmap</Button>
+              {/* <Button variant="outline">Bitmap</Button> */}
             </div>
             <div>
-              <Button variant="outline">Copy Code</Button>
+              <Button
+                variant="outline"
+                onClick={() => navigator.clipboard.writeText(code)}
+              >
+                Copy Code
+              </Button>
             </div>
           </div>
         </DialogHeader>

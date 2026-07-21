@@ -7,6 +7,7 @@ import keymapJson from "./keymap.json";
 import { useEditorStore } from "./store/editor-store";
 import { ShapeType } from "./components/editor/shapes";
 import { CodeGenerator } from "./engine/code-generator";
+import { useKeymapStore } from "./store/keymap-store";
 
 declare global {
   interface Window {
@@ -63,7 +64,7 @@ export class AppContext {
       platform: this.platform,
       commandManager: this.commands,
     });
-    this.codeGenerator = new CodeGenerator(this.editor);
+    this.codeGenerator = new CodeGenerator();
   }
 
   /**
@@ -126,6 +127,9 @@ export class AppContext {
     try {
       this.keymap.add(keymapJson);
       this.keymap.htmlReady();
+      useKeymapStore
+        .getState()
+        .setFormattedKeys(this.keymap.getAllFormattedKeyByCommand());
     } catch (err) {
       console.error("Failed to load keymaps", err);
     }

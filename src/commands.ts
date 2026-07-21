@@ -218,4 +218,16 @@ export function registerCommands() {
   app.commands.register("tool:pen", "Activate the pen tool", {}, async () => {
     app.editor.handlers.setActiveHandler("Pen");
   });
+
+  // view commands -------------------------------------------------------------
+
+  app.commands.register("view:zoom-in", "Zoom in the view", {}, async () => {
+    const scale = window.app.editor.getScale();
+    if (scale < 16) window.app.editor.setScale(scale + 1);
+  });
+
+  app.commands.register("view:zoom-out", "Zoom out the view", {}, async () => {
+    const scale = window.app.editor.getScale();
+    if (scale > 1) window.app.editor.setScale(scale - 1);
+  });
 }
