@@ -16,6 +16,7 @@ import {
   PenManipulator,
   SelectionManipulator,
   TextManipulator,
+  EllipseManipulator,
 } from "./manipulators";
 import { cn } from "@/lib/utils";
 
@@ -41,7 +42,7 @@ function basicSetup(): EditorOptions {
     manipulators: {
       Selection: new SelectionManipulator(),
       Rectangle: new BoxManipulator(),
-      Ellipse: new BoxManipulator(),
+      Ellipse: new EllipseManipulator(),
       Line: new LineManipulator(),
       Text: new TextManipulator(),
       Bitmap: new BitmapManipulator(),

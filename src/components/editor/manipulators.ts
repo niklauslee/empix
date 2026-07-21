@@ -43,6 +43,28 @@ export class BoxManipulator extends Manipulator {
 }
 
 /**
+ * Manipulator for ellipse shapes
+ */
+export class EllipseManipulator extends Manipulator {
+  constructor() {
+    super();
+    this.controllers = [
+      new BoxSizeController(this, { position: ControllerPosition.TOP }),
+      new BoxSizeController(this, { position: ControllerPosition.BOTTOM }),
+      new BoxSizeController(this, { position: ControllerPosition.LEFT }),
+      new BoxSizeController(this, { position: ControllerPosition.RIGHT }),
+      new BoxSizeController(this, { position: ControllerPosition.LEFT_TOP }),
+      new BoxSizeController(this, { position: ControllerPosition.RIGHT_TOP }),
+      new BoxSizeController(this, {
+        position: ControllerPosition.RIGHT_BOTTOM,
+      }),
+      new BoxSizeController(this, { position: ControllerPosition.LEFT_BOTTOM }),
+      new BoxMoveController(this),
+    ];
+  }
+}
+
+/**
  * Manipulator for line shape
  */
 export class LineManipulator extends Manipulator {
