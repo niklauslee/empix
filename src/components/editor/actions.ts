@@ -78,8 +78,13 @@ export class PredefinedActions {
               const s = shape as TextShape;
               this.editor.gc.setFont(value);
               const m = this.editor.gc.metricText(s.text);
-              this.editor.transform.assign(shape, "width", m.width);
-              this.editor.transform.assign(shape, "height", m.height);
+              if (s.direction === 0 || s.direction === 2) {
+                this.editor.transform.assign(shape, "width", m.width);
+                this.editor.transform.assign(shape, "height", m.height);
+              } else if (s.direction === 1 || s.direction === 3) {
+                this.editor.transform.assign(shape, "width", m.height);
+                this.editor.transform.assign(shape, "height", m.width);
+              }
             }
           } else if (key === "text") {
             if (shape.type === ShapeType.TEXT) {
