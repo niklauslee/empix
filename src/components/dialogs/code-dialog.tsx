@@ -15,9 +15,11 @@ import type { U8g2Options } from "@/engine/code-generator";
 
 export interface CodeDialogState {
   open: boolean;
+  target: string;
   code: string;
   options: U8g2Options;
   setOpen: (open: boolean) => void;
+  setTarget: (target: string) => void;
   setCode: (code: string) => void;
   setOptions: (options: U8g2Options) => void;
 }
@@ -26,12 +28,16 @@ export const useCodeDialog = create<CodeDialogState>()(
   devtools(
     (set, get) => ({
       open: false,
+      target: "u8g2",
       code: "",
       options: {
         useProgmem: true,
       },
       setOpen: (open) => {
         set((state) => ({ open }));
+      },
+      setTarget: (target) => {
+        set((state) => ({ target }));
       },
       setCode: (code) => {
         set((state) => ({ code }));
@@ -45,20 +51,34 @@ export const useCodeDialog = create<CodeDialogState>()(
 );
 
 export function CodeDialog() {
-  const { open, code, options, setOpen, setCode, setOptions } = useCodeDialog();
+  const {
+    open,
+    code,
+    target,
+    options,
+    setOpen,
+    setTarget,
+    setCode,
+    setOptions,
+  } = useCodeDialog();
 
   useEffect(() => {
     if (open) {
       const app = window.app;
       if (app) {
-        const generatedCode = app.codeGenerator.generateU8g2(
-          app.editor,
-          options,
-        );
-        setCode(generatedCode);
+        if (target === "u8g2") {
+          const generatedCode = app.codeGenerator.generateU8g2(
+            app.editor,
+            options,
+          );
+          setCode(generatedCode);
+        } else if (target === "xbm") {
+          const generatedCode = app.codeGenerator.generateXBM(app.editor);
+          setCode(generatedCode);
+        }
       }
     }
-  }, [open, options]);
+  }, [open, target, options]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -68,8 +88,18 @@ export function CodeDialog() {
           <div>
             <div className="flex justify-between py-2">
               <div className="flex gap-2">
-                <Button>u8g2</Button>
-                {/* <Button variant="outline">Bitmap</Button> */}
+                <Button
+                  variant={target === "u8g2" ? "default" : "outline"}
+                  onClick={() => setTarget("u8g2")}
+                >
+                  u8g2
+                </Button>
+                <Button
+                  variant={target === "xbm" ? "default" : "outline"}
+                  onClick={() => setTarget("xbm")}
+                >
+                  XBM
+                </Button>
               </div>
               <div>
                 <Button
@@ -81,15 +111,17 @@ export function CodeDialog() {
               </div>
             </div>
             <div className="flex justify-between py-1">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  checked={options.useProgmem}
-                  onCheckedChange={(value) => {
-                    setOptions({ ...options, useProgmem: value });
-                  }}
-                />{" "}
-                Use PROGMEM
-              </div>
+              {target === "u8g2" && (
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    checked={options.useProgmem}
+                    onCheckedChange={(value) => {
+                      setOptions({ ...options, useProgmem: value });
+                    }}
+                  />{" "}
+                  Use PROGMEM
+                </div>
+              )}
             </div>
           </div>
         </DialogHeader>
