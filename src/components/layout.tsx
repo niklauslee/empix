@@ -34,7 +34,7 @@ export function Layout({
   return (
     <main
       className={cn(
-        "dark absolute inset-0 bg-background text-foreground",
+        "absolute inset-0 bg-background text-foreground",
         className,
       )}
       {...others}
