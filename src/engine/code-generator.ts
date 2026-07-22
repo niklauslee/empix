@@ -306,11 +306,11 @@ export class CodeGenerator {
         const bitmapArray = this.toU8g2BitmapCode(shape as PenShape);
         if (options.lang === "c") {
           lines.push(
-            `static const uint8_t ${toCIdentifier(shape.name)}_bits[] = [${bitmapArray.join(",")}];`,
+            `static const uint8_t ${toCIdentifier(shape.name)}_bits[] = {${bitmapArray.join(",")}};`,
           );
         } else if (options.lang === "cpp") {
           lines.push(
-            `static const unsigned char ${toCIdentifier(shape.name)}_bits[]${options.lang === "cpp" && options.useProgmem ? " U8X8_PROGMEM" : ""} = [${bitmapArray.join(",")}];`,
+            `static const unsigned char ${toCIdentifier(shape.name)}_bits[]${options.lang === "cpp" && options.useProgmem ? " U8X8_PROGMEM" : ""} = {${bitmapArray.join(",")}};`,
           );
         }
       }
