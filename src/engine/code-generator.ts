@@ -248,19 +248,38 @@ export class CodeGenerator {
   ): string[] {
     const lines: string[] = [];
     lines.push(`// ${shape.name}`);
-    const { left, top, color, font, direction, text } = shape;
+    const { left, top, width, height, direction, text } = shape;
     const metric = editor.gc.metricText(text);
+    // +1 compensates for the difference between this app's baseline metric
+    // and u8g2's own baseline reference row
     const baseline = metric.baseline + 1;
+    const right = left + width;
+    const bottom = top + height;
+    let x: number;
+    let y: number;
+    switch (direction) {
+      case 1:
+        x = right - baseline;
+        y = top;
+        break;
+      case 2:
+        x = right;
+        y = bottom - baseline;
+        break;
+      case 3:
+        x = left + baseline;
+        y = bottom;
+        break;
+      default:
+        x = left;
+        y = top + baseline;
+    }
     this.generateU8g2SetDrawColor(lines, state, shape, options);
     this.generateU8g2SetFont(lines, state, shape, options);
     if (options.lang === "c") {
-      lines.push(
-        `u8g2_DrawStr(&u8g2, ${left}, ${top + baseline}, "${escapeCString(text)}");`,
-      );
+      lines.push(`u8g2_DrawStr(&u8g2, ${x}, ${y}, "${escapeCString(text)}");`);
     } else if (options.lang === "cpp") {
-      lines.push(
-        `u8g2.drawStr(${left}, ${top + baseline}, "${escapeCString(text)}");`,
-      );
+      lines.push(`u8g2.drawStr(${x}, ${y}, "${escapeCString(text)}");`);
     }
     return lines;
   }
