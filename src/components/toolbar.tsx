@@ -82,6 +82,7 @@ export function Toolbar() {
                   "Are you sure you want to clear the canvas? This action cannot be undone.",
                   () => {
                     window.app.editor.clear();
+                    window.app.updateUI();
                   },
                 );
             }}
