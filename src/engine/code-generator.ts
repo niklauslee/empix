@@ -349,6 +349,8 @@ export class CodeGenerator {
       lines.push("u8g2_SetFontMode(&u8g2, 1);");
     } else if (options.lang === "cpp") {
       lines.push("u8g2.clearBuffer();");
+      lines.push("u8g2.setBitmapMode(1);");
+      lines.push("u8g2.setFontMode(1);");
     }
     // generate code for each shape
     for (let i = 0; i < shapes.length; i++) {
