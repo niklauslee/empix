@@ -6,6 +6,7 @@ import {
   type LineShape,
   type TextShape,
   type PenShape,
+  type Shape,
 } from "@/components/editor/shapes";
 import { odd } from "@/lib/utils";
 
@@ -16,6 +17,7 @@ export interface U8g2State {
 }
 
 export interface U8g2Options {
+  lang: "c" | "cpp";
   useProgmem: boolean;
 }
 
@@ -87,6 +89,49 @@ export class CodeGenerator {
     return bitmapArray;
   }
 
+  generateU8g2SetDrawColor(
+    lines: string[],
+    state: U8g2State,
+    shape: Shape,
+    options: U8g2Options,
+  ): string[] {
+    const { color } = shape;
+    if (state.drawColor !== color) {
+      if (options.lang === "c") {
+        lines.push(`u8g2_SetDrawColor(&u8g2, ${this.toU8g2Color(color)});`);
+      } else if (options.lang === "cpp") {
+        lines.push(`u8g2.setDrawColor(${this.toU8g2Color(color)});`);
+      }
+      state.drawColor = color;
+    }
+    return lines;
+  }
+
+  generateU8g2SetFont(
+    lines: string[],
+    state: U8g2State,
+    shape: TextShape,
+    options: U8g2Options,
+  ): string[] {
+    if (state.font !== shape.font) {
+      if (options.lang === "c") {
+        lines.push(`u8g2_SetFont(&u8g2, ${this.toU8g2Font(shape.font)});`);
+      } else if (options.lang === "cpp") {
+        lines.push(`u8g2.setFont(${this.toU8g2Font(shape.font)});`);
+      }
+      state.font = shape.font;
+    }
+    if (state.fontDirection !== shape.direction) {
+      if (options.lang === "c") {
+        lines.push(`u8g2_SetFontDirection(&u8g2, ${shape.direction});`);
+      } else if (options.lang === "cpp") {
+        lines.push(`u8g2.setFontDirection(${shape.direction});`);
+      }
+      state.fontDirection = shape.direction;
+    }
+    return lines;
+  }
+
   generateU8g2Rectangle(
     editor: Editor,
     state: U8g2State,
@@ -96,14 +141,23 @@ export class CodeGenerator {
     const lines: string[] = [];
     lines.push(`// ${shape.name}`);
     const { left, top, width, height, color } = shape;
-    if (state.drawColor !== color) {
-      lines.push(`u8g2.setDrawColor(${this.toU8g2Color(color)});`);
-      state.drawColor = color;
-    }
+    this.generateU8g2SetDrawColor(lines, state, shape, options);
     if (shape.fill) {
-      lines.push(`u8g2.drawBox(${left}, ${top}, ${width}, ${height});`);
+      if (options.lang === "c") {
+        lines.push(
+          `u8g2_DrawBox(&u8g2, ${left}, ${top}, ${width}, ${height});`,
+        );
+      } else if (options.lang === "cpp") {
+        lines.push(`u8g2.drawBox(${left}, ${top}, ${width}, ${height});`);
+      }
     } else {
-      lines.push(`u8g2.drawFrame(${left}, ${top}, ${width}, ${height});`);
+      if (options.lang === "c") {
+        lines.push(
+          `u8g2_DrawFrame(&u8g2, ${left}, ${top}, ${width}, ${height});`,
+        );
+      } else if (options.lang === "cpp") {
+        lines.push(`u8g2.drawFrame(${left}, ${top}, ${width}, ${height});`);
+      }
     }
     return lines;
   }
@@ -121,19 +175,26 @@ export class CodeGenerator {
     const cy = Math.round(top + height / 2);
     const rx = Math.round(width / 2) - 1;
     const ry = Math.round(height / 2) - 1;
-    if (state.drawColor !== color) {
-      lines.push(`u8g2.setDrawColor(${this.toU8g2Color(color)});`);
-      state.drawColor = color;
-    }
+    this.generateU8g2SetDrawColor(lines, state, shape, options);
     if (!odd(shape.width) || !odd(shape.height)) {
       lines.push(
         `// [WARNING] Ellipse with even width or height may not render correctly`,
       );
     }
     if (shape.fill) {
-      lines.push(`u8g2.drawFilledEllipse(${cx}, ${cy}, ${rx}, ${ry});`);
+      if (options.lang === "c") {
+        lines.push(
+          `u8g2_DrawFilledEllipse(&u8g2, ${cx}, ${cy}, ${rx}, ${ry});`,
+        );
+      } else if (options.lang === "cpp") {
+        lines.push(`u8g2.drawFilledEllipse(${cx}, ${cy}, ${rx}, ${ry});`);
+      }
     } else {
-      lines.push(`u8g2.drawEllipse(${cx}, ${cy}, ${rx}, ${ry});`);
+      if (options.lang === "c") {
+        lines.push(`u8g2_DrawEllipse(&u8g2, ${cx}, ${cy}, ${rx}, ${ry});`);
+      } else if (options.lang === "cpp") {
+        lines.push(`u8g2.drawEllipse(${cx}, ${cy}, ${rx}, ${ry});`);
+      }
     }
     return lines;
   }
@@ -147,20 +208,25 @@ export class CodeGenerator {
     const lines: string[] = [];
     lines.push(`// ${shape.name}`);
     const { color } = shape;
-    if (state.drawColor !== color) {
-      lines.push(`u8g2.setDrawColor(${this.toU8g2Color(color)});`);
-      state.drawColor = color;
-    }
+    this.generateU8g2SetDrawColor(lines, state, shape, options);
     if (shape.path.length > 1) {
       for (let i = 0; i < shape.path.length - 1; i++) {
         const [x1, y1] = shape.path[i];
         const [x2, y2] = shape.path[i + 1];
-        lines.push(`u8g2.drawLine(${x1}, ${y1}, ${x2}, ${y2});`);
+        if (options.lang === "c") {
+          lines.push(`u8g2_DrawLine(&u8g2, ${x1}, ${y1}, ${x2}, ${y2});`);
+        } else if (options.lang === "cpp") {
+          lines.push(`u8g2.drawLine(${x1}, ${y1}, ${x2}, ${y2});`);
+        }
       }
       if (shape.closed) {
         const [x1, y1] = shape.path[shape.path.length - 1];
         const [x2, y2] = shape.path[0];
-        lines.push(`u8g2.drawLine(${x1}, ${y1}, ${x2}, ${y2});`);
+        if (options.lang === "c") {
+          lines.push(`u8g2_DrawLine(&u8g2, ${x1}, ${y1}, ${x2}, ${y2});`);
+        } else if (options.lang === "cpp") {
+          lines.push(`u8g2.drawLine(${x1}, ${y1}, ${x2}, ${y2});`);
+        }
       }
     }
     return lines;
@@ -177,21 +243,17 @@ export class CodeGenerator {
     const { left, top, color, font, direction, text } = shape;
     const metric = editor.gc.metricText(text);
     const baseline = metric.baseline + 1;
-    if (state.drawColor !== color) {
-      lines.push(`u8g2.setDrawColor(${this.toU8g2Color(color)});`);
-      state.drawColor = color;
+    this.generateU8g2SetDrawColor(lines, state, shape, options);
+    this.generateU8g2SetFont(lines, state, shape, options);
+    if (options.lang === "c") {
+      lines.push(
+        `u8g2_DrawStr(&u8g2, ${left}, ${top + baseline}, "${escapeCString(text)}");`,
+      );
+    } else if (options.lang === "cpp") {
+      lines.push(
+        `u8g2.drawStr(${left}, ${top + baseline}, "${escapeCString(text)}");`,
+      );
     }
-    if (state.font !== shape.font) {
-      lines.push(`u8g2.setFont(${this.toU8g2Font(shape.font)});`);
-      state.font = shape.font;
-    }
-    if (state.fontDirection !== shape.direction) {
-      lines.push(`u8g2.setFontDirection(${shape.direction});`);
-      state.fontDirection = shape.direction;
-    }
-    lines.push(
-      `u8g2.drawStr(${left}, ${top + baseline}, "${escapeCString(text)}");`,
-    );
     return lines;
   }
 
@@ -204,14 +266,24 @@ export class CodeGenerator {
     const lines: string[] = [];
     lines.push(`// ${shape.name}`);
     const { left, top, width, height, color } = shape;
-    if (state.drawColor !== color) {
-      lines.push(`u8g2.setDrawColor(${this.toU8g2Color(color)});`);
-      state.drawColor = color;
-    }
+    this.generateU8g2SetDrawColor(lines, state, shape, options);
     const bitmapArray = this.toU8g2BitmapCode(shape);
-    lines.push(
-      `u8g2.${options.useProgmem ? "drawXBMP" : "drawXBM"}(${left}, ${top}, ${width}, ${height}, ${toCIdentifier(shape.name)}_bits);`,
-    );
+    if (options.lang === "c") {
+      lines.push(
+        `u8g2_DrawXBM(&u8g2, ${left}, ${top}, ${width}, ${height}, ${toCIdentifier(shape.name)}_bits);`,
+      );
+    } else if (options.lang === "cpp") {
+      if (options.useProgmem) {
+        lines.push(
+          `u8g2.drawXBMP(${left}, ${top}, ${width}, ${height}, ${toCIdentifier(shape.name)}_bits);`,
+        );
+      } else {
+        lines.push(
+          `u8g2.drawXBM(${left}, ${top}, ${width}, ${height}, ${toCIdentifier(shape.name)}_bits);`,
+        );
+      }
+    }
+
     return lines;
   }
 
@@ -232,10 +304,22 @@ export class CodeGenerator {
       const shape = shapes[i];
       if (shape.type === ShapeType.PEN) {
         const bitmapArray = this.toU8g2BitmapCode(shape as PenShape);
-        lines.push(
-          `static const unsigned char ${toCIdentifier(shape.name)}_bits[]${options.useProgmem ? " U8X8_PROGMEM" : ""} = [${bitmapArray.join(",")}];`,
-        );
+        if (options.lang === "c") {
+          lines.push(
+            `static const uint8_t ${toCIdentifier(shape.name)}_bits[] = [${bitmapArray.join(",")}];`,
+          );
+        } else if (options.lang === "cpp") {
+          lines.push(
+            `static const unsigned char ${toCIdentifier(shape.name)}_bits[]${options.lang === "cpp" && options.useProgmem ? " U8X8_PROGMEM" : ""} = [${bitmapArray.join(",")}];`,
+          );
+        }
       }
+    }
+    // generate initial code for C lang
+    if (options.lang === "c") {
+      lines.push("u8g2_ClearBuffer(&u8g2);");
+      lines.push("u8g2_SetBitmapMode(&u8g2, 1);");
+      lines.push("u8g2_SetFontMode(&u8g2, 1);");
     }
     // generate code for each shape
     for (let i = 0; i < shapes.length; i++) {
