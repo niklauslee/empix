@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { availableFonts } from "./editor/font";
+import { availableFonts } from "../font-data";
 import { Button } from "./ui/button";
 
 export interface ShapeEditorProps extends React.HTMLAttributes<HTMLDivElement> {
