@@ -72,12 +72,12 @@ export class AppContext {
   /**
    * Initializes the app context
    */
-  initialize(editor: Editor) {
+  async initialize(editor: Editor) {
     this.editor = editor;
     this.wiring();
     this.loadKeymap();
+    await this.loadFonts();
     this.loadData();
-    this.loadFonts();
     registerCommands();
   }
 
@@ -152,17 +152,17 @@ export class AppContext {
   }
 
   saveData() {
-    const json = this.editor.saveToJSON();
-    localStorage.setItem("app-data", JSON.stringify(json));
+    if (this.editor.store.shapes.length > 0) {
+      const json = this.editor.saveToJSON();
+      localStorage.setItem("app-data", JSON.stringify(json));
+    }
   }
 
-  loadFonts() {
-    setTimeout(() => {
-      for (const font of availableFonts) {
-        const bdfstring = getEmbeddedFontBDF(font.name);
-        loadFontFromBDF(bdfstring);
-      }
-    }, 100);
+  async loadFonts() {
+    for (const font of availableFonts) {
+      const bdfstring = getEmbeddedFontBDF(font.name);
+      await loadFontFromBDF(bdfstring);
+    }
   }
 
   updateUI() {
