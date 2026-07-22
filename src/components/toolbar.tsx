@@ -113,6 +113,7 @@ export function Toolbar() {
                 const file = await fileHandle.getFile();
                 const text = await file.text();
                 window.app.editor.loadFromJSON(JSON.parse(text));
+                window.app.updateUI();
               } catch (e) {
                 if ((e as any)?.name !== "AbortError") console.error(e);
               }

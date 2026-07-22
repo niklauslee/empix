@@ -145,6 +145,15 @@ export class AppContext {
         console.error("Failed to load app data", err);
       }
     }
+    this.updateUI();
+  }
+
+  saveData() {
+    const json = this.editor.saveToJSON();
+    localStorage.setItem("app-data", JSON.stringify(json));
+  }
+
+  updateUI() {
     useEditorStore
       .getState()
       .setSize(this.editor.getSize()[0], this.editor.getSize()[1]);
@@ -153,11 +162,6 @@ export class AppContext {
       .getState()
       .setActiveHandler(this.editor.handlers.defaultHandlerId);
     useEditorStore.getState().setShapes([...this.editor.store.shapes]);
-  }
-
-  saveData() {
-    const json = this.editor.saveToJSON();
-    localStorage.setItem("app-data", JSON.stringify(json));
   }
 }
 
