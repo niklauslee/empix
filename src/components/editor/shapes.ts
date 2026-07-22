@@ -352,22 +352,24 @@ export function render(gc: GraphicContext, shape: Shape) {
     case ShapeType.TEXT: {
       const s = shape as TextShape;
       gc.setFont(s.font);
+      const m = gc.metricText(s.text);
       const left = s.left;
       const top = s.top;
       const right = s.left + s.width - 1;
       const bottom = s.top + s.height - 1;
+      const baseline = m.baseline;
       switch (s.direction) {
         case 1:
-          gc.drawText(right, top, s.text, s.color, 1);
+          gc.drawText(right - baseline, top, s.text, s.color, 1);
           break;
         case 2:
-          gc.drawText(right, bottom, s.text, s.color, 2);
+          gc.drawText(right, bottom - baseline, s.text, s.color, 2);
           break;
         case 3:
-          gc.drawText(left, bottom, s.text, s.color, 3);
+          gc.drawText(left + baseline, bottom, s.text, s.color, 3);
           break;
         default:
-          gc.drawText(left, top, s.text, s.color);
+          gc.drawText(left, top + baseline, s.text, s.color);
       }
       break;
     }

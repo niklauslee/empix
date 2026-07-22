@@ -418,7 +418,7 @@ export class GraphicContext {
           const bit = (rowValue >> bitPosFromRight) & 1;
           if (bit) {
             const dc = bbxoff + b;
-            const dr = r;
+            const dr = r - bbyoff - bbh + 1;
             let gx: number, gy: number;
             switch (direction) {
               case 1:

@@ -11,6 +11,7 @@ import {
 } from "./shapes";
 import * as geometry from "./geometry";
 import { generateNewName } from "@/lib/utils";
+import { availableFonts, isFontLoaded, loadFontFromUrl } from "./font";
 
 export class PredefinedActions {
   editor: Editor;
@@ -38,7 +39,7 @@ export class PredefinedActions {
   /**
    * Update properties of shapes in the editor. If no shapes are provided, it will update the currently selected shapes.
    */
-  update(props: ShapeProps, shapes?: Shape[], asAction: boolean = true) {
+  async update(props: ShapeProps, shapes?: Shape[], asAction: boolean = true) {
     const shapesToUpdate =
       shapes && shapes.length > 0 ? shapes : this.editor.selection.get();
     if (asAction) this.editor.transform.begin();
@@ -77,6 +78,14 @@ export class PredefinedActions {
           } else if (key === "font") {
             if (shape.type === ShapeType.TEXT) {
               const s = shape as TextShape;
+              if (!isFontLoaded(value)) {
+                const url = availableFonts.find((f) => f.name === value)?.url;
+                if (url) {
+                  await loadFontFromUrl(url);
+                } else {
+                  console.warn(`Font "${value}" not found in available fonts.`);
+                }
+              }
               this.editor.gc.setFont(value);
               const m = this.editor.gc.metricText(s.text);
               if (s.direction === 0 || s.direction === 2) {

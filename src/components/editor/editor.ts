@@ -18,7 +18,7 @@ import {
 import * as geometry from "./geometry";
 import { Transform } from "./transform";
 import { Store } from "./store";
-import { getFonts, loadFont } from "./font";
+import { getLoadedFonts, loadFontFromBDF } from "./font";
 import { nanoid } from "nanoid";
 import { TypedEvent } from "./std";
 import { Clipboard } from "./clipboard";
@@ -1041,14 +1041,14 @@ export class Editor {
    * Load a font from a BDF string.
    */
   async loadFont(bdfstring: string) {
-    return await loadFont(bdfstring);
+    return await loadFontFromBDF(bdfstring);
   }
 
   /**
    * Get a list of available font names
    */
   getAvailableFonts(): string[] {
-    return getFonts();
+    return getLoadedFonts();
   }
 
   /**

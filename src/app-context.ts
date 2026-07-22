@@ -8,6 +8,7 @@ import { useEditorStore } from "./store/editor-store";
 import { ShapeType } from "./components/editor/shapes";
 import { CodeGenerator } from "./engine/code-generator";
 import { useKeymapStore } from "./store/keymap-store";
+import { loadAllFonts } from "./components/editor/font";
 
 declare global {
   interface Window {
@@ -75,6 +76,7 @@ export class AppContext {
     this.wiring();
     this.loadKeymap();
     this.loadData();
+    this.loadFonts();
     registerCommands();
   }
 
@@ -151,6 +153,10 @@ export class AppContext {
   saveData() {
     const json = this.editor.saveToJSON();
     localStorage.setItem("app-data", JSON.stringify(json));
+  }
+
+  loadFonts() {
+    loadAllFonts();
   }
 
   updateUI() {
