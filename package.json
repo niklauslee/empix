@@ -27,6 +27,7 @@
     "clsx": "^2.1.1",
     "js-base64": "^3.9.1",
     "keycode": "^2.2.1",
+    "pako": "^3.0.1",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-syntax-highlighter": "^16.1.1",
@@ -38,6 +39,7 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@types/pako": "^2.0.4",
     "@types/react-syntax-highlighter": "^15.5.13"
   }
 }

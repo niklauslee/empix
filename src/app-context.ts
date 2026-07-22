@@ -8,7 +8,8 @@ import { useEditorStore } from "./store/editor-store";
 import { ShapeType } from "./components/editor/shapes";
 import { CodeGenerator } from "./engine/code-generator";
 import { useKeymapStore } from "./store/keymap-store";
-import { loadAllFonts } from "./components/editor/font";
+import { loadFontFromBDF } from "./components/editor/font";
+import { availableFonts, getEmbeddedFontBDF } from "./font-data";
 
 declare global {
   interface Window {
@@ -156,7 +157,12 @@ export class AppContext {
   }
 
   loadFonts() {
-    loadAllFonts();
+    setTimeout(() => {
+      for (const font of availableFonts) {
+        const bdfstring = getEmbeddedFontBDF(font.name);
+        loadFontFromBDF(bdfstring);
+      }
+    }, 100);
   }
 
   updateUI() {

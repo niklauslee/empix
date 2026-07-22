@@ -3,23 +3,15 @@ import { Color, Mouse } from "./consts";
 import {
   containsPoint,
   getBoundingRect,
-  type LineShape,
-  move,
   overlapRect,
-  type PenShape,
   render,
   renderOutline,
   type Shape,
   ShapeFactory,
-  type ShapeProps,
-  ShapeType,
-  type TextShape,
 } from "./shapes";
 import * as geometry from "./geometry";
 import { Transform } from "./transform";
 import { Store } from "./store";
-import { getLoadedFonts, loadFontFromBDF } from "./font";
-import { nanoid } from "nanoid";
 import { TypedEvent } from "./std";
 import { Clipboard } from "./clipboard";
 import { PredefinedActions } from "./actions";
@@ -1035,20 +1027,6 @@ export class Editor {
   setCursor(cursor: string, angle: number = 0) {
     const cssCursor = cursor.replace("{{angle}}", angle.toString());
     this.canvas.style.cursor = cssCursor;
-  }
-
-  /**
-   * Load a font from a BDF string.
-   */
-  async loadFont(bdfstring: string) {
-    return await loadFontFromBDF(bdfstring);
-  }
-
-  /**
-   * Get a list of available font names
-   */
-  getAvailableFonts(): string[] {
-    return getLoadedFonts();
   }
 
   /**
