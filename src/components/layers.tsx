@@ -49,7 +49,7 @@ export const LayersPanel: React.FC<LayersPanelProps> = ({ className }) => {
       <div className="absolute inset-x-0 top-8 bottom-0">
         <ScrollArea className="w-full h-full">
           {shapes.length === 0 && (
-            <div className="px-4 h-8 mt-2 text-sm text-muted-foreground">
+            <div className="px-4 h-8 mt-2 text-sm text-muted-foreground/60">
               No shapes
             </div>
           )}
