@@ -4,12 +4,12 @@
 
 👉 https://empix.niklauslee.workers.dev/
 
-An open-source minimal design tool for embedded devices with monochrome displays.
+An open-source minimal graphic design tool for embedded devices with monochrome displays.
 
-- Support various shapes (rectangle, circle, line, polygon, text, free drawing)
+- Local first and no login required
+- Support various shapes (rectangle, ellipse, line, polygon, text, free drawing)
 - Support various BDF fonts
-- Export to [u8g2](https://github.com/olikraus/u8g2) code (under development)
-- Export to PNG (under development)
+- [u8g2](https://github.com/olikraus/u8g2) C/C++ code generation
 
 ## Build
 
@@ -31,4 +31,4 @@ Please note that this project is **not open contribution**, so we do not accept 
 
 ## License
 
-Empix Studio is distributed under the _GPLv3 license_.
+Empix Studio is distributed under the _Apache License 2.0_. See the [LICENSE](./LICENSE.md) file for more details.
