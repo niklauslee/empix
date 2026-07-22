@@ -6,7 +6,7 @@
 
 ![Screen](https://github.com/niklauslee/empix/blob/main/public/images/screen.png?raw=true)
 
-An open-source minimal graphic design tool for embedded devices with monochrome displays.
+A super-simple graphic editor for embedded devices with monochrome displays.
 
 - Local first and no login required
 - Save your work in the browser
