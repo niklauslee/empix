@@ -9,9 +9,10 @@
 An open-source minimal graphic design tool for embedded devices with monochrome displays.
 
 - Local first and no login required
+- Save your work in the browser
 - Support various shapes (rectangle, ellipse, line, polygon, text, free drawing)
-- Support various BDF fonts
 - [u8g2](https://github.com/olikraus/u8g2) C/C++ code generation
+- XBM (X Bitmap) code generation
 
 ## Build
 

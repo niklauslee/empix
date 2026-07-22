@@ -23,6 +23,14 @@ const LayerItem: React.FC<{
         "text-sm h-8 w-full flex items-center justify-start gap-2 px-4 cursor-pointer hover:bg-neutral-800",
         selected && "bg-neutral-700",
       )}
+      onClick={() => {
+        const clickedShape = window.app.editor.store.getShapeById(shape.id)!;
+        if (clickedShape) {
+          window.app.editor.selection.clear();
+          window.app.editor.selection.select(clickedShape);
+          window.app.editor.repaint();
+        }
+      }}
     >
       <div className="min-w-4 min-h-4 flex items-center justify-center">
         {shape.type === ShapeType.RECTANGLE && <RectangleIcon size={14} />}
