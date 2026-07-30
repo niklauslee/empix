@@ -1,15 +1,15 @@
 import type { Editor } from "@/components/editor/editor";
-import { detectPlatform, generateNewName } from "./lib/utils";
-import { CommandManager } from "./engine/command-manager";
-import { KeymapManager } from "./engine/keymap-manager";
+import { detectPlatform, generateNewName } from "../../lib/utils";
+import { CommandManager } from "../../engine/command-manager";
+import { KeymapManager } from "../../engine/keymap-manager";
 import { registerCommands } from "./commands";
 import keymapJson from "./keymap.json";
-import { useEditorStore } from "./store/editor-store";
-import { ShapeType } from "./components/editor/shapes";
-import { CodeGenerator } from "./engine/code-generator";
-import { useKeymapStore } from "./store/keymap-store";
-import { loadFontFromBDF } from "./components/editor/font";
-import { availableFonts, getEmbeddedFontBDF } from "./font-data";
+import { useEditorStore } from "./editor-store";
+import { ShapeType } from "../../components/editor/shapes";
+import { CodeGenerator } from "../../engine/code-generator";
+import { useKeymapStore } from "./keymap-store";
+import { loadFontFromBDF } from "../../components/editor/font";
+import { availableFonts, getEmbeddedFontBDF } from "../../font-data";
 
 declare global {
   interface Window {

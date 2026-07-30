@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
-import { Input } from "../ui/input";
+import { Input } from "@/components/ui/input";
 import { useFontStore } from "./font-store";
 import { drawText, measureText, setupCanvas } from "./render";
 
@@ -37,7 +37,10 @@ export function Preview({ className, ...others }: PreviewProps) {
   }, [font, previewText, width, height, lineHeight]);
 
   return (
-    <div className={cn("flex h-28 flex-col gap-2 px-4 py-3", className)} {...others}>
+    <div
+      className={cn("flex h-28 flex-col gap-2 px-4 py-3", className)}
+      {...others}
+    >
       <div className="flex items-center gap-2">
         <div className="text-xs text-muted-foreground">Preview</div>
         <Input

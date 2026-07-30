@@ -1,4 +1,4 @@
-import { useEditorStore } from "@/store/editor-store";
+import { useEditorStore } from "@/apps/screen-editor/editor-store";
 import {
   BringToFrontIcon,
   CursorIcon,
@@ -14,13 +14,13 @@ import {
   SendToBackIcon,
   TextIcon,
   UndoIcon,
-} from "../icons";
-import { Button } from "../ui/button";
-import { Label } from "../ui/label";
-import { NumberField } from "../ui/number-field";
-import { useConfirmDialog } from "../dialogs/confirm-dialog";
-import { useCodeDialog } from "../dialogs/code-dialog";
-import { useKeymapStore } from "@/store/keymap-store";
+} from "@/components/icons";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { NumberField } from "@/components/ui/number-field";
+import { useConfirmDialog } from "@/components/dialogs/confirm-dialog";
+import { useCodeDialog } from "@/components/dialogs/code-dialog";
+import { useKeymapStore } from "@/apps/screen-editor/keymap-store";
 
 export function Toolbar() {
   const activeHandler = useEditorStore((state) => state.activeHandler);
@@ -70,84 +70,6 @@ export function Toolbar() {
               }}
             />
           </div>
-        </div>
-        <div className="flex flex-row items-center justify-end gap-2 px-4">
-          <Button
-            variant="outline"
-            onClick={() => {
-              useConfirmDialog
-                .getState()
-                .show(
-                  "Clear Canvas",
-                  "Are you sure you want to clear the canvas? This action cannot be undone.",
-                  () => {
-                    window.app.editor.clear();
-                    window.app.updateUI();
-                  },
-                );
-            }}
-          >
-            Clear
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => {
-              useCodeDialog.getState().setOpen(true);
-            }}
-          >
-            Code
-          </Button>
-          <Button
-            variant="outline"
-            onClick={async () => {
-              // FIXME: Only works in Chromium-based browsers
-              try {
-                const [fileHandle] = await (window as any).showOpenFilePicker({
-                  types: [
-                    {
-                      description: "Empix file",
-                      accept: { "application/json": [".empix"] },
-                    },
-                  ],
-                  multiple: false,
-                });
-                const file = await fileHandle.getFile();
-                const text = await file.text();
-                window.app.editor.loadFromJSON(JSON.parse(text));
-                window.app.updateUI();
-              } catch (e) {
-                if ((e as any)?.name !== "AbortError") console.error(e);
-              }
-            }}
-          >
-            Import
-          </Button>
-          <Button
-            variant="outline"
-            onClick={async () => {
-              // FIXME: Only works in Chromium-based browsers
-              try {
-                const fileHandle = await (window as any).showSaveFilePicker({
-                  suggestedName: "untitled.empix",
-                  types: [
-                    {
-                      description: "Empix file",
-                      accept: { "application/json": [".empix"] },
-                    },
-                  ],
-                });
-                const writable = await fileHandle.createWritable();
-                await writable.write(
-                  JSON.stringify(window.app.editor.saveToJSON(), null, 2),
-                );
-                await writable.close();
-              } catch (e) {
-                if ((e as any)?.name !== "AbortError") console.error(e);
-              }
-            }}
-          >
-            Export
-          </Button>
         </div>
       </div>
 

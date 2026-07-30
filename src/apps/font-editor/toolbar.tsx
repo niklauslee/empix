@@ -1,7 +1,7 @@
-import { Button } from "../ui/button";
-import { Checkbox } from "../ui/checkbox";
-import { Label } from "../ui/label";
-import { MinusIcon, PlusIcon, RedoIcon, UndoIcon } from "../icons";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { MinusIcon, PlusIcon, RedoIcon, UndoIcon } from "@/components/icons";
 import { findGlyph } from "./bdf";
 import {
   clear,

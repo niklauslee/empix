@@ -1,9 +1,9 @@
 import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { ScrollArea } from "../ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatCode, type Font, type Glyph } from "./bdf";
 import { useFontStore } from "./font-store";
 import { drawGlyph, setupCanvas } from "./render";
@@ -70,7 +70,14 @@ function GlyphThumb({
     const ctx = setupCanvas(canvas, box.w * scale, box.h * scale);
     if (!ctx) return;
     ctx.fillStyle = color;
-    drawGlyph(ctx, font, glyph, -box.ox * scale, (box.oy + box.h) * scale, scale);
+    drawGlyph(
+      ctx,
+      font,
+      glyph,
+      -box.ox * scale,
+      (box.oy + box.h) * scale,
+      scale,
+    );
   }, [font, glyph, scale, color, box.w, box.h, box.ox, box.oy]);
 
   // the layout size is set here, not just in the effect: a freshly mounted
@@ -116,7 +123,10 @@ export function GlyphList({ className, ...others }: GlyphListProps) {
   };
 
   return (
-    <div className={cn("absolute inset-0 flex flex-col", className)} {...others}>
+    <div
+      className={cn("absolute inset-0 flex flex-col", className)}
+      {...others}
+    >
       <div className="flex h-10 shrink-0 items-center justify-between px-4 text-sm">
         <div>Glyphs</div>
         <div className="text-xs text-muted-foreground">

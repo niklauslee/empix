@@ -1,12 +1,12 @@
 import { getEmbeddedFontBDF } from "@/font-data";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { useConfirmDialog } from "../dialogs/confirm-dialog";
+} from "@/components/ui/dropdown-menu";
+import { useConfirmDialog } from "@/components/dialogs/confirm-dialog";
 import { parseBDF } from "./bdf";
 import { embeddedFontNames, useFontStore } from "./font-store";
 

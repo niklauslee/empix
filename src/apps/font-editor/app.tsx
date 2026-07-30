@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import Logo from "../screen-editor/logo";
-import { Button } from "../ui/button";
-import { ConfirmDialog, useConfirmDialog } from "../dialogs/confirm-dialog";
+import Logo from "../../components/logo";
+import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  ConfirmDialog,
+  useConfirmDialog,
+} from "@/components/dialogs/confirm-dialog";
 import {
   createFont,
   createGlyph,
@@ -27,6 +30,7 @@ import { PropertiesPanel } from "./properties";
 import { Preview } from "./preview";
 import { Toolbar } from "./toolbar";
 import { EmbeddedFontMenu } from "./embedded-font-menu";
+import { cn } from "@/lib/utils";
 
 /** A fresh font: printable ASCII, all glyphs blank. */
 function blankFont(): Font {
@@ -170,9 +174,20 @@ function App() {
     <>
       <main className="absolute inset-0 flex select-none flex-col bg-background text-foreground">
         <header className="flex h-12 shrink-0 items-center justify-between border-b-[1.5px] border-neutral-700">
-          <div className="flex items-center justify-start px-4">
-            <Logo size={1.5} className="text-green-600" />
-            <div className="ml-3 text-xl">font</div>
+          <div className="flex items-center justify-start gap-6 px-4">
+            <div className="text-xl flex flex-row items-start justify-center gap-1">
+              <Logo size={1.5} className="text-green-600" />
+              <div className="text-xl ml-3">studio</div>
+            </div>
+            <div className="flex flex-row items-start justify-center gap-2">
+              <a
+                href="/screen"
+                className={cn(buttonVariants({ variant: "outline" }))}
+              >
+                Screen
+              </a>
+              <Button variant="default">Font</Button>
+            </div>
           </div>
           <div className="flex items-center gap-2 px-4">
             <EmbeddedFontMenu onLoad={(name) => flash(`Opened ${name}`)} />

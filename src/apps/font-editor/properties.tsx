@@ -1,18 +1,18 @@
 import { QuestionIcon } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
-import { Button } from "../ui/button";
-import { Label } from "../ui/label";
-import { NumberField } from "../ui/number-field";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { NumberField } from "@/components/ui/number-field";
 import {
   Popover,
   PopoverContent,
   PopoverDescription,
   PopoverTitle,
   PopoverTrigger,
-} from "../ui/popover";
-import { ScrollArea } from "../ui/scroll-area";
-import { TextField } from "../ui/text-field";
-import { useConfirmDialog } from "../dialogs/confirm-dialog";
+} from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { TextField } from "@/components/ui/text-field";
+import { useConfirmDialog } from "@/components/dialogs/confirm-dialog";
 import { findGlyph, formatCode } from "./bdf";
 import { useFontStore } from "./font-store";
 
@@ -115,9 +115,10 @@ function FontProperties() {
         <Help title="Bounding box">
           One grid shared by every glyph (BDF FONTBOUNDINGBOX). W and H are its
           size in pixels — the columns and rows you can draw in. X off and Y off
-          place it relative to the origin (baseline, left edge); Y off is normally
-          negative, which puts that many rows below the baseline. Resizing re-maps
-          every glyph around the origin, and pixels left outside are dropped.
+          place it relative to the origin (baseline, left edge); Y off is
+          normally negative, which puts that many rows below the baseline.
+          Resizing re-maps every glyph around the origin, and pixels left
+          outside are dropped.
         </Help>
       </div>
       <div className="flex w-full gap-2">
@@ -225,8 +226,8 @@ function GlyphProperties() {
           Delete Glyph
         </Button>
         <Help title="Delete Glyph">
-          Removes the glyph from the font. Structural edits clear the undo stack,
-          so this cannot be undone.
+          Removes the glyph from the font. Structural edits clear the undo
+          stack, so this cannot be undone.
         </Help>
       </div>
     </div>
@@ -235,9 +236,15 @@ function GlyphProperties() {
 
 interface PropertiesPanelProps extends React.HTMLAttributes<HTMLDivElement> {}
 
-export function PropertiesPanel({ className, ...others }: PropertiesPanelProps) {
+export function PropertiesPanel({
+  className,
+  ...others
+}: PropertiesPanelProps) {
   return (
-    <div className={cn("absolute inset-0 flex flex-col", className)} {...others}>
+    <div
+      className={cn("absolute inset-0 flex flex-col", className)}
+      {...others}
+    >
       <div className="flex h-10 shrink-0 items-center px-4 text-sm">Font</div>
       <div className="min-h-0 flex-1">
         <ScrollArea className="h-full w-full">
