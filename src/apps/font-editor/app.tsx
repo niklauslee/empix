@@ -236,7 +236,7 @@ function App() {
           </aside>
         </section>
 
-        <footer className="flex h-6 shrink-0 items-center justify-between border-t-[1.5px] border-neutral-700 px-4 font-mono text-[10px] text-muted-foreground">
+        <footer className="flex h-8 shrink-0 items-center justify-between border-t-[1.5px] border-neutral-700 px-4 font-mono text-xs text-muted-foreground">
           <div className="flex gap-4">
             {glyph && (
               <span>
