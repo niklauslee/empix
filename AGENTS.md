@@ -108,6 +108,28 @@ Entry point: `src/pages/index.astro` renders `<App client:only="react" />`.
   `components.json`. Icons: hand-written SVGs in `src/components/icons/`, plus
   `@phosphor-icons/react`.
 
+### Font editor (`src/components/font-editor/`)
+
+A second, self-contained app at `src/pages/font.astro`: a BDF glyph editor. It
+shares only the `ui/`, `icons/` and `dialogs/` components — it does not use the
+editor core, `AppContext` or the engine.
+
+- `bdf.ts` — the `Font` / `Glyph` model plus `parseBDF` / `serializeBDF`. Every
+  glyph bitmap is stored in the **font bounding box frame** (one fixed grid for
+  the whole font); per-glyph `BBX` is recomputed tightly on serialization. BDF y
+  points up from the baseline, grid rows go down:
+  `y = box.oy + box.h - 1 - row`.
+- `draw.ts` — pixel operations (pen, line, rect, flood fill, shift, flip,
+  invert). They take and return `boolean[]`, never mutate.
+- `font-store.ts` — zustand store: font, selected codepoint, tool, zoom, and an
+  undo stack of bitmap patches (structural edits clear it). Persists the font as
+  BDF text in `localStorage["font-data"]`, debounced.
+- `render.ts` — canvas helpers (`drawGlyph`, `drawText`) used by the glyph
+  browser, the editing grid and the preview.
+- `app.tsx` — layout, import/export, keyboard shortcuts; with `glyph-list.tsx`,
+  `toolbar.tsx`, `glyph-canvas.tsx`, `properties.tsx`, `preview.tsx`,
+  `embedded-font-menu.tsx`.
+
 ### Fonts
 
 Two unrelated font pipelines:

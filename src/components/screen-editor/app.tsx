@@ -1,16 +1,16 @@
 import { app, AppContext } from "@/app-context";
-import { Editor } from "./editor/editor";
-import { EditorComponent } from "./editor/editor-component";
-import { ConfirmDialog } from "./dialogs/confirm-dialog";
+import { Editor } from "../editor/editor";
+import { EditorComponent } from "../editor/editor-component";
+import { ConfirmDialog } from "../dialogs/confirm-dialog";
 import { Layout } from "./layout";
 import { Toolbar } from "./toolbar";
 import Logo from "./logo";
 import { PropertiesPanel } from "./properties";
-import type { ShapeProps } from "./editor/shapes";
+import type { ShapeProps } from "../editor/shapes";
 import { useEditorStore } from "@/store/editor-store";
 import { LayersPanel } from "./layers";
-import { ScrollAreaBoth } from "./ui/scroll-area-both";
-import { CodeDialog } from "./dialogs/code-dialog";
+import { ScrollAreaBoth } from "../ui/scroll-area-both";
+import { CodeDialog } from "../dialogs/code-dialog";
 
 declare global {
   interface Window {

@@ -14,12 +14,12 @@ import {
   SendToBackIcon,
   TextIcon,
   UndoIcon,
-} from "./icons";
-import { Button } from "./ui/button";
-import { Label } from "./ui/label";
-import { NumberField } from "./ui/number-field";
-import { useConfirmDialog } from "./dialogs/confirm-dialog";
-import { useCodeDialog } from "./dialogs/code-dialog";
+} from "../icons";
+import { Button } from "../ui/button";
+import { Label } from "../ui/label";
+import { NumberField } from "../ui/number-field";
+import { useConfirmDialog } from "../dialogs/confirm-dialog";
+import { useCodeDialog } from "../dialogs/code-dialog";
 import { useKeymapStore } from "@/store/keymap-store";
 
 export function Toolbar() {

@@ -1,16 +1,16 @@
 import { cn, odd } from "@/lib/utils";
-import { Label } from "./ui/label";
+import { Label } from "../ui/label";
 import {
   ShapeType,
   type LineShape,
   type Shape,
   type ShapeProps,
   type TextShape,
-} from "./editor/shapes";
-import { TextField } from "./ui/text-field";
-import { NumberField } from "./ui/number-field";
-import { ScrollArea } from "./ui/scroll-area";
-import { Checkbox } from "./ui/checkbox";
+} from "../editor/shapes";
+import { TextField } from "../ui/text-field";
+import { NumberField } from "../ui/number-field";
+import { ScrollArea } from "../ui/scroll-area";
+import { Checkbox } from "../ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -19,8 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { availableFonts } from "../font-data";
-import { Button } from "./ui/button";
+import { availableFonts } from "../../font-data";
+import { Button } from "../ui/button";
 
 export interface ShapeEditorProps extends React.HTMLAttributes<HTMLDivElement> {
   selection: Shape[];
