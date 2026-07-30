@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import Logo from "../../components/logo";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Appbar } from "@/components/appbar";
+import { Button } from "@/components/ui/button";
 import {
   ConfirmDialog,
   useConfirmDialog,
@@ -30,7 +30,6 @@ import { PropertiesPanel } from "./properties";
 import { Preview } from "./preview";
 import { Toolbar } from "./toolbar";
 import { EmbeddedFontMenu } from "./embedded-font-menu";
-import { cn } from "@/lib/utils";
 
 /** A fresh font: printable ASCII, all glyphs blank. */
 function blankFont(): Font {
@@ -173,60 +172,43 @@ function App() {
   return (
     <>
       <main className="absolute inset-0 flex select-none flex-col bg-background text-foreground">
-        <header className="flex h-12 shrink-0 items-center justify-between border-b-[1.5px] border-neutral-700">
-          <div className="flex items-center justify-start gap-6 px-4">
-            <div className="text-xl flex flex-row items-start justify-center gap-1">
-              <Logo size={1.5} className="text-green-600" />
-              <div className="text-xl ml-3">studio</div>
-            </div>
-            <div className="flex flex-row items-start justify-center gap-2">
-              <a
-                href="/screen"
-                className={cn(buttonVariants({ variant: "outline" }))}
-              >
-                Screen
-              </a>
-              <Button variant="default">Font</Button>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 px-4">
-            <EmbeddedFontMenu onLoad={(name) => flash(`Opened ${name}`)} />
-            <Button
-              variant="outline"
-              size="sm"
-              title="Import a BDF file"
-              onClick={() => fileRef.current?.click()}
-            >
-              Import
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              title="Export as BDF"
-              onClick={() =>
-                download(`${font.name || "untitled"}.bdf`, serializeBDF(font))
-              }
-            >
-              Export
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              title="Start a new font"
-              onClick={() => {
-                useConfirmDialog
-                  .getState()
-                  .show(
-                    "New Font",
-                    "Discard the current font and start a new one? This cannot be undone.",
-                    () => setFont(blankFont()),
-                  );
-              }}
-            >
-              New
-            </Button>
-          </div>
-        </header>
+        <Appbar active="font">
+          <EmbeddedFontMenu onLoad={(name) => flash(`Opened ${name}`)} />
+          <Button
+            variant="outline"
+            size="sm"
+            title="Import a BDF file"
+            onClick={() => fileRef.current?.click()}
+          >
+            Import
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            title="Export as BDF"
+            onClick={() =>
+              download(`${font.name || "untitled"}.bdf`, serializeBDF(font))
+            }
+          >
+            Export
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            title="Start a new font"
+            onClick={() => {
+              useConfirmDialog
+                .getState()
+                .show(
+                  "New Font",
+                  "Discard the current font and start a new one? This cannot be undone.",
+                  () => setFont(blankFont()),
+                );
+            }}
+          >
+            New
+          </Button>
+        </Appbar>
 
         <section className="flex min-h-0 flex-1">
           <aside className="relative w-84 shrink-0 border-r-[1.5px] border-neutral-700">

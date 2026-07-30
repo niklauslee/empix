@@ -158,8 +158,7 @@ export function GlyphCanvas({ glyph, className, ...others }: GlyphCanvasProps) {
     ctx.textBaseline = "middle";
     for (let col = 0; col < box.w; col++) {
       const x = box.ox + col;
-      const label = x < 0 ? String(x) : x.toString(16).toUpperCase();
-      ctx.fillText(label, col * cellSize + cellSize / 2, -MARGIN / 2);
+      ctx.fillText(String(x), col * cellSize + cellSize / 2, -MARGIN / 2);
     }
     ctx.textAlign = "right";
     for (let row = 0; row < box.h; row++) {
@@ -213,13 +212,21 @@ export function GlyphCanvas({ glyph, className, ...others }: GlyphCanvasProps) {
     event.currentTarget.setPointerCapture(event.pointerId);
     // pen toggles the pixel it starts on, alt / right button always erases
     const erase =
-      tool === "eraser" || event.altKey || event.buttons === 2 || event.button === 2;
+      tool === "eraser" ||
+      event.altKey ||
+      event.buttons === 2 ||
+      event.button === 2;
     const on = erase
       ? false
       : tool === "pen"
         ? !getPixel(box, glyph.pixels, point.col, point.row)
         : true;
-    const stroke: Stroke = { start: point, last: point, on, base: glyph.pixels };
+    const stroke: Stroke = {
+      start: point,
+      last: point,
+      on,
+      base: glyph.pixels,
+    };
     strokeRef.current = stroke;
     if (tool === "fill") {
       putDraft(floodFill(box, glyph.pixels, point, on));
@@ -251,7 +258,10 @@ export function GlyphCanvas({ glyph, className, ...others }: GlyphCanvasProps) {
   };
 
   return (
-    <div className={cn("flex flex-col items-start gap-3", className)} {...others}>
+    <div
+      className={cn("flex flex-col items-center gap-3", className)}
+      {...others}
+    >
       <canvas
         ref={canvasRef}
         className="touch-none cursor-crosshair"

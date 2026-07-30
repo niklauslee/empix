@@ -1,7 +1,26 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { MinusIcon, PlusIcon, RedoIcon, UndoIcon } from "@/components/icons";
+import { cn } from "@/lib/utils";
+import {
+  ArrowDownIcon,
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  ArrowUpIcon,
+  ContrastIcon,
+  EraserIcon,
+  FlipHorizontalIcon,
+  FlipVerticalIcon,
+  MinusIcon,
+  PaintBucketIcon,
+  PencilIcon,
+  PlusIcon,
+  Redo2Icon,
+  SlashIcon,
+  SquareIcon,
+  Trash2Icon,
+  Undo2Icon,
+} from "lucide-react";
 import { findGlyph } from "./bdf";
 import {
   clear,
@@ -13,20 +32,47 @@ import {
 } from "./draw";
 import { useFontStore } from "./font-store";
 
-const TOOLS: { id: Tool; label: string; key: string }[] = [
-  { id: "pen", label: "Pen", key: "P" },
-  { id: "eraser", label: "Eraser", key: "E" },
-  { id: "line", label: "Line", key: "L" },
-  { id: "rect", label: "Rect", key: "R" },
-  { id: "rect-fill", label: "Rect ■", key: "Shift+R" },
-  { id: "fill", label: "Fill", key: "F" },
+/** A lucide icon, narrowed to the props the toolbar passes. */
+type IconComponent = React.ComponentType<{ className?: string }>;
+
+/**
+ * Icon size, as a class rather than the `size` prop: `buttonVariants` styles
+ * `svg:not([class*='size-'])` and that CSS wins over lucide's width/height.
+ */
+const ICON = "size-3.5";
+
+const TOOLS: {
+  id: Tool;
+  label: string;
+  key: string;
+  icon: IconComponent;
+  /** Extra icon classes — the filled rect reuses the outlined square. */
+  iconClassName?: string;
+}[] = [
+  { id: "pen", label: "Pen", key: "P", icon: PencilIcon },
+  { id: "eraser", label: "Eraser", key: "E", icon: EraserIcon },
+  { id: "line", label: "Line", key: "L", icon: SlashIcon },
+  { id: "rect", label: "Rect", key: "R", icon: SquareIcon },
+  {
+    id: "rect-fill",
+    label: "Rect filled",
+    key: "Shift+R",
+    icon: SquareIcon,
+    iconClassName: "fill-current",
+  },
+  { id: "fill", label: "Fill", key: "F", icon: PaintBucketIcon },
 ];
 
-const SHIFTS: { label: string; dcol: number; drow: number }[] = [
-  { label: "↑", dcol: 0, drow: -1 },
-  { label: "↓", dcol: 0, drow: 1 },
-  { label: "←", dcol: -1, drow: 0 },
-  { label: "→", dcol: 1, drow: 0 },
+const SHIFTS: {
+  label: string;
+  icon: IconComponent;
+  dcol: number;
+  drow: number;
+}[] = [
+  { label: "up", icon: ArrowUpIcon, dcol: 0, drow: -1 },
+  { label: "down", icon: ArrowDownIcon, dcol: 0, drow: 1 },
+  { label: "left", icon: ArrowLeftIcon, dcol: -1, drow: 0 },
+  { label: "right", icon: ArrowRightIcon, dcol: 1, drow: 0 },
 ];
 
 export function Toolbar() {
@@ -60,12 +106,12 @@ export function Toolbar() {
           {TOOLS.map((item) => (
             <Button
               key={item.id}
-              size="sm"
+              size="icon-sm"
               title={`${item.label} ⎯ ${item.key}`}
               variant={tool === item.id ? "default" : "outline"}
               onClick={() => setTool(item.id)}
             >
-              {item.label}
+              <item.icon className={cn(ICON, item.iconClassName)} />
             </Button>
           ))}
         </div>
@@ -76,7 +122,7 @@ export function Toolbar() {
             title="Zoom In"
             onClick={() => setCellSize(cellSize + 2)}
           >
-            <PlusIcon size={12} />
+            <PlusIcon className={ICON} />
           </Button>
           <Button
             size="icon-sm"
@@ -84,7 +130,7 @@ export function Toolbar() {
             title="Zoom Out"
             onClick={() => setCellSize(cellSize - 2)}
           >
-            <MinusIcon size={12} />
+            <MinusIcon className={ICON} />
           </Button>
           <Button
             size="icon-sm"
@@ -93,7 +139,7 @@ export function Toolbar() {
             disabled={!canUndo}
             onClick={undo}
           >
-            <UndoIcon size={12} />
+            <Undo2Icon className={ICON} />
           </Button>
           <Button
             size="icon-sm"
@@ -102,7 +148,7 @@ export function Toolbar() {
             disabled={!canRedo}
             onClick={redo}
           >
-            <RedoIcon size={12} />
+            <Redo2Icon className={ICON} />
           </Button>
         </div>
       </div>
@@ -115,53 +161,53 @@ export function Toolbar() {
               key={item.label}
               size="icon-sm"
               variant="outline"
-              title="Shift the glyph"
+              title={`Shift the glyph ${item.label}`}
               disabled={disabled}
               onClick={() =>
                 apply((pixels) => shift(font.box, pixels, item.dcol, item.drow))
               }
             >
-              {item.label}
+              <item.icon className={ICON} />
             </Button>
           ))}
         </div>
         <div className="h-6 w-px bg-neutral-700" />
         <div className="flex items-center gap-1">
           <Button
-            size="sm"
+            size="icon-sm"
             variant="outline"
             title="Invert ⎯ I"
             disabled={disabled}
             onClick={() => apply(invert)}
           >
-            Invert
+            <ContrastIcon className={ICON} />
           </Button>
           <Button
-            size="sm"
+            size="icon-sm"
             variant="outline"
             title="Flip horizontally ⎯ Shift+H"
             disabled={disabled}
             onClick={() => apply((pixels) => flipHorizontal(font.box, pixels))}
           >
-            Flip H
+            <FlipHorizontalIcon className={ICON} />
           </Button>
           <Button
-            size="sm"
+            size="icon-sm"
             variant="outline"
             title="Flip vertically ⎯ Shift+V"
             disabled={disabled}
             onClick={() => apply((pixels) => flipVertical(font.box, pixels))}
           >
-            Flip V
+            <FlipVerticalIcon className={ICON} />
           </Button>
           <Button
-            size="sm"
+            size="icon-sm"
             variant="outline"
             title="Clear the glyph ⎯ Delete"
             disabled={disabled}
             onClick={() => apply(() => clear(font.box))}
           >
-            Clear
+            <Trash2Icon className={ICON} />
           </Button>
         </div>
         <Label className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">

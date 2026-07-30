@@ -1,4 +1,4 @@
-import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
+import { ChevronLeftIcon, ChevronRightIcon, PlusIcon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -153,7 +153,7 @@ export function GlyphList({ className, ...others }: GlyphListProps) {
           disabled={parseCodepoint(filter) === null}
           onClick={handleAdd}
         >
-          +
+          <PlusIcon className="size-3.5" />
         </Button>
       </div>
       <div className="min-h-0 flex-1">
@@ -210,7 +210,7 @@ export function GlyphList({ className, ...others }: GlyphListProps) {
             disabled={page === 0}
             onClick={() => setRequested(page - 1)}
           >
-            <CaretLeftIcon />
+            <ChevronLeftIcon className="size-3.5" />
           </Button>
           <div className="font-mono text-[10px] text-muted-foreground">
             {visible.length > 0 && (
@@ -230,7 +230,7 @@ export function GlyphList({ className, ...others }: GlyphListProps) {
             disabled={page >= pageCount - 1}
             onClick={() => setRequested(page + 1)}
           >
-            <CaretRightIcon />
+            <ChevronRightIcon className="size-3.5" />
           </Button>
         </div>
       )}
