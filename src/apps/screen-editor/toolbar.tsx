@@ -1,4 +1,4 @@
-import { useEditorStore } from "@/apps/screen-editor/editor-store";
+import { useEditorStore } from "@/apps/screen-editor/store/editor-store";
 import {
   BringToFrontIcon,
   CursorIcon,
@@ -20,7 +20,7 @@ import { Label } from "@/components/ui/label";
 import { NumberField } from "@/components/ui/number-field";
 import { useConfirmDialog } from "@/components/dialogs/confirm-dialog";
 import { useCodeDialog } from "@/components/dialogs/code-dialog";
-import { useKeymapStore } from "@/apps/screen-editor/keymap-store";
+import { useKeymapStore } from "@/apps/screen-editor/store/keymap-store";
 
 export function Toolbar() {
   const activeHandler = useEditorStore((state) => state.activeHandler);

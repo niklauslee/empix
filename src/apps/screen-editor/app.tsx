@@ -10,7 +10,7 @@ import { Toolbar } from "./toolbar";
 import Logo from "../../components/logo";
 import { PropertiesPanel } from "./properties";
 import type { ShapeProps } from "@/components/editor/shapes";
-import { useEditorStore } from "@/apps/screen-editor/editor-store";
+import { useEditorStore } from "@/apps/screen-editor/store/editor-store";
 import { LayersPanel } from "./layers";
 import { ScrollAreaBoth } from "@/components/ui/scroll-area-both";
 import { CodeDialog, useCodeDialog } from "@/components/dialogs/code-dialog";
