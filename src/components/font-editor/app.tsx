@@ -234,7 +234,7 @@ function App() {
             </div>
             <Preview className="shrink-0 border-t-[1.5px] border-neutral-700" />
           </article>
-          <aside className="relative w-84 shrink-0 border-l-[1.5px] border-neutral-700">
+          <aside className="relative w-64 shrink-0 border-l-[1.5px] border-neutral-700">
             <PropertiesPanel />
           </aside>
         </section>

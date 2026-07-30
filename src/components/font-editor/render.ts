@@ -12,8 +12,12 @@ export function setupCanvas(
   height: number,
 ): CanvasRenderingContext2D | null {
   const ratio = window.devicePixelRatio || 1;
-  canvas.width = Math.round(width * ratio);
-  canvas.height = Math.round(height * ratio);
+  const pixelWidth = Math.round(width * ratio);
+  const pixelHeight = Math.round(height * ratio);
+  // assigning width/height reallocates the backing store, so only do it on a
+  // real size change — redraws of a reused canvas are then just a clear + fill
+  if (canvas.width !== pixelWidth) canvas.width = pixelWidth;
+  if (canvas.height !== pixelHeight) canvas.height = pixelHeight;
   canvas.style.width = `${width}px`;
   canvas.style.height = `${height}px`;
   const ctx = canvas.getContext("2d");

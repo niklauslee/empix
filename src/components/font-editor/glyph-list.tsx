@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef } from "react";
+import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -7,9 +8,10 @@ import { formatCode, type Font, type Glyph } from "./bdf";
 import { useFontStore } from "./font-store";
 import { drawGlyph, setupCanvas } from "./render";
 
-/** Cap on rendered thumbnails — large fonts are reached through the search. */
-const MAX_ITEMS = 512;
 const THUMB_SIZE = 26;
+
+/** Glyphs per page — the list is paged so huge fonts stay cheap to render. */
+const PAGE_SIZE = 256;
 
 /**
  * Parse a codepoint written as a character (`A`), hex (`U+41`, `0x41`) or a
@@ -50,14 +52,17 @@ function GlyphThumb({
   font,
   glyph,
   color,
+  size = THUMB_SIZE,
 }: {
   font: Font;
   glyph: Glyph;
   color: string;
+  /** Largest thumbnail edge in screen pixels. */
+  size?: number;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { box } = font;
-  const scale = Math.max(1, Math.floor(THUMB_SIZE / Math.max(box.w, box.h)));
+  const scale = Math.max(1, Math.floor(size / Math.max(box.w, box.h)));
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -68,7 +73,14 @@ function GlyphThumb({
     drawGlyph(ctx, font, glyph, -box.ox * scale, (box.oy + box.h) * scale, scale);
   }, [font, glyph, scale, color, box.w, box.h, box.ox, box.oy]);
 
-  return <canvas ref={canvasRef} />;
+  // the layout size is set here, not just in the effect: a freshly mounted
+  // canvas would otherwise paint once at its default 300x150
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{ width: box.w * scale, height: box.h * scale }}
+    />
+  );
 }
 
 interface GlyphListProps extends React.HTMLAttributes<HTMLDivElement> {}
@@ -85,7 +97,16 @@ export function GlyphList({ className, ...others }: GlyphListProps) {
     () => font.glyphs.filter((glyph) => matches(glyph, filter)),
     [font.glyphs, filter],
   );
-  const visible = filtered.slice(0, MAX_ITEMS);
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const [requested, setRequested] = useState(0);
+  const page = Math.min(requested, pageCount - 1);
+  const visible = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+
+  // follow the selection onto its page when it is picked from outside the list
+  const selectedIndex = filtered.findIndex((glyph) => glyph.code === code);
+  useEffect(() => {
+    if (selectedIndex >= 0) setRequested(Math.floor(selectedIndex / PAGE_SIZE));
+  }, [selectedIndex]);
 
   const handleAdd = () => {
     const value = parseCodepoint(filter);
@@ -127,28 +148,34 @@ export function GlyphList({ className, ...others }: GlyphListProps) {
       </div>
       <div className="min-h-0 flex-1">
         <ScrollArea className="h-full w-full">
-          <div className="grid grid-cols-5 gap-px px-3 pb-3">
-            {visible.map((glyph) => {
+          <div className="grid grid-cols-8 gap-1 px-3 pb-3">
+            {visible.map((glyph, index) => {
               const selected = glyph.code === code;
               return (
+                // keyed by cell position, not codepoint: paging then redraws the
+                // existing canvases instead of allocating a page worth of new ones
                 <button
-                  key={glyph.code}
+                  key={index}
                   title={`${formatCode(glyph.code)} ${glyph.name}`}
-                  className={cn(
-                    "flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 border-[1.5px] border-neutral-800 hover:bg-neutral-800",
-                    selected && "border-neutral-100 bg-neutral-100",
-                  )}
+                  className="flex min-w-0 cursor-pointer flex-col items-center gap-0.5"
                   onClick={() => selectCode(glyph.code)}
                 >
-                  <GlyphThumb
-                    font={font}
-                    glyph={glyph}
-                    color={selected ? "#000000" : "#f5f5f5"}
-                  />
+                  <div
+                    className={cn(
+                      "flex aspect-square w-full items-center justify-center overflow-hidden border-[1.5px] border-neutral-800 hover:bg-neutral-800",
+                      selected && "border-neutral-100 bg-neutral-100",
+                    )}
+                  >
+                    <GlyphThumb
+                      font={font}
+                      glyph={glyph}
+                      color={selected ? "#000000" : "#f5f5f5"}
+                    />
+                  </div>
                   <span
                     className={cn(
-                      "font-mono text-[10px] leading-none",
-                      selected ? "text-black/60" : "text-muted-foreground",
+                      "font-mono text-[9px] leading-none",
+                      selected ? "text-neutral-100" : "text-muted-foreground",
                     )}
                   >
                     {charLabel(glyph.code)}
@@ -162,13 +189,41 @@ export function GlyphList({ className, ...others }: GlyphListProps) {
               No glyphs
             </div>
           )}
-          {filtered.length > visible.length && (
-            <div className="px-4 py-2 text-xs text-muted-foreground/60">
-              {filtered.length - visible.length} more — refine the search
-            </div>
-          )}
         </ScrollArea>
       </div>
+      {pageCount > 1 && (
+        <div className="flex h-8 shrink-0 items-center justify-between gap-1 border-t-[1.5px] border-neutral-800 px-3">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            title="Previous page"
+            disabled={page === 0}
+            onClick={() => setRequested(page - 1)}
+          >
+            <CaretLeftIcon />
+          </Button>
+          <div className="font-mono text-[10px] text-muted-foreground">
+            {visible.length > 0 && (
+              <>
+                {formatCode(visible[0].code)} –{" "}
+                {formatCode(visible[visible.length - 1].code)}
+              </>
+            )}
+          </div>
+          <div className="text-[10px] text-muted-foreground">
+            {page + 1} / {pageCount}
+          </div>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            title="Next page"
+            disabled={page >= pageCount - 1}
+            onClick={() => setRequested(page + 1)}
+          >
+            <CaretRightIcon />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

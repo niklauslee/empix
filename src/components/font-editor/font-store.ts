@@ -1,6 +1,8 @@
 /**
- * Font editor state. Local-first, like the screen editor: the font is kept in
- * `localStorage` as BDF text, so a reload picks up where you left off.
+ * Font editor state. The font lives in memory only — unlike the screen editor
+ * it is *not* persisted: serializing a few thousand glyphs to BDF on every edit
+ * made `localStorage` writes stall the browser. Use Import / Export to keep
+ * work across reloads.
  */
 
 import { create } from "zustand";
@@ -11,14 +13,12 @@ import {
   findGlyph,
   parseBDF,
   resizeBox,
-  serializeBDF,
   type Box,
   type Font,
   type Glyph,
 } from "./bdf";
 import type { Point, Tool } from "./draw";
 
-const STORAGE_KEY = "font-data";
 /** Font loaded on first run, trimmed to printable ASCII. */
 const SEED_FONT = "6x13";
 const SEED_RANGE = [0x20, 0x7e];
@@ -82,25 +82,13 @@ function seedFont(): Font {
   };
 }
 
-function loadFont(): Font {
-  try {
-    const saved = window.localStorage.getItem(STORAGE_KEY);
-    if (saved) return parseBDF(saved);
-  } catch (error) {
-    console.error("Failed to load the saved font:", error);
-  }
+function initialFont(): Font {
   try {
     return seedFont();
   } catch (error) {
     console.error("Failed to load the seed font:", error);
     return createFont();
   }
-}
-
-function initialFont(): Font {
-  // the page renders with `client:only`, but stay safe if that ever changes
-  if (typeof window === "undefined") return createFont();
-  return loadFont();
 }
 
 function firstCode(font: Font): number {
@@ -241,21 +229,6 @@ export const useFontStore = create<FontEditorState>()((set, get) => ({
     });
   },
 }));
-
-/** Persist the font, debounced so a drag does not serialize on every pixel. */
-let saveTimer: ReturnType<typeof setTimeout> | null = null;
-
-useFontStore.subscribe((state, previous) => {
-  if (state.font === previous.font) return;
-  if (saveTimer) clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, serializeBDF(state.font));
-    } catch (error) {
-      console.error("Failed to save the font:", error);
-    }
-  }, 500);
-});
 
 /** Names of the fonts embedded in the app, offered as a starting point. */
 export const embeddedFontNames = availableFonts.map((font) => font.name);

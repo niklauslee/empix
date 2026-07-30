@@ -122,8 +122,10 @@ editor core, `AppContext` or the engine.
 - `draw.ts` — pixel operations (pen, line, rect, flood fill, shift, flip,
   invert). They take and return `boolean[]`, never mutate.
 - `font-store.ts` — zustand store: font, selected codepoint, tool, zoom, and an
-  undo stack of bitmap patches (structural edits clear it). Persists the font as
-  BDF text in `localStorage["font-data"]`, debounced.
+  undo stack of bitmap patches (structural edits clear it). The font is **not**
+  persisted — it starts from an embedded seed font and is kept in memory only,
+  because serializing thousands of glyphs to BDF on every edit made
+  `localStorage` writes stall the browser. Import / Export is the way in and out.
 - `render.ts` — canvas helpers (`drawGlyph`, `drawText`) used by the glyph
   browser, the editing grid and the preview.
 - `app.tsx` — layout, import/export, keyboard shortcuts; with `glyph-list.tsx`,
