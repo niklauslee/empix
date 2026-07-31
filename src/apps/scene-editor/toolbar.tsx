@@ -1,6 +1,6 @@
-import { useEditorStore } from "@/apps/screen-editor/store/editor-store";
+import { useEditorStore } from "@/apps/scene-editor/store/editor-store";
 import { Button } from "@/components/ui/button";
-import { useKeymapStore } from "@/apps/screen-editor/store/keymap-store";
+import { useKeymapStore } from "@/apps/scene-editor/store/keymap-store";
 import {
   BringToFrontIcon,
   CircleIcon,

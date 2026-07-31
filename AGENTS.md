@@ -2,7 +2,7 @@
 
 Two browser-based editors for embedded devices with monochrome displays:
 
-- **Screen editor** (`/screen`) — draws into a packed 1-bpp pixel buffer (like a
+- **Scene editor** (`/scene`) — draws into a packed 1-bpp pixel buffer (like a
   real display framebuffer) and generates
   [u8g2](https://github.com/olikraus/u8g2) C/C++ or XBM code from the scene.
 - **Font editor** (`/font`) — a BDF glyph editor.
@@ -10,7 +10,7 @@ Two browser-based editors for embedded devices with monochrome displays:
 Local-first: no backend for the editors themselves — the scene is persisted in
 `localStorage`. The only backend surface is `/login`, which authenticates via
 GitHub OAuth (through [better-auth](https://better-auth.com)) against a
-Cloudflare D1 database; `/screen` and `/font` don't require a session.
+Cloudflare D1 database; `/scene` and `/font` don't require a session.
 
 Astro (server output, most pages still prerendered) + React islands, deployed
 to Cloudflare Workers.
@@ -40,11 +40,11 @@ exercising the editor.
 
 ```
 src/
-  pages/            routes: index.astro (redirect → /screen), screen.astro,
+  pages/            routes: index.astro (redirect → /scene), scene.astro,
                     font.astro, login.astro, api/auth/[...all].ts (better-auth handler)
   middleware.ts     populates Astro.locals.user/session for every request
   apps/
-    screen-editor/  the u8g2 scene editor app (AppContext, engine, UI, commands)
+    scene-editor/  the u8g2 scene editor app (AppContext, engine, UI, commands)
     font-editor/    the BDF glyph editor app (self-contained)
   components/
     editor/         reusable editor core — canvas, shapes, tools, undo/redo
@@ -64,24 +64,24 @@ src/
 Both pages render `<App client:only="react" />` inside `<body class="dark">`
 (there is no light theme) with the shared `components/astro/head.astro`, which
 takes an optional `title` and includes the Google Analytics tag. The two apps
-link to each other from their appbars; `/` just redirects to `/screen`.
+link to each other from their appbars; `/` just redirects to `/scene`.
 
 The apps share `components/editor/`, `ui/`, `icons/`, `dialogs/`, `logo.tsx`,
 `lib/utils.ts` and `font-data.ts` — nothing else. In particular the font editor
 does not touch the editor core, `AppContext` or the engine.
 
-## Screen editor
+## Scene editor
 
 Three layers, from inside out:
 
 1. **`src/components/editor/`** — the editor core. Plain TypeScript, no React
    (except `editor-component.tsx`), no app knowledge. Renders to a canvas.
-2. **`src/apps/screen-editor/engine/`** — app services: commands, keymap, code
+2. **`src/apps/scene-editor/engine/`** — app services: commands, keymap, code
    generation.
-3. **`src/apps/screen-editor/*.tsx`, `src/apps/screen-editor/store/`** — React UI
+3. **`src/apps/scene-editor/*.tsx`, `src/apps/scene-editor/store/`** — React UI
    (shadcn + Tailwind v4) that observes the editor through zustand stores.
 
-`src/apps/screen-editor/app-context.ts` glues them: `AppContext` is a singleton
+`src/apps/scene-editor/app-context.ts` glues them: `AppContext` is a singleton
 exposed as `window.app`, and holds `editor`, `commands`, `keymap`,
 `codeGenerator`. Its `wiring()` subscribes to editor events and pushes state into
 `useEditorStore`; every action also triggers `saveData()`
@@ -121,7 +121,7 @@ from `app.tsx`'s `onMount` handler on `EditorComponent`.
 - `geometry.ts`, `utils.ts`, `consts.ts` (`Color`, `Cursor`, `Mouse`),
   `std.ts` (`TypedEvent`, `Stack`), `clipboard.ts`, `font.ts`.
 
-### Engine (`src/apps/screen-editor/engine/`)
+### Engine (`src/apps/scene-editor/engine/`)
 
 - `command-manager.ts` — `app.commands.register(id, description, zodShape, handler)`
   and `execute(id, args)` with Zod validation. Command ids are namespaced:
@@ -135,11 +135,11 @@ from `app.tsx`'s `onMount` handler on `EditorComponent`.
   direction so redundant setters are skipped; Pen shapes become XBM byte arrays.
   `generateXBM(editor)` dumps the whole framebuffer instead.
 
-### UI (`src/apps/screen-editor/`)
+### UI (`src/apps/scene-editor/`)
 
 - `app.tsx` — composes `layout.tsx` (appbar / left sidebar / right sidebar /
   content) with `LayersPanel`, `Toolbar`, `PropertiesPanel`, `EditorComponent`
-  and the dialogs. The appbar holds the Screen/Font nav, Clear, Code, and
+  and the dialogs. The appbar holds the Scene/Font nav, Clear, Code, and
   Import / Export of `.empix` files (JSON via the File System Access API —
   Chromium only, marked `FIXME`).
 - `store/editor-store.ts` — read-only mirror of editor state for React
@@ -194,7 +194,7 @@ Two unrelated font pipelines:
 
 - **BDF fonts**: `res/bdf/*.bdf` → `node tools/generate-fonts.js` →
   `src/font-data.ts` (generated; deflate + base64 — do not edit by hand),
-  exposing `availableFonts` and `getEmbeddedFontBDF(name)`. The screen editor's
+  exposing `availableFonts` and `getEmbeddedFontBDF(name)`. The scene editor's
   `AppContext.loadFonts()` inflates each and registers it with `bdfparser`
   through `editor/font.ts`; the font editor uses the same data as seeds. Font
   names must match the u8g2 map in `engine/code-generator.ts` for codegen to
@@ -207,9 +207,9 @@ Two unrelated font pipelines:
 the sole provider — there's no email/password.
 
 - `src/lib/auth.ts` — `getAuth()` lazily builds the `betterAuth` instance the
-  first time it's called *during a request*. It must not be constructed at
+  first time it's called _during a request_. It must not be constructed at
   module load time: bindings/secrets are read via `import { env } from
-  "cloudflare:workers"`, which only resolves inside request handling
+"cloudflare:workers"`, which only resolves inside request handling
   (`Astro.locals.runtime.env` doesn't exist on this Astro/adapter version
   anymore). Once built, the instance is memoized — bindings don't change
   between requests.
@@ -217,14 +217,14 @@ the sole provider — there's no email/password.
 - `src/middleware.ts` — calls `getAuth().api.getSession()` on every request
   and sets `Astro.locals.user` / `Astro.locals.session` (typed in
   `src/env.d.ts`), so `login.astro` can render signed-in vs signed-out
-  server-side with no client flash. It does not gate `/screen` or `/font`.
+  server-side with no client flash. It does not gate `/scene` or `/font`.
 - `src/lib/db/schema.ts` — hand-written Drizzle schema for better-auth's core
   tables (`user`, `session`, `account`, `verification`). Hand-written rather
   than generated by the better-auth CLI because generation would need to
   import the real auth config, which pulls in `cloudflare:workers` — not
   resolvable outside workerd.
 - Migrations live in `drizzle/migrations/`, generated with `npx drizzle-kit
-  generate` (schema-diff only, no DB connection needed) and applied with
+generate` (schema-diff only, no DB connection needed) and applied with
   `npx wrangler d1 migrations apply DB --local` / `--remote` — not
   `drizzle-kit migrate`, which D1 doesn't support directly.
 - Local secrets go in `.dev.vars` (gitignored; `.dev.vars.example` documents
@@ -245,22 +245,22 @@ the sole provider — there's no email/password.
 - Adding a shape type touches, in order: `components/editor/shapes.ts`
   (interface, factory case, `render`/`getOutline`/`containsPoint`/`move`) →
   `handlers.ts` → `manipulators.ts` + `controllers.ts` → `basicSetup()` in
-  `editor-component.tsx` → `apps/screen-editor/properties.tsx` →
-  `apps/screen-editor/engine/code-generator.ts`.
-- Adding a command: register it in `src/apps/screen-editor/commands.ts` and bind
-  a key in `src/apps/screen-editor/keymap.json`; invoke with
+  `editor-component.tsx` → `apps/scene-editor/properties.tsx` →
+  `apps/scene-editor/engine/code-generator.ts`.
+- Adding a command: register it in `src/apps/scene-editor/commands.ts` and bind
+  a key in `src/apps/scene-editor/keymap.json`; invoke with
   `window.app.commands.execute(id)`.
 - Code shared by both apps belongs in `src/components/` or `src/lib/`;
   app-specific code stays under its `src/apps/<app>/` directory.
 - Import alias `@/*` → `src/*`. TypeScript is `astro/tsconfigs/strict`.
 - Debugging: `window.app` (app context) and `window.editor` (editor instance) —
-  screen editor only.
+  scene editor only.
 
 ## Deployment
 
 Astro `output: "server"` with the Cloudflare adapter, served by a Worker
 (`wrangler.jsonc`, assets from `./dist`, `nodejs_compat` flag required by
-better-auth's password-hashing utils). `/`, `/screen` and `/font` set
+better-auth's password-hashing utils). `/`, `/scene` and `/font` set
 `export const prerender = true` so they still ship as static HTML; `/login`
 and `/api/auth/*` are rendered on demand and need the `DB` (D1) binding plus
 `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` / `BETTER_AUTH_SECRET` secrets to

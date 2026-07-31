@@ -9,7 +9,7 @@ import {
   PenIcon,
 } from "@/components/icons";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useEditorStore } from "@/apps/screen-editor/store/editor-store";
+import { useEditorStore } from "@/apps/scene-editor/store/editor-store";
 
 interface LayersPanelProps extends React.HTMLAttributes<HTMLDivElement> {}
 

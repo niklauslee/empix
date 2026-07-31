@@ -1,4 +1,4 @@
-import { app, AppContext } from "@/apps/screen-editor/app-context";
+import { app, AppContext } from "@/apps/scene-editor/app-context";
 import { Editor } from "@/components/editor/editor";
 import { EditorComponent } from "@/components/editor/editor-component";
 import {
@@ -10,7 +10,7 @@ import { Toolbar } from "./toolbar";
 import { Appbar } from "@/components/appbar";
 import { PropertiesPanel } from "./properties";
 import type { ShapeProps } from "@/components/editor/shapes";
-import { useEditorStore } from "@/apps/screen-editor/store/editor-store";
+import { useEditorStore } from "@/apps/scene-editor/store/editor-store";
 import { LayersPanel } from "./layers";
 import { ScrollAreaBoth } from "@/components/ui/scroll-area-both";
 import { CodeDialog, useCodeDialog } from "@/components/dialogs/code-dialog";
@@ -46,7 +46,7 @@ function App() {
     <>
       <Layout
         appbar={
-          <Appbar active="screen">
+          <Appbar active="scene">
             <Button
               variant="outline"
               onClick={() => {
@@ -77,15 +77,17 @@ function App() {
               onClick={async () => {
                 // FIXME: Only works in Chromium-based browsers
                 try {
-                  const [fileHandle] = await (window as any).showOpenFilePicker({
-                    types: [
-                      {
-                        description: "Empix file",
-                        accept: { "application/json": [".empix"] },
-                      },
-                    ],
-                    multiple: false,
-                  });
+                  const [fileHandle] = await (window as any).showOpenFilePicker(
+                    {
+                      types: [
+                        {
+                          description: "Empix file",
+                          accept: { "application/json": [".empix"] },
+                        },
+                      ],
+                      multiple: false,
+                    },
+                  );
                   const file = await fileHandle.getFile();
                   const text = await file.text();
                   window.app.editor.loadFromJSON(JSON.parse(text));

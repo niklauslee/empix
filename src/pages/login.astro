@@ -23,21 +23,15 @@ const user = Astro.locals.user;
             <>
               <div class="flex flex-col items-center gap-2 text-center">
                 {user.image && (
-                  <img
-                    src={user.image}
-                    alt=""
-                    class="size-12 rounded-full"
-                  />
+                  <img src={user.image} alt="" class="size-12 rounded-full" />
                 )}
                 <p class="text-sm text-muted-foreground">
                   Signed in as{" "}
-                  <span class="font-medium text-foreground">
-                    {user.name}
-                  </span>
+                  <span class="font-medium text-foreground">{user.name}</span>
                 </p>
               </div>
               <div class="flex w-full flex-col gap-2">
-                <a href="/screen" class="w-full">
+                <a href="/scene" class="w-full">
                   <Button className="w-full">Go to editor</Button>
                 </a>
                 <Button id="sign-out" variant="outline" className="w-full">
@@ -60,7 +54,10 @@ const user = Astro.locals.user;
       document
         .getElementById("sign-in-github")
         ?.addEventListener("click", () => {
-          authClient.signIn.social({ provider: "github", callbackURL: "/login" });
+          authClient.signIn.social({
+            provider: "github",
+            callbackURL: "/login",
+          });
         });
 
       document

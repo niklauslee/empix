@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { availableFonts } from "../../font-data";
 import { Button } from "@/components/ui/button";
-import { useEditorStore } from "@/apps/screen-editor/store/editor-store";
+import { useEditorStore } from "@/apps/scene-editor/store/editor-store";
 
 export interface ShapeEditorProps extends React.HTMLAttributes<HTMLDivElement> {
   selection: Shape[];
@@ -29,7 +29,7 @@ export interface ShapeEditorProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 /** Canvas size — a document property, not tied to the selection. */
-export const ScreenEdit: React.FC = () => {
+export const SceneEdit: React.FC = () => {
   const width = useEditorStore((state) => state.width);
   const height = useEditorStore((state) => state.height);
 
@@ -39,13 +39,13 @@ export const ScreenEdit: React.FC = () => {
         <Label
           className="text-sm"
           htmlFor="input-editor-width"
-          title="Screen Width"
+          title="Scene Width"
         >
           W
         </Label>
         <NumberField
           id="input-editor-width"
-          title="Screen Width"
+          title="Scene Width"
           className="text-sm"
           type="number"
           value={width}
@@ -58,13 +58,13 @@ export const ScreenEdit: React.FC = () => {
         <Label
           className="text-sm"
           htmlFor="input-editor-height"
-          title="Screen Height"
+          title="Scene Height"
         >
           H
         </Label>
         <NumberField
           id="input-editor-height"
-          title="Screen Height"
+          title="Scene Height"
           className="text-sm"
           type="number"
           value={height}
@@ -391,11 +391,11 @@ export const PropertiesPanel: React.FC<ShapeEditorProps> = ({
 
   return (
     <div className={cn("absolute inset-0 flex flex-col", className)}>
-      <div className="flex h-10 shrink-0 items-center px-4 text-sm">Screen</div>
+      <div className="flex h-10 shrink-0 items-center px-4 text-sm">Scene</div>
       <div className="min-h-0 flex-1">
         <ScrollArea className="w-full h-full">
           <div className="flex flex-col gap-3 px-4 pb-4">
-            <ScreenEdit />
+            <SceneEdit />
             <div className="mt-1 border-t-[1.5px] border-neutral-800 pt-3 text-sm">
               Shape
             </div>

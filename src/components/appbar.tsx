@@ -3,10 +3,10 @@ import Logo from "@/components/logo";
 import { cn } from "@/lib/utils";
 
 /** Which editor is currently open — its nav button is rendered as active. */
-export type AppbarApp = "screen" | "font";
+export type AppbarApp = "scene" | "font";
 
 const APPS: { app: AppbarApp; label: string; href: string }[] = [
-  { app: "screen", label: "Screen", href: "/screen" },
+  { app: "scene", label: "Scene", href: "/scene" },
   { app: "font", label: "Font", href: "/font" },
 ];
 
@@ -17,10 +17,15 @@ interface AppbarProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 /**
- * The titlebar shared by both editors: logo, the Screen/Font nav, and a slot
+ * The titlebar shared by both editors: logo, the Scene/Font nav, and a slot
  * for app-specific actions.
  */
-export function Appbar({ active, className, children, ...others }: AppbarProps) {
+export function Appbar({
+  active,
+  className,
+  children,
+  ...others
+}: AppbarProps) {
   return (
     <div
       className={cn(

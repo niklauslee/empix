@@ -11,7 +11,7 @@ Two super-simple editors for embedded devices with monochrome displays.
 - Local first and no login required
 - Save your work in the browser
 
-## Screen editor
+## Scene editor
 
 Draws a scene into a packed 1-bpp pixel buffer, like a real display
 framebuffer.
