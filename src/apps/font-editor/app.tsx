@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Appbar } from "@/components/appbar";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/dialogs/confirm-dialog";
+import { FontCodeDialog, showFontCodeDialog } from "./code-dialog";
 import {
   createFont,
   createGlyph,
@@ -198,6 +199,14 @@ function App() {
           >
             New
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            title="Generate u8g2 / Adafruit GFX font code"
+            onClick={showFontCodeDialog}
+          >
+            Code
+          </Button>
         </Appbar>
 
         <section className="flex min-h-0 flex-1">
@@ -259,6 +268,7 @@ function App() {
       />
       <ConfirmDialog />
       <NewFontDialog onCreate={(selected) => setFont(blankFont(selected))} />
+      <FontCodeDialog />
     </>
   );
 }

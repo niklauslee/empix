@@ -143,7 +143,7 @@ export function resizeBox(font: Font, box: Box): Font {
 }
 
 /** Tight bounding box of the set pixels, or null when the glyph is blank. */
-function tightBox(box: Box, pixels: boolean[]): Box | null {
+export function tightBox(box: Box, pixels: boolean[]): Box | null {
   let minCol = box.w;
   let minRow = box.h;
   let maxCol = -1;
