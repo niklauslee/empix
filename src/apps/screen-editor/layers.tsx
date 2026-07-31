@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { ShapeType, type Shape } from "./editor/shapes";
+import { ShapeType, type Shape } from "@/components/editor/shapes";
 import {
   RectangleIcon,
   EllipseIcon,
@@ -7,9 +7,9 @@ import {
   TextIcon,
   BitmapIcon,
   PenIcon,
-} from "./icons";
-import { ScrollArea } from "./ui/scroll-area";
-import { useEditorStore } from "@/store/editor-store";
+} from "@/components/icons";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useEditorStore } from "@/apps/screen-editor/store/editor-store";
 
 interface LayersPanelProps extends React.HTMLAttributes<HTMLDivElement> {}
 

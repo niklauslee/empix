@@ -1,0 +1,12 @@
+---
+import App from "../apps/screen-editor/app";
+import Head from "../components/astro/head.astro";
+import "../styles/global.css";
+---
+
+<html lang="en">
+  <Head />
+  <body class="dark">
+    <App client:only="react" />
+  </body>
+</html>
