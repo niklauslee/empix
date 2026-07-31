@@ -158,7 +158,7 @@ export function GlyphList({ className, ...others }: GlyphListProps) {
       </div>
       <div className="min-h-0 flex-1">
         <ScrollArea className="h-full w-full">
-          <div className="grid grid-cols-8 gap-1 px-3 pb-3">
+          <div className="grid grid-cols-8 gap-2 px-3 pb-3">
             {visible.map((glyph, index) => {
               const selected = glyph.code === code;
               return (
@@ -184,7 +184,7 @@ export function GlyphList({ className, ...others }: GlyphListProps) {
                   </div>
                   <span
                     className={cn(
-                      "font-mono text-[9px] leading-none",
+                      "font-mono text-xs leading-none",
                       selected ? "text-neutral-100" : "text-muted-foreground",
                     )}
                   >

@@ -1,10 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Appbar } from "@/components/appbar";
 import { Button } from "@/components/ui/button";
-import {
-  ConfirmDialog,
-  useConfirmDialog,
-} from "@/components/dialogs/confirm-dialog";
+import { ConfirmDialog } from "@/components/dialogs/confirm-dialog";
 import {
   createFont,
   createGlyph,
@@ -30,9 +27,11 @@ import { PropertiesPanel } from "./properties";
 import { Preview } from "./preview";
 import { Toolbar } from "./toolbar";
 import { EmbeddedFontMenu } from "./embedded-font-menu";
+import { codepointsForRanges } from "./charsets";
+import { NewFontDialog, useNewFontDialog } from "./new-font-dialog";
 
-/** A fresh font: printable ASCII, all glyphs blank. */
-function blankFont(): Font {
+/** A fresh font with blank glyphs for the given ranges (see charsets.ts). */
+function blankFont(rangeIds: ReadonlySet<string>): Font {
   const font = createFont({
     name: "untitled",
     box: { w: 8, h: 13, ox: 0, oy: -2 },
@@ -40,10 +39,9 @@ function blankFont(): Font {
     ascent: 11,
     descent: 2,
   });
-  const glyphs: Glyph[] = [];
-  for (let code = 0x20; code <= 0x7e; code++) {
-    glyphs.push(createGlyph(font, code));
-  }
+  const glyphs: Glyph[] = codepointsForRanges(rangeIds).map((code) =>
+    createGlyph(font, code),
+  );
   return { ...font, glyphs };
 }
 
@@ -196,15 +194,7 @@ function App() {
             variant="outline"
             size="sm"
             title="Start a new font"
-            onClick={() => {
-              useConfirmDialog
-                .getState()
-                .show(
-                  "New Font",
-                  "Discard the current font and start a new one? This cannot be undone.",
-                  () => setFont(blankFont()),
-                );
-            }}
+            onClick={() => useNewFontDialog.getState().show()}
           >
             New
           </Button>
@@ -268,6 +258,7 @@ function App() {
         }}
       />
       <ConfirmDialog />
+      <NewFontDialog onCreate={(selected) => setFont(blankFont(selected))} />
     </>
   );
 }
