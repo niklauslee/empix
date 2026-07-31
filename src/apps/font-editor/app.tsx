@@ -28,7 +28,6 @@ import { GlyphList } from "./glyph-list";
 import { PropertiesPanel } from "./properties";
 import { Preview } from "./preview";
 import { Toolbar } from "./toolbar";
-import { EmbeddedFontMenu } from "./embedded-font-menu";
 import { codepointsForRanges } from "./charsets";
 import { NewFontDialog, useNewFontDialog } from "./new-font-dialog";
 
@@ -194,14 +193,13 @@ function App() {
     <>
       <main className="absolute inset-0 flex select-none flex-col bg-background text-foreground">
         <Appbar active="font">
-          <EmbeddedFontMenu onLoad={(name) => flash(`Opened ${name}`)} />
           <Button
             variant="outline"
             size="sm"
             title="Import a BDF file"
             onClick={() => fileRef.current?.click()}
           >
-            Import
+            Import BDF
           </Button>
           <Button
             variant="outline"
@@ -211,7 +209,7 @@ function App() {
               download(`${font.name || "untitled"}.bdf`, serializeBDF(font))
             }
           >
-            Export
+            Export BDF
           </Button>
           <Button
             variant="outline"
@@ -219,7 +217,7 @@ function App() {
             title="Start a new font"
             onClick={() => useNewFontDialog.getState().show()}
           >
-            New
+            New Font
           </Button>
           <Button
             variant="outline"

@@ -6,7 +6,7 @@
  */
 
 import { create } from "zustand";
-import { availableFonts, getEmbeddedFontBDF } from "@/font-data";
+import { getEmbeddedFontBDF } from "@/font-data";
 import {
   createFont,
   createGlyph,
@@ -259,6 +259,3 @@ export const useFontStore = create<FontEditorState>()((set, get) => ({
     });
   },
 }));
-
-/** Names of the fonts embedded in the app, offered as a starting point. */
-export const embeddedFontNames = availableFonts.map((font) => font.name);
