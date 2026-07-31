@@ -24,6 +24,20 @@ const SEED_FONT = "6x13";
 const SEED_RANGE = [0x20, 0x7e];
 const MAX_UNDO = 100;
 
+const CELL_SIZE_KEY = "font-editor-cell-size";
+const MIN_CELL_SIZE = 4;
+const MAX_CELL_SIZE = 48;
+const DEFAULT_CELL_SIZE = 22;
+
+/** Editing grid zoom, unlike the font itself, is cheap to persist. */
+function loadCellSize(): number {
+  const stored = Number(localStorage.getItem(CELL_SIZE_KEY));
+  if (Number.isFinite(stored) && stored > 0) {
+    return Math.max(MIN_CELL_SIZE, Math.min(MAX_CELL_SIZE, stored));
+  }
+  return DEFAULT_CELL_SIZE;
+}
+
 /**
  * An undoable bitmap edit. Only bitmap edits are undoable — structural changes
  * (import, add/remove glyph, box resize) clear the stacks instead.
@@ -91,6 +105,16 @@ function initialFont(): Font {
   }
 }
 
+/** The full (untrimmed) seed font, offered as a glyph source for new fonts. */
+export function loadDefaultGlyphSource(): Font | null {
+  try {
+    return parseBDF(getEmbeddedFontBDF(SEED_FONT));
+  } catch (error) {
+    console.error("Failed to load the default glyph font:", error);
+    return null;
+  }
+}
+
 function firstCode(font: Font): number {
   const printable = font.glyphs.find((glyph) => glyph.code >= 0x41);
   return (printable ?? font.glyphs[0])?.code ?? -1;
@@ -110,7 +134,7 @@ export const useFontStore = create<FontEditorState>()((set, get) => ({
   font,
   code: firstCode(font),
   tool: "pen",
-  cellSize: 22,
+  cellSize: loadCellSize(),
   showGuides: true,
   filter: "",
   previewText: "Handgloves 0123",
@@ -133,8 +157,14 @@ export const useFontStore = create<FontEditorState>()((set, get) => ({
   },
 
   setTool: (tool) => set({ tool }),
-  setCellSize: (cellSize) =>
-    set({ cellSize: Math.max(4, Math.min(48, Math.round(cellSize))) }),
+  setCellSize: (cellSize) => {
+    const clamped = Math.max(
+      MIN_CELL_SIZE,
+      Math.min(MAX_CELL_SIZE, Math.round(cellSize)),
+    );
+    localStorage.setItem(CELL_SIZE_KEY, String(clamped));
+    set({ cellSize: clamped });
+  },
   setShowGuides: (showGuides) => set({ showGuides }),
   setFilter: (filter) => set({ filter }),
   setPreviewText: (previewText) => set({ previewText }),

@@ -117,6 +117,26 @@ export function createFont(partial: Partial<Font> = {}): Font {
 }
 
 /**
+ * Copy a bitmap from one box frame into another, keeping pixels at the same
+ * position relative to the origin. Pixels falling outside the new box are
+ * dropped.
+ */
+export function remapPixels(from: Box, pixels: boolean[], to: Box): boolean[] {
+  const result = emptyPixels(to);
+  for (let row = 0; row < to.h; row++) {
+    const y = to.oy + to.h - 1 - row;
+    const fromRow = from.oy + from.h - 1 - y;
+    for (let col = 0; col < to.w; col++) {
+      const x = to.ox + col;
+      if (getPixel(from, pixels, x - from.ox, fromRow)) {
+        result[row * to.w + col] = true;
+      }
+    }
+  }
+  return result;
+}
+
+/**
  * Move every glyph into a new font box, keeping pixels at the same position
  * relative to the origin. Pixels falling outside the new box are dropped.
  */
@@ -125,20 +145,10 @@ export function resizeBox(font: Font, box: Box): Font {
   if (box.w === from.w && box.h === from.h && box.ox === from.ox && box.oy === from.oy) {
     return font;
   }
-  const glyphs = font.glyphs.map((glyph) => {
-    const pixels = emptyPixels(box);
-    for (let row = 0; row < box.h; row++) {
-      const y = box.oy + box.h - 1 - row;
-      const fromRow = from.oy + from.h - 1 - y;
-      for (let col = 0; col < box.w; col++) {
-        const x = box.ox + col;
-        if (getPixel(from, glyph.pixels, x - from.ox, fromRow)) {
-          pixels[row * box.w + col] = true;
-        }
-      }
-    }
-    return { ...glyph, pixels };
-  });
+  const glyphs = font.glyphs.map((glyph) => ({
+    ...glyph,
+    pixels: remapPixels(from, glyph.pixels, box),
+  }));
   return { ...font, box, glyphs };
 }
 

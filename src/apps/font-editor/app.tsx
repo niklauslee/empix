@@ -9,6 +9,7 @@ import {
   findGlyph,
   formatCode,
   parseBDF,
+  remapPixels,
   serializeBDF,
   type Font,
   type Glyph,
@@ -21,7 +22,7 @@ import {
   shift,
   type Tool,
 } from "./draw";
-import { useFontStore } from "./font-store";
+import { loadDefaultGlyphSource, useFontStore } from "./font-store";
 import { GlyphCanvas } from "./glyph-canvas";
 import { GlyphList } from "./glyph-list";
 import { PropertiesPanel } from "./properties";
@@ -31,8 +32,12 @@ import { EmbeddedFontMenu } from "./embedded-font-menu";
 import { codepointsForRanges } from "./charsets";
 import { NewFontDialog, useNewFontDialog } from "./new-font-dialog";
 
-/** A fresh font with blank glyphs for the given ranges (see charsets.ts). */
-function blankFont(rangeIds: ReadonlySet<string>): Font {
+/**
+ * A fresh font for the given ranges (see charsets.ts). When `fillGlyphs` is
+ * set, glyphs are pre-filled with shapes from the built-in default font
+ * instead of being left blank.
+ */
+function blankFont(rangeIds: ReadonlySet<string>, fillGlyphs: boolean): Font {
   const font = createFont({
     name: "untitled",
     box: { w: 8, h: 13, ox: 0, oy: -2 },
@@ -40,9 +45,16 @@ function blankFont(rangeIds: ReadonlySet<string>): Font {
     ascent: 11,
     descent: 2,
   });
-  const glyphs: Glyph[] = codepointsForRanges(rangeIds).map((code) =>
-    createGlyph(font, code),
-  );
+  const source = fillGlyphs ? loadDefaultGlyphSource() : null;
+  const glyphs: Glyph[] = codepointsForRanges(rangeIds).map((code) => {
+    const glyph = createGlyph(font, code);
+    const sourceGlyph = source && findGlyph(source, code);
+    if (!sourceGlyph) return glyph;
+    return {
+      ...glyph,
+      pixels: remapPixels(source.box, sourceGlyph.pixels, font.box),
+    };
+  });
   return { ...font, glyphs };
 }
 
@@ -102,6 +114,16 @@ function App() {
         event.preventDefault();
         if (event.shiftKey) store.redo();
         else store.undo();
+        return;
+      }
+      if (mod && (event.key === "=" || event.key === "+")) {
+        event.preventDefault();
+        store.setCellSize(store.cellSize + 2);
+        return;
+      }
+      if (mod && event.key === "-") {
+        event.preventDefault();
+        store.setCellSize(store.cellSize - 2);
         return;
       }
       if (mod || event.altKey) return;
@@ -267,7 +289,11 @@ function App() {
         }}
       />
       <ConfirmDialog />
-      <NewFontDialog onCreate={(selected) => setFont(blankFont(selected))} />
+      <NewFontDialog
+        onCreate={(selected, fillGlyphs) =>
+          setFont(blankFont(selected, fillGlyphs))
+        }
+      />
       <FontCodeDialog />
     </>
   );

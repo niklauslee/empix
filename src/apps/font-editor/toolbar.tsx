@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
+import { cn, detectPlatform } from "@/lib/utils";
 import {
   ArrowDownIcon,
   ArrowLeftIcon,
@@ -75,6 +75,10 @@ const SHIFTS: {
   { label: "right", icon: ArrowRightIcon, dcol: 1, drow: 0 },
 ];
 
+const isMac = detectPlatform() === "darwin";
+const ZOOM_IN_HINT = isMac ? "⌘+" : "Ctrl++";
+const ZOOM_OUT_HINT = isMac ? "⌘-" : "Ctrl+-";
+
 export function Toolbar() {
   const font = useFontStore((state) => state.font);
   const code = useFontStore((state) => state.code);
@@ -119,7 +123,7 @@ export function Toolbar() {
           <Button
             size="icon-sm"
             variant="outline"
-            title="Zoom In"
+            title={`Zoom In ⎯ ${ZOOM_IN_HINT}`}
             onClick={() => setCellSize(cellSize + 2)}
           >
             <PlusIcon className={ICON} />
@@ -127,7 +131,7 @@ export function Toolbar() {
           <Button
             size="icon-sm"
             variant="outline"
-            title="Zoom Out"
+            title={`Zoom Out ⎯ ${ZOOM_OUT_HINT}`}
             onClick={() => setCellSize(cellSize - 2)}
           >
             <MinusIcon className={ICON} />
