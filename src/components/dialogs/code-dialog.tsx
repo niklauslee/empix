@@ -19,7 +19,7 @@ import {
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Checkbox } from "../ui/checkbox";
-import type { U8g2Options } from "@/engine/code-generator";
+import type { U8g2Options } from "@/apps/scene-editor/engine/code-generator";
 
 export interface CodeDialogState {
   open: boolean;
@@ -73,7 +73,7 @@ export function CodeDialog() {
 
   const langItems = [
     { value: "cpp", label: "C++ (Arduino)" },
-    { value: "c", label: "C (Zephyr)" },
+    { value: "c", label: "C" },
   ];
 
   useEffect(() => {

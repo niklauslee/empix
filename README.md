@@ -6,13 +6,27 @@
 
 ![Screen](https://github.com/niklauslee/empix/blob/main/public/images/screen.png?raw=true)
 
-A super-simple graphic editor for embedded devices with monochrome displays.
+Two super-simple editors for embedded devices with monochrome displays.
 
 - Local first and no login required
 - Save your work in the browser
+
+## Scene editor
+
+Draws a scene into a packed 1-bpp pixel buffer, like a real display
+framebuffer.
+
 - Support various shapes (rectangle, ellipse, line, polygon, text, free drawing)
 - [u8g2](https://github.com/olikraus/u8g2) C/C++ code generation
 - XBM (X Bitmap) code generation
+
+## Font editor
+
+A BDF glyph editor for creating and editing bitmap fonts.
+
+- Edit glyph bitmaps on the font's bounding box grid
+- Import / export BDF fonts
+- Preview text rendered with the font
 
 ## Build
 
