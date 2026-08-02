@@ -73,7 +73,7 @@ export function CodeDialog() {
 
   const langItems = [
     { value: "cpp", label: "C++ (Arduino)" },
-    { value: "c", label: "C (Zephyr)" },
+    { value: "c", label: "C" },
   ];
 
   useEffect(() => {
