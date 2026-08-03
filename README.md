@@ -4,14 +4,14 @@
 
 👉 https://empix.niklauslee.workers.dev/
 
-![Screen](https://github.com/niklauslee/empix/blob/main/public/images/screen.png?raw=true)
-
 Two super-simple editors for embedded devices with monochrome displays.
 
 - Local first and no login required
 - Save your work in the browser
 
 ## Scene editor
+
+![Scene Editor](https://github.com/niklauslee/empix/blob/main/public/images/scene-editor.png?raw=true)
 
 Draws a scene into a packed 1-bpp pixel buffer, like a real display
 framebuffer.
@@ -21,6 +21,8 @@ framebuffer.
 - XBM (X Bitmap) code generation
 
 ## Font editor
+
+![Font Editor](https://github.com/niklauslee/empix/blob/main/public/images/font-editor.png?raw=true)
 
 A BDF glyph editor for creating and editing bitmap fonts.
 
