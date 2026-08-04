@@ -5,6 +5,7 @@ import { drawBox } from "./utils";
 import {
   type BitmapShape,
   type EllipseShape,
+  ellipseCenterFromBounds,
   type LineShape,
   type PenShape,
   type RectangleShape,
@@ -290,22 +291,43 @@ export class EllipseFactoryHandler extends Handler {
     this.shape = editor.factory.create(ShapeType.ELLIPSE) as EllipseShape;
     this.shape.left = this.dragStartPoint[0];
     this.shape.top = this.dragStartPoint[1];
+    this.shape.width = 1;
+    this.shape.height = 1;
+    const c = ellipseCenterFromBounds(
+      this.shape.left,
+      this.shape.top,
+      this.shape.width,
+      this.shape.height,
+    );
+    this.shape.x = c.x;
+    this.shape.y = c.y;
+    this.shape.rx = c.rx;
+    this.shape.ry = c.ry;
     editor.transform.insert(this.shape);
   }
 
   update(editor: Editor, e: PointerEvent): void {
     if (!this.shape) return;
+    const minSize = 1;
     const r = [this.dragStartPoint, this.dragPoint];
     const normalized = geometry.normalizeRect(r);
     const l = normalized[0][0];
     const t = normalized[0][1];
-    const w = normalized[1][0] - normalized[0][0] + 1;
-    const h = normalized[1][1] - normalized[0][1] + 1;
-    const minSize = 3;
+    let w = Math.max(normalized[1][0] - normalized[0][0] + 1, minSize);
+    let h = Math.max(normalized[1][1] - normalized[0][1] + 1, minSize);
+    // the ellipse's center must land on a pixel, so the bounding box must
+    // always have odd width/height
+    if (w % 2 === 0) w += 1;
+    if (h % 2 === 0) h += 1;
+    const c = ellipseCenterFromBounds(l, t, w, h);
+    editor.transform.assign(this.shape, "x", c.x);
+    editor.transform.assign(this.shape, "y", c.y);
+    editor.transform.assign(this.shape, "rx", c.rx);
+    editor.transform.assign(this.shape, "ry", c.ry);
     editor.transform.assign(this.shape, "left", l);
     editor.transform.assign(this.shape, "top", t);
-    editor.transform.assign(this.shape, "width", Math.max(w, minSize));
-    editor.transform.assign(this.shape, "height", Math.max(h, minSize));
+    editor.transform.assign(this.shape, "width", w);
+    editor.transform.assign(this.shape, "height", h);
   }
 
   finalize(editor: Editor, e: PointerEvent): void {

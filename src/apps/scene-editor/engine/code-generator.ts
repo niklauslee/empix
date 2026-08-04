@@ -8,7 +8,6 @@ import {
   type PenShape,
   type Shape,
 } from "@/components/editor/shapes";
-import { odd } from "@/lib/utils";
 
 export interface U8g2State {
   drawColor: number;
@@ -178,17 +177,8 @@ export class CodeGenerator {
   ): string[] {
     const lines: string[] = [];
     lines.push(`// ${shape.name}`);
-    const { left, top, width, height, color } = shape;
-    const cx = Math.round(left + width / 2);
-    const cy = Math.round(top + height / 2);
-    const rx = Math.round(width / 2) - 1;
-    const ry = Math.round(height / 2) - 1;
+    const { x: cx, y: cy, rx, ry } = shape;
     this.generateU8g2SetDrawColor(lines, state, shape, options);
-    if (!odd(shape.width) || !odd(shape.height)) {
-      lines.push(
-        `// [WARNING] Ellipse with even width or height may not render correctly`,
-      );
-    }
     if (shape.fill) {
       if (options.lang === "c") {
         lines.push(

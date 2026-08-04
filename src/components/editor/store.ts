@@ -1,4 +1,9 @@
-import { type Shape } from "./shapes";
+import {
+  type EllipseShape,
+  ellipseCenterFromBounds,
+  type Shape,
+  ShapeType,
+} from "./shapes";
 
 /**
  * Store object that manages the shapes and their mutations.
@@ -42,7 +47,22 @@ export class Store {
       if (!Array.isArray(json)) {
         throw new Error("Invalid JSON format: Expected an array of shapes.");
       }
-      this.shapes = json;
+      this.shapes = json.map((shape) => {
+        if (
+          shape.type === ShapeType.ELLIPSE &&
+          typeof (shape as EllipseShape).x !== "number"
+        ) {
+          const s = shape as EllipseShape;
+          const center = ellipseCenterFromBounds(
+            s.left,
+            s.top,
+            s.width,
+            s.height,
+          );
+          return { ...s, ...center };
+        }
+        return shape;
+      });
     } catch (error) {
       console.error("Failed to load store from JSON:", error);
     }

@@ -6,6 +6,8 @@ import {
   Cursor,
 } from "./consts";
 import {
+  type EllipseShape,
+  ellipseCenterFromBounds,
   getBoundingRect,
   ShapeType,
   type LineShape,
@@ -264,6 +266,94 @@ export class BoxSizeController extends Controller {
     const gc = editor.gc;
     const cp = getControllerPosition(gc, shape, this.options.position);
     drawControlPoint(gc, cp[0], cp[1]);
+  }
+}
+
+/**
+ * Moving controller for ellipse shape — keeps the center (x, y) in sync with
+ * the bounding box (left, top).
+ */
+export class EllipseMoveController extends BoxMoveController {
+  update(editor: Editor, shape: Shape, e: PointerEvent, point: number[]) {
+    if (this.dxStep === 0 && this.dyStep === 0) return;
+    const s = shape as EllipseShape;
+    editor.transform.assign(shape, "left", shape.left + this.dxStep);
+    editor.transform.assign(shape, "top", shape.top + this.dyStep);
+    editor.transform.assign(s, "x", s.x + this.dxStep);
+    editor.transform.assign(s, "y", s.y + this.dyStep);
+  }
+}
+
+/**
+ * Sizing controller for ellipse shape — moves only the dragged side of the
+ * bounding box (the opposite side stays fixed, like `BoxSizeController`),
+ * then re-fits the ellipse (center x/y, rx/ry) to the resulting box.
+ * Movement is quantized to 2px steps so the box width/height (always odd,
+ * per `ellipseBoundsFromCenter`) stay odd, which keeps rx/ry exact integers
+ * with no rounding drift.
+ */
+export class EllipseSizeController extends BoxSizeController {
+  update(editor: Editor, shape: Shape, e: PointerEvent, point: number[]) {
+    if (this.dxStep === 0 && this.dyStep === 0) return;
+    const r = geometry.copyRect(this.initialRect);
+    const minRadius = Math.max(Math.floor((this.options.minSize - 1) / 2), 0);
+    const min = minRadius * 2;
+    const qdx = Math.round(this.dx / 2) * 2;
+    const qdy = Math.round(this.dy / 2) * 2;
+    switch (this.options.position) {
+      case ControllerPosition.TOP:
+        r[0][1] += qdy;
+        if (geometry.height(r) < min) r[0][1] = r[1][1] - min;
+        break;
+      case ControllerPosition.BOTTOM:
+        r[1][1] += qdy;
+        if (geometry.height(r) < min) r[1][1] = r[0][1] + min;
+        break;
+      case ControllerPosition.LEFT:
+        r[0][0] += qdx;
+        if (geometry.width(r) < min) r[0][0] = r[1][0] - min;
+        break;
+      case ControllerPosition.RIGHT:
+        r[1][0] += qdx;
+        if (geometry.width(r) < min) r[1][0] = r[0][0] + min;
+        break;
+      case ControllerPosition.LEFT_TOP:
+        r[0][0] += qdx;
+        r[0][1] += qdy;
+        if (geometry.width(r) < min) r[0][0] = r[1][0] - min;
+        if (geometry.height(r) < min) r[0][1] = r[1][1] - min;
+        break;
+      case ControllerPosition.RIGHT_TOP:
+        r[1][0] += qdx;
+        r[0][1] += qdy;
+        if (geometry.width(r) < min) r[1][0] = r[0][0] + min;
+        if (geometry.height(r) < min) r[0][1] = r[1][1] - min;
+        break;
+      case ControllerPosition.LEFT_BOTTOM:
+        r[0][0] += qdx;
+        r[1][1] += qdy;
+        if (geometry.width(r) < min) r[0][0] = r[1][0] - min;
+        if (geometry.height(r) < min) r[1][1] = r[0][1] + min;
+        break;
+      case ControllerPosition.RIGHT_BOTTOM:
+        r[1][0] += qdx;
+        r[1][1] += qdy;
+        if (geometry.width(r) < min) r[1][0] = r[0][0] + min;
+        if (geometry.height(r) < min) r[1][1] = r[0][1] + min;
+        break;
+    }
+    const nr = geometry.normalizeRect(r);
+    const width = geometry.width(nr) + 1;
+    const height = geometry.height(nr) + 1;
+    const c = ellipseCenterFromBounds(nr[0][0], nr[0][1], width, height);
+    editor.transform.assign(shape, "left", nr[0][0]);
+    editor.transform.assign(shape, "top", nr[0][1]);
+    editor.transform.assign(shape, "width", width);
+    editor.transform.assign(shape, "height", height);
+    editor.transform.assign(shape, "x", c.x);
+    editor.transform.assign(shape, "y", c.y);
+    editor.transform.assign(shape, "rx", c.rx);
+    editor.transform.assign(shape, "ry", c.ry);
   }
 }
 

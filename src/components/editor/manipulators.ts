@@ -3,6 +3,8 @@ import { ControllerPosition } from "./consts";
 import {
   BoxMoveController,
   BoxSizeController,
+  EllipseMoveController,
+  EllipseSizeController,
   LineAddPointController,
   LineMoveController,
   LineMovePointController,
@@ -71,43 +73,31 @@ export class EllipseManipulator extends Manipulator {
   constructor() {
     super();
     this.controllers = [
-      new BoxSizeController(this, {
+      new EllipseSizeController(this, {
         position: ControllerPosition.TOP,
-        minSize: 3,
       }),
-      new BoxSizeController(this, {
+      new EllipseSizeController(this, {
         position: ControllerPosition.BOTTOM,
-        minSize: 3,
       }),
-      new BoxSizeController(this, {
+      new EllipseSizeController(this, {
         position: ControllerPosition.LEFT,
-        minSize: 3,
       }),
-      new BoxSizeController(this, {
+      new EllipseSizeController(this, {
         position: ControllerPosition.RIGHT,
-        minSize: 3,
       }),
-      new BoxSizeController(this, {
-        position: ControllerPosition.RIGHT,
-        minSize: 3,
-      }),
-      new BoxSizeController(this, {
+      new EllipseSizeController(this, {
         position: ControllerPosition.LEFT_TOP,
-        minSize: 3,
       }),
-      new BoxSizeController(this, {
+      new EllipseSizeController(this, {
         position: ControllerPosition.RIGHT_TOP,
-        minSize: 3,
       }),
-      new BoxSizeController(this, {
+      new EllipseSizeController(this, {
         position: ControllerPosition.RIGHT_BOTTOM,
-        minSize: 3,
       }),
-      new BoxSizeController(this, {
+      new EllipseSizeController(this, {
         position: ControllerPosition.LEFT_BOTTOM,
-        minSize: 3,
       }),
-      new BoxMoveController(this),
+      new EllipseMoveController(this),
     ];
   }
 }

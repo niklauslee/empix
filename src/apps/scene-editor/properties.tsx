@@ -1,6 +1,7 @@
 import { cn, odd } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import {
+  type EllipseShape,
   ShapeType,
   type LineShape,
   type Shape,
@@ -108,33 +109,43 @@ export const PositionEdit: React.FC<ShapeEditorProps> = ({
 }) => {
   if (selection.length === 0) return null;
   const shape = selection[0];
+  const isEllipse = shape.type === ShapeType.ELLIPSE;
+  const x = isEllipse ? (shape as EllipseShape).x : shape.left;
+  const y = isEllipse ? (shape as EllipseShape).y : shape.top;
+
+  const xLabel = isEllipse ? "CX" : "X";
+  const yLabel = isEllipse ? "CY" : "Y";
 
   return (
     <div className="flex w-full gap-4">
       <div className="flex gap-2 w-full">
-        <Label className="text-sm" htmlFor="input-x" title="X">
-          X
+        <Label className="text-sm" htmlFor="input-x" title={xLabel}>
+          {xLabel}
         </Label>
         <NumberField
           id="input-x"
-          title="X"
+          title={xLabel}
           className="text-sm"
           type="number"
-          value={shape?.left ?? 0}
-          onChange={(value) => onChange({ left: value })}
+          value={x ?? 0}
+          onChange={(value) =>
+            onChange(isEllipse ? { x: value } : { left: value })
+          }
         />
       </div>
       <div className="flex gap-2 w-full">
-        <Label className="text-sm" htmlFor="input-y" title="Y">
-          Y
+        <Label className="text-sm" htmlFor="input-y" title={yLabel}>
+          {yLabel}
         </Label>
         <NumberField
           id="input-y"
-          title="Y"
+          title={yLabel}
           className="text-sm"
           type="number"
-          value={shape?.top ?? 0}
-          onChange={(value) => onChange({ top: value })}
+          value={y ?? 0}
+          onChange={(value) =>
+            onChange(isEllipse ? { y: value } : { top: value })
+          }
         />
       </div>
     </div>
@@ -149,34 +160,49 @@ export const SizeEdit: React.FC<ShapeEditorProps> = ({
   const shape = selection[0];
   if (shape.type !== ShapeType.RECTANGLE && shape.type !== ShapeType.ELLIPSE)
     return null;
+  const isEllipse = shape.type === ShapeType.ELLIPSE;
+  const w = isEllipse ? (shape as EllipseShape).rx : shape.width;
+  const h = isEllipse ? (shape as EllipseShape).ry : shape.height;
 
   return (
     <div className="flex flex-col gap-2 w-full">
       <div className="flex w-full gap-4">
         <div className="flex gap-2 w-full">
-          <Label className="text-sm" htmlFor="input-width" title="Width">
-            W
+          <Label
+            className="text-sm"
+            htmlFor="input-width"
+            title={isEllipse ? "Radius X" : "Width"}
+          >
+            {isEllipse ? "RX" : "W"}
           </Label>
           <NumberField
             id="input-width"
-            title="Width"
+            title={isEllipse ? "Radius X" : "Width"}
             className="text-sm"
             type="number"
-            value={shape?.width ?? 0}
-            onChange={(value) => onChange({ width: value })}
+            value={w ?? 0}
+            onChange={(value) =>
+              onChange(isEllipse ? { rx: value } : { width: value })
+            }
           />
         </div>
         <div className="flex gap-2 w-full">
-          <Label className="text-sm" htmlFor="input-height" title="Height">
-            H
+          <Label
+            className="text-sm"
+            htmlFor="input-height"
+            title={isEllipse ? "Radius Y" : "Height"}
+          >
+            {isEllipse ? "RY" : "H"}
           </Label>
           <NumberField
             id="input-height"
-            title="Height"
+            title={isEllipse ? "Radius Y" : "Height"}
             className="text-sm"
             type="number"
-            value={shape?.height ?? 0}
-            onChange={(value) => onChange({ height: value })}
+            value={h ?? 0}
+            onChange={(value) =>
+              onChange(isEllipse ? { ry: value } : { height: value })
+            }
           />
         </div>
       </div>

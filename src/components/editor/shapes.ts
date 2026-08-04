@@ -45,6 +45,10 @@ export interface RectangleShape extends Shape {
 export interface EllipseShape extends Shape {
   type: typeof ShapeType.ELLIPSE;
   fill: boolean;
+  x: number; // center x
+  y: number; // center y
+  rx: number; // radius x
+  ry: number; // radius y
 }
 
 /**
@@ -131,6 +135,10 @@ export class ShapeFactory {
         s.fill = false;
         s.width = 3;
         s.height = 3;
+        s.rx = 1;
+        s.ry = 1;
+        s.x = s.left + s.rx;
+        s.y = s.top + s.ry;
         break;
       }
       case ShapeType.LINE: {
@@ -178,6 +186,34 @@ export class ShapeFactory {
 }
 
 /**
+ * Compute an ellipse's bounding box (left, top, width, height) from its
+ * center and radii. Inverse of `ellipseCenterFromBounds`.
+ */
+export function ellipseBoundsFromCenter(
+  x: number,
+  y: number,
+  rx: number,
+  ry: number,
+): { left: number; top: number; width: number; height: number } {
+  return { left: x - rx, top: y - ry, width: rx * 2 + 1, height: ry * 2 + 1 };
+}
+
+/**
+ * Compute an ellipse's center and radii from its bounding box. Inverse of
+ * `ellipseBoundsFromCenter`; only exact when width/height are odd.
+ */
+export function ellipseCenterFromBounds(
+  left: number,
+  top: number,
+  width: number,
+  height: number,
+): { x: number; y: number; rx: number; ry: number } {
+  const rx = Math.round((width - 1) / 2);
+  const ry = Math.round((height - 1) / 2);
+  return { x: left + rx, y: top + ry, rx, ry };
+}
+
+/**
  * Get the bounding rectangle of a shape
  */
 export function getBoundingRect(shape: Shape): number[][] {
@@ -200,11 +236,10 @@ export function getOutline(shape: Shape): number[][] {
     }
     case ShapeType.ELLIPSE: {
       const s = shape as EllipseShape;
-      const r = getBoundingRect(s);
       return geometry.pointsOnEllipse(
-        geometry.center(r),
-        s.width / 2,
-        s.height / 2,
+        [s.x, s.y],
+        s.rx,
+        s.ry,
         Math.max(Math.round((s.width + s.height) / 5), 30), // num of points
       );
     }
@@ -282,6 +317,12 @@ export function move(shape: Shape, dx: number, dy: number): void {
   shape.left += dx;
   shape.top += dy;
   switch (shape.type) {
+    case ShapeType.ELLIPSE: {
+      const ellipse = shape as EllipseShape;
+      ellipse.x += dx;
+      ellipse.y += dy;
+      break;
+    }
     case ShapeType.LINE: {
       const line = shape as LineShape;
       line.path = geometry.movePath(line.path, dx, dy);
@@ -312,21 +353,9 @@ export function render(gc: GraphicContext, shape: Shape) {
     case ShapeType.ELLIPSE: {
       const s = shape as EllipseShape;
       if (s.fill) {
-        gc.fillEllipse(
-          s.left,
-          s.top,
-          s.left + s.width - 1,
-          s.top + s.height - 1,
-          s.color,
-        );
+        gc.fillEllipse(s.x, s.y, s.rx, s.ry, s.color);
       } else {
-        gc.drawEllipse(
-          s.left,
-          s.top,
-          s.left + s.width - 1,
-          s.top + s.height - 1,
-          s.color,
-        );
+        gc.drawEllipse(s.x, s.y, s.rx, s.ry, s.color);
       }
       break;
     }
