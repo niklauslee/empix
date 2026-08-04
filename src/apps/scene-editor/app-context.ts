@@ -71,7 +71,7 @@ export class AppContext {
 
   /**
    * Initializes the app context. When `initialData` (a scene loaded from the
-   * dashboard) is given, it takes priority over the locally saved draft.
+   * dashboard) is given, it is loaded into the editor.
    */
   async initialize(editor: Editor, initialData?: any) {
     this.editor = editor;
@@ -80,10 +80,8 @@ export class AppContext {
     await this.loadFonts();
     if (initialData) {
       this.editor.loadFromJSON(initialData);
-      this.updateUI();
-    } else {
-      this.loadData();
     }
+    this.updateUI();
     registerCommands();
   }
 
@@ -95,7 +93,6 @@ export class AppContext {
       const size = editor.getSize();
       useEditorStore.getState().setSize(size[0], size[1]);
       useEditorStore.getState().setScale(editor.getScale());
-      this.saveData();
     });
     this.editor.onDblClick.addListener(({ shape, point }) => {
       if (shape && shape.type === ShapeType.PEN) {
@@ -112,17 +109,14 @@ export class AppContext {
     this.editor.transform.onAction.addListener((action) => {
       useEditorStore.getState().increaseActionSequence();
       useEditorStore.getState().setShapes([...this.editor.store.shapes]);
-      this.saveData();
     });
     this.editor.transform.onUndo.addListener((shape) => {
       useEditorStore.getState().increaseActionSequence();
       useEditorStore.getState().setShapes([...this.editor.store.shapes]);
-      this.saveData();
     });
     this.editor.transform.onRedo.addListener((shape) => {
       useEditorStore.getState().increaseActionSequence();
       useEditorStore.getState().setShapes([...this.editor.store.shapes]);
-      this.saveData();
     });
     this.editor.selection.onChange.addListener((shapes) => {
       useEditorStore.getState().setSelection([...shapes]);
@@ -141,26 +135,6 @@ export class AppContext {
         .setFormattedKeys(this.keymap.getAllFormattedKeyByCommand());
     } catch (err) {
       console.error("Failed to load keymaps", err);
-    }
-  }
-
-  loadData() {
-    const data = localStorage.getItem("app-data");
-    if (data) {
-      try {
-        const json = JSON.parse(data);
-        this.editor.loadFromJSON(json);
-      } catch (err) {
-        console.error("Failed to load app data", err);
-      }
-    }
-    this.updateUI();
-  }
-
-  saveData() {
-    if (this.editor.store.shapes.length > 0) {
-      const json = this.editor.saveToJSON();
-      localStorage.setItem("app-data", JSON.stringify(json));
     }
   }
 

@@ -5,7 +5,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/dialogs/confirm-dialog";
 import { FontCodeDialog, showFontCodeDialog } from "./code-dialog";
-import { findGlyph, formatCode, parseBDF, serializeBDF, type Font } from "./bdf";
+import { findGlyph, formatCode, parseBDF, serializeBDF } from "./bdf";
 import {
   clear,
   flipHorizontal,
@@ -36,15 +36,6 @@ const SHIFT_KEYS: Record<string, [number, number]> = {
   ArrowLeft: [-1, 0],
   ArrowRight: [1, 0],
 };
-
-function download(name: string, text: string) {
-  const url = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = name;
-  anchor.click();
-  URL.revokeObjectURL(url);
-}
 
 async function api(path: string, init?: RequestInit) {
   const response = await fetch(path, {
@@ -84,7 +75,6 @@ function App({
   );
   const [savedName, setSavedName] = useState(initialFont?.name ?? "");
   const [saving, setSaving] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
 
   const glyph = findGlyph(font, code);
   const onPixels = glyph?.pixels.filter((on) => on).length ?? 0;
@@ -111,14 +101,6 @@ function App({
       ? `Empix Font Editor — ${savedName}`
       : "Empix Font Editor";
   }, [savedName]);
-
-  /** Point the editor at a different, not-yet-saved font (import / new font). */
-  const replaceFont = (next: Font) => {
-    setFont(next);
-    setSavedId(null);
-    setSavedName("");
-    history.replaceState(null, "", "/font");
-  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -148,6 +130,9 @@ function App({
     }
   };
 
+  const handleSaveRef = useRef(handleSave);
+  handleSaveRef.current = handleSave;
+
   // keyboard shortcuts — bitmap operations act on the selected glyph
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
@@ -158,6 +143,11 @@ function App({
       const current = findGlyph(store.font, store.code);
       const mod = event.metaKey || event.ctrlKey;
 
+      if (mod && event.key.toLowerCase() === "s") {
+        event.preventDefault();
+        if (user) handleSaveRef.current();
+        return;
+      }
       if (mod && event.key.toLowerCase() === "z") {
         event.preventDefault();
         if (event.shiftKey) store.redo();
@@ -226,18 +216,6 @@ function App({
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  const handleImport = async (file: File) => {
-    try {
-      const imported = parseBDF(await file.text());
-      if (imported.glyphs.length === 0) throw new Error("no glyphs found");
-      replaceFont(imported);
-      flash(`Imported ${file.name} — ${imported.glyphs.length} glyphs`);
-    } catch (error) {
-      console.error("Failed to import the BDF file:", error);
-      flash("Import failed — not a valid BDF file");
-    }
-  };
-
   return (
     <>
       <main className="absolute inset-0 flex select-none flex-col bg-background text-foreground">
@@ -250,24 +228,6 @@ function App({
               {savedName}
             </span>
           )}
-          <Button
-            variant="outline"
-            size="sm"
-            title="Import a BDF file"
-            onClick={() => fileRef.current?.click()}
-          >
-            Import BDF
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            title="Export as BDF"
-            onClick={() =>
-              download(`${font.name || "untitled"}.bdf`, serializeBDF(font))
-            }
-          >
-            Export BDF
-          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -348,17 +308,6 @@ function App({
         </footer>
       </main>
 
-      <input
-        ref={fileRef}
-        type="file"
-        accept=".bdf,text/plain"
-        className="hidden"
-        onChange={(event) => {
-          const file = event.target.files?.[0];
-          event.target.value = "";
-          if (file) handleImport(file);
-        }}
-      />
       <ConfirmDialog />
       <FontCodeDialog />
     </>

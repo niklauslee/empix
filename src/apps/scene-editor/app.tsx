@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { SaveIcon } from "lucide-react";
 import { app, AppContext } from "@/apps/scene-editor/app-context";
 import { Editor } from "@/components/editor/editor";
@@ -91,14 +91,7 @@ function App({
     }
   };
 
-  /** Point the editor at a different, not-yet-saved scene (import). */
-  const replaceScene = () => {
-    setSavedId(null);
-    setSavedName("");
-    history.replaceState(null, "", "/scene");
-  };
-
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     setSaving(true);
     try {
       const data = JSON.stringify(window.app.editor.saveToJSON());
@@ -124,7 +117,18 @@ function App({
     } finally {
       setSaving(false);
     }
-  };
+  }, [savedId, savedName]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
+        event.preventDefault();
+        if (user && !saving) handleSave();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [user, saving, handleSave]);
 
   return (
     <>
@@ -163,60 +167,6 @@ function App({
               }}
             >
               Code
-            </Button>
-            <Button
-              variant="outline"
-              onClick={async () => {
-                // FIXME: Only works in Chromium-based browsers
-                try {
-                  const [fileHandle] = await (window as any).showOpenFilePicker(
-                    {
-                      types: [
-                        {
-                          description: "Empix file",
-                          accept: { "application/json": [".empix"] },
-                        },
-                      ],
-                      multiple: false,
-                    },
-                  );
-                  const file = await fileHandle.getFile();
-                  const text = await file.text();
-                  window.app.editor.loadFromJSON(JSON.parse(text));
-                  window.app.updateUI();
-                  replaceScene();
-                } catch (e) {
-                  if ((e as any)?.name !== "AbortError") console.error(e);
-                }
-              }}
-            >
-              Import
-            </Button>
-            <Button
-              variant="outline"
-              onClick={async () => {
-                // FIXME: Only works in Chromium-based browsers
-                try {
-                  const fileHandle = await (window as any).showSaveFilePicker({
-                    suggestedName: "untitled.empix",
-                    types: [
-                      {
-                        description: "Empix file",
-                        accept: { "application/json": [".empix"] },
-                      },
-                    ],
-                  });
-                  const writable = await fileHandle.createWritable();
-                  await writable.write(
-                    JSON.stringify(window.app.editor.saveToJSON(), null, 2),
-                  );
-                  await writable.close();
-                } catch (e) {
-                  if ((e as any)?.name !== "AbortError") console.error(e);
-                }
-              }}
-            >
-              Export
             </Button>
             {user ? (
               <Button
