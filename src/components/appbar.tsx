@@ -1,14 +1,15 @@
-import { Button, buttonVariants } from "@/components/ui/button";
+import { LayoutDashboardIcon } from "lucide-react";
 import Logo from "@/components/logo";
 import { cn } from "@/lib/utils";
 
-/** Which editor is currently open — its nav button is rendered as active. */
-export type AppbarApp = "scene" | "font";
+/** Which page is currently open — shown as a label, not a link. */
+export type AppbarApp = "scene" | "font" | "dashboard";
 
-const APPS: { app: AppbarApp; label: string; href: string }[] = [
-  { app: "scene", label: "Scene", href: "/scene" },
-  { app: "font", label: "Font", href: "/font" },
-];
+const APP_LABELS: Record<AppbarApp, string> = {
+  scene: "Scene",
+  font: "Font",
+  dashboard: "Dashboard",
+};
 
 interface AppbarProps extends React.HTMLAttributes<HTMLDivElement> {
   active: AppbarApp;
@@ -17,7 +18,7 @@ interface AppbarProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 /**
- * The titlebar shared by both editors: logo, the Scene/Font nav, and a slot
+ * The titlebar shared by all pages: logo, the current page label, and a slot
  * for app-specific actions.
  */
 export function Appbar({
@@ -39,23 +40,19 @@ export function Appbar({
           <Logo size={1.5} className="text-green-600" />
           <div className="text-xl ml-3">studio</div>
         </div>
-        <div className="flex flex-row items-start justify-center gap-2">
-          {APPS.map(({ app, label, href }) =>
-            app === active ? (
-              <Button key={app} variant="default">
-                {label}
-              </Button>
-            ) : (
-              <a
-                key={app}
-                href={href}
-                className={cn(buttonVariants({ variant: "outline" }))}
-              >
-                {label}
-              </a>
-            ),
-          )}
+        <div className="text-sm text-muted-foreground">
+          {APP_LABELS[active]}
         </div>
+        {active !== "dashboard" && (
+          <a
+            href="/dashboard"
+            title="Back to Dashboard"
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <LayoutDashboardIcon className="size-3.5" />
+            Dashboard
+          </a>
+        )}
       </div>
       <div className="flex items-center justify-end gap-2 px-4">
         {children}

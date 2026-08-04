@@ -1,4 +1,69 @@
 ---
-export const prerender = true;
-return Astro.redirect("/scene");
+import { GithubLogoIcon } from "@phosphor-icons/react";
+import { MonitorIcon, TypeIcon } from "lucide-react";
+import Head from "../components/astro/head.astro";
+import Logo from "../components/logo";
+import { Button } from "../components/ui/button";
+import "../styles/global.css";
+
+const user = Astro.locals.user;
+if (user) {
+  return Astro.redirect("/dashboard");
+}
 ---
+
+<html lang="en">
+  <Head title="Empix — Editors for monochrome embedded displays" />
+  <body class="dark">
+    <main
+      class="flex min-h-screen flex-col items-center justify-center gap-12 bg-background px-4 py-16 text-foreground"
+    >
+      <div class="flex flex-col items-center gap-4 text-center">
+        <Logo size={2.5} className="text-green-600" />
+        <h1 class="text-2xl font-semibold">Empix Studio</h1>
+        <p class="max-w-md text-sm text-muted-foreground">
+          Two browser-based editors for embedded devices with monochrome
+          displays. Design a scene or craft a bitmap font, then export
+          u8g2-ready C/C++ code.
+        </p>
+      </div>
+
+      <div class="grid w-full max-w-lg grid-cols-1 gap-4 sm:grid-cols-2">
+        <div
+          class="flex flex-col gap-2 rounded-xl border border-border bg-card p-5 text-card-foreground"
+        >
+          <MonitorIcon className="size-5 text-green-600" />
+          <div class="text-sm font-medium">Scene editor</div>
+          <p class="text-xs text-muted-foreground">
+            Draw into a packed 1-bpp pixel buffer and generate u8g2 C/C++ or
+            XBM code.
+          </p>
+        </div>
+        <div
+          class="flex flex-col gap-2 rounded-xl border border-border bg-card p-5 text-card-foreground"
+        >
+          <TypeIcon className="size-5 text-green-600" />
+          <div class="text-sm font-medium">Font editor</div>
+          <p class="text-xs text-muted-foreground">
+            A BDF glyph editor for crafting bitmap fonts for your display.
+          </p>
+        </div>
+      </div>
+
+      <div class="flex flex-col items-center gap-3">
+        <a href="/login">
+          <Button size="lg">Get started</Button>
+        </a>
+        <a
+          href="https://github.com/niklauslee/empix"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+        >
+          <GithubLogoIcon weight="fill" />
+          View on GitHub
+        </a>
+      </div>
+    </main>
+  </body>
+</html>

@@ -70,14 +70,20 @@ export class AppContext {
   }
 
   /**
-   * Initializes the app context
+   * Initializes the app context. When `initialData` (a scene loaded from the
+   * dashboard) is given, it takes priority over the locally saved draft.
    */
-  async initialize(editor: Editor) {
+  async initialize(editor: Editor, initialData?: any) {
     this.editor = editor;
     this.wiring();
     this.loadKeymap();
     await this.loadFonts();
-    this.loadData();
+    if (initialData) {
+      this.editor.loadFromJSON(initialData);
+      this.updateUI();
+    } else {
+      this.loadData();
+    }
     registerCommands();
   }
 

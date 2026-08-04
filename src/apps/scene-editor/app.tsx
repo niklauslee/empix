@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { SaveIcon } from "lucide-react";
 import { app, AppContext } from "@/apps/scene-editor/app-context";
 import { Editor } from "@/components/editor/editor";
 import { EditorComponent } from "@/components/editor/editor-component";
@@ -14,7 +16,8 @@ import { useEditorStore } from "@/apps/scene-editor/store/editor-store";
 import { LayersPanel } from "./layers";
 import { ScrollAreaBoth } from "@/components/ui/scroll-area-both";
 import { CodeDialog, useCodeDialog } from "@/components/dialogs/code-dialog";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 declare global {
   interface Window {
@@ -22,13 +25,59 @@ declare global {
   }
 }
 
-function App() {
+interface SceneEditorUser {
+  name: string;
+  image?: string | null;
+}
+
+interface InitialScene {
+  id: string;
+  name: string;
+  data: string;
+}
+
+async function api(path: string, init?: RequestInit) {
+  const response = await fetch(path, {
+    ...init,
+    headers: { "Content-Type": "application/json", ...init?.headers },
+  });
+  if (!response.ok) throw new Error(await response.text());
+  return response;
+}
+
+function App({
+  user,
+  initialScene,
+}: {
+  user: SceneEditorUser | null;
+  initialScene: InitialScene | null;
+}) {
   const selection = useEditorStore((state) => state.selection);
   // for ui update when actions are performed
   const actionSequence = useEditorStore((state) => state.actionSequence);
+  const [notice, setNotice] = useState("");
+  const [savedId, setSavedId] = useState<string | null>(
+    initialScene?.id ?? null,
+  );
+  const [savedName, setSavedName] = useState(initialScene?.name ?? "");
+  const [saving, setSaving] = useState(false);
 
-  const handleMount = (editor: Editor) => {
-    app.initialize(editor);
+  const flash = (message: string) => {
+    setNotice(message);
+    setTimeout(() => setNotice(""), 3000);
+  };
+
+  useEffect(() => {
+    document.title = savedName
+      ? `Empix Scene Editor — ${savedName}`
+      : "Empix Scene Editor";
+  }, [savedName]);
+
+  const handleMount = async (editor: Editor) => {
+    await app.initialize(
+      editor,
+      initialScene ? JSON.parse(initialScene.data) : undefined,
+    );
     editor.fit();
     editor.repaint();
   };
@@ -42,11 +91,54 @@ function App() {
     }
   };
 
+  /** Point the editor at a different, not-yet-saved scene (import). */
+  const replaceScene = () => {
+    setSavedId(null);
+    setSavedName("");
+    history.replaceState(null, "", "/scene");
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const data = JSON.stringify(window.app.editor.saveToJSON());
+      if (savedId) {
+        await api(`/api/scenes/${savedId}`, {
+          method: "PATCH",
+          body: JSON.stringify({ data }),
+        });
+      } else {
+        const response = await api("/api/scenes", {
+          method: "POST",
+          body: JSON.stringify({ name: savedName || "untitled", data }),
+        });
+        const created: { id: string; name: string } = await response.json();
+        setSavedId(created.id);
+        setSavedName(created.name);
+        history.replaceState(null, "", `/scene?id=${created.id}`);
+      }
+      flash("Saved to your account");
+    } catch (error) {
+      console.error("Failed to save the scene:", error);
+      flash("Save failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <>
       <Layout
         appbar={
           <Appbar active="scene">
+            {savedName && (
+              <span
+                className="max-w-48 truncate pr-2 text-xs text-muted-foreground"
+                title={savedName}
+              >
+                {savedName}
+              </span>
+            )}
             <Button
               variant="outline"
               onClick={() => {
@@ -92,6 +184,7 @@ function App() {
                   const text = await file.text();
                   window.app.editor.loadFromJSON(JSON.parse(text));
                   window.app.updateUI();
+                  replaceScene();
                 } catch (e) {
                   if ((e as any)?.name !== "AbortError") console.error(e);
                 }
@@ -125,6 +218,34 @@ function App() {
             >
               Export
             </Button>
+            {user ? (
+              <Button
+                variant="outline"
+                title={
+                  savedId
+                    ? "Save changes to your account"
+                    : "Save this scene to your account"
+                }
+                disabled={saving}
+                onClick={handleSave}
+              >
+                <SaveIcon className="size-3.5" />
+                {saving ? "Saving…" : "Save"}
+              </Button>
+            ) : (
+              <a
+                href="/login"
+                title="Sign in to save scenes to your account"
+                className={cn(buttonVariants({ variant: "outline" }))}
+              >
+                Sign in to Save
+              </a>
+            )}
+            {notice && (
+              <span className="pl-2 text-xs text-muted-foreground">
+                {notice}
+              </span>
+            )}
           </Appbar>
         }
         leftSidebar={
