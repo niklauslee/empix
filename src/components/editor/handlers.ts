@@ -5,7 +5,7 @@ import { drawBox } from "./utils";
 import {
   type BitmapShape,
   type EllipseShape,
-  ellipseBoundsFromCenter,
+  ellipseCenterFromBounds,
   type LineShape,
   type PenShape,
   type RectangleShape,
@@ -289,39 +289,45 @@ export class EllipseFactoryHandler extends Handler {
   initialize(editor: Editor, e: PointerEvent): void {
     editor.transform.begin();
     this.shape = editor.factory.create(ShapeType.ELLIPSE) as EllipseShape;
-    this.shape.x = this.dragStartPoint[0];
-    this.shape.y = this.dragStartPoint[1];
-    this.shape.rx = 1;
-    this.shape.ry = 1;
-    const b = ellipseBoundsFromCenter(
-      this.shape.x,
-      this.shape.y,
-      this.shape.rx,
-      this.shape.ry,
+    this.shape.left = this.dragStartPoint[0];
+    this.shape.top = this.dragStartPoint[1];
+    this.shape.width = 1;
+    this.shape.height = 1;
+    const c = ellipseCenterFromBounds(
+      this.shape.left,
+      this.shape.top,
+      this.shape.width,
+      this.shape.height,
     );
-    this.shape.left = b.left;
-    this.shape.top = b.top;
-    this.shape.width = b.width;
-    this.shape.height = b.height;
+    this.shape.x = c.x;
+    this.shape.y = c.y;
+    this.shape.rx = c.rx;
+    this.shape.ry = c.ry;
     editor.transform.insert(this.shape);
   }
 
   update(editor: Editor, e: PointerEvent): void {
     if (!this.shape) return;
-    const minRadius = 1;
-    const x = this.dragStartPoint[0];
-    const y = this.dragStartPoint[1];
-    const rx = Math.max(Math.abs(this.dragPoint[0] - x), minRadius);
-    const ry = Math.max(Math.abs(this.dragPoint[1] - y), minRadius);
-    const b = ellipseBoundsFromCenter(x, y, rx, ry);
-    editor.transform.assign(this.shape, "x", x);
-    editor.transform.assign(this.shape, "y", y);
-    editor.transform.assign(this.shape, "rx", rx);
-    editor.transform.assign(this.shape, "ry", ry);
-    editor.transform.assign(this.shape, "left", b.left);
-    editor.transform.assign(this.shape, "top", b.top);
-    editor.transform.assign(this.shape, "width", b.width);
-    editor.transform.assign(this.shape, "height", b.height);
+    const minSize = 1;
+    const r = [this.dragStartPoint, this.dragPoint];
+    const normalized = geometry.normalizeRect(r);
+    const l = normalized[0][0];
+    const t = normalized[0][1];
+    let w = Math.max(normalized[1][0] - normalized[0][0] + 1, minSize);
+    let h = Math.max(normalized[1][1] - normalized[0][1] + 1, minSize);
+    // the ellipse's center must land on a pixel, so the bounding box must
+    // always have odd width/height
+    if (w % 2 === 0) w += 1;
+    if (h % 2 === 0) h += 1;
+    const c = ellipseCenterFromBounds(l, t, w, h);
+    editor.transform.assign(this.shape, "x", c.x);
+    editor.transform.assign(this.shape, "y", c.y);
+    editor.transform.assign(this.shape, "rx", c.rx);
+    editor.transform.assign(this.shape, "ry", c.ry);
+    editor.transform.assign(this.shape, "left", l);
+    editor.transform.assign(this.shape, "top", t);
+    editor.transform.assign(this.shape, "width", w);
+    editor.transform.assign(this.shape, "height", h);
   }
 
   finalize(editor: Editor, e: PointerEvent): void {
