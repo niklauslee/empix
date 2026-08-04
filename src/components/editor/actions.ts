@@ -1,6 +1,8 @@
 import { nanoid } from "nanoid";
 import type { Editor } from "./editor";
 import {
+  type EllipseShape,
+  ellipseCenterFromBounds,
   move,
   ShapeType,
   type LineShape,
@@ -59,6 +61,10 @@ export class PredefinedActions {
               const dx = value - oldLeft;
               const ps = geometry.movePath(s.points, dx, 0);
               this.editor.transform.assign(shape, "points", ps);
+            } else if (shape.type === ShapeType.ELLIPSE) {
+              const s = shape as EllipseShape;
+              const dx = value - s.left;
+              this.editor.transform.assign(shape, "x", s.x + dx);
             }
           } else if (key === "top") {
             if (shape.type === ShapeType.LINE) {
@@ -73,6 +79,60 @@ export class PredefinedActions {
               const dy = value - oldTop;
               const ps = geometry.movePath(s.points, 0, dy);
               this.editor.transform.assign(shape, "points", ps);
+            } else if (shape.type === ShapeType.ELLIPSE) {
+              const s = shape as EllipseShape;
+              const dy = value - s.top;
+              this.editor.transform.assign(shape, "y", s.y + dy);
+            }
+          } else if (key === "width") {
+            if (shape.type === ShapeType.ELLIPSE) {
+              const s = shape as EllipseShape;
+              const center = ellipseCenterFromBounds(
+                s.left,
+                s.top,
+                value,
+                s.height,
+              );
+              this.editor.transform.assign(shape, "x", center.x);
+              this.editor.transform.assign(shape, "y", center.y);
+              this.editor.transform.assign(shape, "rx", center.rx);
+              this.editor.transform.assign(shape, "ry", center.ry);
+            }
+          } else if (key === "height") {
+            if (shape.type === ShapeType.ELLIPSE) {
+              const s = shape as EllipseShape;
+              const center = ellipseCenterFromBounds(
+                s.left,
+                s.top,
+                s.width,
+                value,
+              );
+              this.editor.transform.assign(shape, "x", center.x);
+              this.editor.transform.assign(shape, "y", center.y);
+              this.editor.transform.assign(shape, "rx", center.rx);
+              this.editor.transform.assign(shape, "ry", center.ry);
+            }
+          } else if (key === "x") {
+            if (shape.type === ShapeType.ELLIPSE) {
+              const s = shape as EllipseShape;
+              this.editor.transform.assign(shape, "left", value - s.rx);
+            }
+          } else if (key === "y") {
+            if (shape.type === ShapeType.ELLIPSE) {
+              const s = shape as EllipseShape;
+              this.editor.transform.assign(shape, "top", value - s.ry);
+            }
+          } else if (key === "rx") {
+            if (shape.type === ShapeType.ELLIPSE) {
+              const s = shape as EllipseShape;
+              this.editor.transform.assign(shape, "left", s.x - value);
+              this.editor.transform.assign(shape, "width", value * 2 + 1);
+            }
+          } else if (key === "ry") {
+            if (shape.type === ShapeType.ELLIPSE) {
+              const s = shape as EllipseShape;
+              this.editor.transform.assign(shape, "top", s.y - value);
+              this.editor.transform.assign(shape, "height", value * 2 + 1);
             }
           } else if (key === "font") {
             if (shape.type === ShapeType.TEXT) {
@@ -152,6 +212,12 @@ export class PredefinedActions {
       this.editor.transform.assign(s, "left", s.left + dx);
       this.editor.transform.assign(s, "top", s.top + dy);
       switch (s.type) {
+        case ShapeType.ELLIPSE: {
+          const ellipse = s as EllipseShape;
+          this.editor.transform.assign(ellipse, "x", ellipse.x + dx);
+          this.editor.transform.assign(ellipse, "y", ellipse.y + dy);
+          break;
+        }
         case ShapeType.LINE: {
           const line = s as LineShape;
           this.editor.transform.assign(

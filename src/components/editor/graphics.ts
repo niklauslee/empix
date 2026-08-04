@@ -258,13 +258,13 @@ export class GraphicContext {
   /**
    * Draw an ellipse
    */
-  drawEllipse(x1: number, y1: number, x2: number, y2: number, color: number) {
-    let px0 = Math.min(x1, x2);
-    let py0 = Math.min(y1, y2);
-    let px1 = Math.max(x1, x2);
-    let py1 = Math.max(y1, y2);
-    const a = px1 - px0;
-    const b = py1 - py0;
+  drawEllipse(x: number, y: number, rx: number, ry: number, color: number) {
+    let px0 = x - rx;
+    let py0 = y - ry;
+    let px1 = x + rx;
+    let py1 = y + ry;
+    const a = 2 * rx;
+    const b = 2 * ry;
     const b1 = b & 1;
     let dx = 4 * (1 - a) * b * b;
     let dy = 4 * (b1 + 1) * a * a;
@@ -297,12 +297,12 @@ export class GraphicContext {
     py1--;
     while (py0 - py1 <= b) {
       const lx = px0 - 1;
-      const rx = px1 + 1;
+      const rxEdge = px1 + 1;
       this.putPixel(lx, py0, color);
-      if (lx !== rx) this.putPixel(rx, py0, color);
+      if (lx !== rxEdge) this.putPixel(rxEdge, py0, color);
       if (py0 !== py1) {
         this.putPixel(lx, py1, color);
-        if (lx !== rx) this.putPixel(rx, py1, color);
+        if (lx !== rxEdge) this.putPixel(rxEdge, py1, color);
       }
       py0++;
       py1--;
@@ -312,13 +312,13 @@ export class GraphicContext {
   /**
    * Fill an ellipse
    */
-  fillEllipse(x1: number, y1: number, x2: number, y2: number, color: number) {
-    let px0 = Math.min(x1, x2);
-    let py0 = Math.min(y1, y2);
-    let px1 = Math.max(x1, x2);
-    let py1 = Math.max(y1, y2);
-    const a = px1 - px0;
-    const b = py1 - py0;
+  fillEllipse(x: number, y: number, rx: number, ry: number, color: number) {
+    let px0 = x - rx;
+    let py0 = y - ry;
+    let px1 = x + rx;
+    let py1 = y + ry;
+    const a = 2 * rx;
+    const b = 2 * ry;
     const b1 = b & 1;
     let dx = 4 * (1 - a) * b * b;
     let dy = 4 * (b1 + 1) * a * a;
