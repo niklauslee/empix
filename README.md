@@ -6,9 +6,6 @@
 
 Two super-simple editors for embedded devices with monochrome displays.
 
-- Local first and no login required
-- Save your work in the browser
-
 ## Scene editor
 
 ![Scene Editor](https://github.com/niklauslee/empix/blob/main/public/images/scene-editor.png?raw=true)
@@ -30,6 +27,15 @@ A BDF glyph editor for creating and editing bitmap fonts.
 - Import / export BDF fonts
 - Preview text rendered with the font
 
+## Dashboard
+
+Sign in with GitHub to save scenes and fonts to your account and manage them
+from one place.
+
+- Create, rename, delete, download and upload scenes and fonts
+- Open a saved scene or font straight into its editor
+- Everything is scoped to your account — nobody else can see or edit it
+
 ## Build
 
 ```sh
@@ -42,6 +48,45 @@ $ npm install
 
 # run app
 $ npm run dev
+```
+
+Signing in and saving to the dashboard needs a GitHub OAuth app and a
+Cloudflare D1 database configured locally (`.dev.vars`, `wrangler.jsonc`) —
+see `AGENTS.md` for details. The editors themselves work without any of that.
+
+## Remote database (Cloudflare D1)
+
+Deploying the dashboard needs a remote D1 database, created once per
+Cloudflare account:
+
+```sh
+# create the remote D1 database
+$ npx wrangler d1 create empix
+```
+
+Copy the `database_id` printed by that command into the `d1_databases` entry
+in `wrangler.jsonc`, then apply the migrations under `drizzle/migrations` to
+it:
+
+```sh
+$ npx wrangler d1 migrations apply DB --remote
+```
+
+Production also needs its own copies of the secrets from `.dev.vars`
+(`GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `BETTER_AUTH_SECRET`), set as
+Worker secrets:
+
+```sh
+$ npx wrangler secret put GITHUB_CLIENT_ID
+$ npx wrangler secret put GITHUB_CLIENT_SECRET
+$ npx wrangler secret put BETTER_AUTH_SECRET
+```
+
+Then build and deploy the Worker:
+
+```sh
+$ npm run build
+$ npx wrangler deploy
 ```
 
 ## Contribution

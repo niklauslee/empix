@@ -1,19 +1,11 @@
 import { useEffect, useRef, useState } from "react";
+import { SaveIcon } from "lucide-react";
 import { Appbar } from "@/components/appbar";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/dialogs/confirm-dialog";
 import { FontCodeDialog, showFontCodeDialog } from "./code-dialog";
-import {
-  createFont,
-  createGlyph,
-  findGlyph,
-  formatCode,
-  parseBDF,
-  remapPixels,
-  serializeBDF,
-  type Font,
-  type Glyph,
-} from "./bdf";
+import { findGlyph, formatCode, parseBDF, serializeBDF } from "./bdf";
 import {
   clear,
   flipHorizontal,
@@ -22,40 +14,12 @@ import {
   shift,
   type Tool,
 } from "./draw";
-import { loadDefaultGlyphSource, useFontStore } from "./font-store";
+import { useFontStore } from "./font-store";
 import { GlyphCanvas } from "./glyph-canvas";
 import { GlyphList } from "./glyph-list";
 import { PropertiesPanel } from "./properties";
 import { Preview } from "./preview";
 import { Toolbar } from "./toolbar";
-import { codepointsForRanges } from "./charsets";
-import { NewFontDialog, useNewFontDialog } from "./new-font-dialog";
-
-/**
- * A fresh font for the given ranges (see charsets.ts). When `fillGlyphs` is
- * set, glyphs are pre-filled with shapes from the built-in default font
- * instead of being left blank.
- */
-function blankFont(rangeIds: ReadonlySet<string>, fillGlyphs: boolean): Font {
-  const font = createFont({
-    name: "untitled",
-    box: { w: 8, h: 13, ox: 0, oy: -2 },
-    pointSize: 13,
-    ascent: 11,
-    descent: 2,
-  });
-  const source = fillGlyphs ? loadDefaultGlyphSource() : null;
-  const glyphs: Glyph[] = codepointsForRanges(rangeIds).map((code) => {
-    const glyph = createGlyph(font, code);
-    const sourceGlyph = source && findGlyph(source, code);
-    if (!sourceGlyph) return glyph;
-    return {
-      ...glyph,
-      pixels: remapPixels(source.box, sourceGlyph.pixels, font.box),
-    };
-  });
-  return { ...font, glyphs };
-}
 
 const TOOL_KEYS: Record<string, Tool> = {
   p: "pen",
@@ -73,23 +37,44 @@ const SHIFT_KEYS: Record<string, [number, number]> = {
   ArrowRight: [1, 0],
 };
 
-function download(name: string, text: string) {
-  const url = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = name;
-  anchor.click();
-  URL.revokeObjectURL(url);
+async function api(path: string, init?: RequestInit) {
+  const response = await fetch(path, {
+    ...init,
+    headers: { "Content-Type": "application/json", ...init?.headers },
+  });
+  if (!response.ok) throw new Error(await response.text());
+  return response;
 }
 
-function App() {
+interface FontEditorUser {
+  name: string;
+  image?: string | null;
+}
+
+interface InitialFont {
+  id: string;
+  name: string;
+  data: string;
+}
+
+function App({
+  user,
+  initialFont,
+}: {
+  user: FontEditorUser | null;
+  initialFont: InitialFont | null;
+}) {
   const font = useFontStore((state) => state.font);
   const code = useFontStore((state) => state.code);
   const tool = useFontStore((state) => state.tool);
   const hover = useFontStore((state) => state.hover);
   const setFont = useFontStore((state) => state.setFont);
   const [notice, setNotice] = useState("");
-  const fileRef = useRef<HTMLInputElement>(null);
+  const [savedId, setSavedId] = useState<string | null>(
+    initialFont?.id ?? null,
+  );
+  const [savedName, setSavedName] = useState(initialFont?.name ?? "");
+  const [saving, setSaving] = useState(false);
 
   const glyph = findGlyph(font, code);
   const onPixels = glyph?.pixels.filter((on) => on).length ?? 0;
@@ -98,6 +83,55 @@ function App() {
     setNotice(message);
     setTimeout(() => setNotice(""), 3000);
   };
+
+  // load the font passed down from the dashboard (`/font?id=...`), once
+  useEffect(() => {
+    if (!initialFont) return;
+    try {
+      setFont(parseBDF(initialFont.data));
+    } catch (error) {
+      console.error("Failed to load the saved font:", error);
+      flash("Failed to load the saved font");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    document.title = savedName
+      ? `Empix Font Editor — ${savedName}`
+      : "Empix Font Editor";
+  }, [savedName]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const data = serializeBDF(font);
+      if (savedId) {
+        await api(`/api/fonts/${savedId}`, {
+          method: "PATCH",
+          body: JSON.stringify({ data }),
+        });
+      } else {
+        const response = await api("/api/fonts", {
+          method: "POST",
+          body: JSON.stringify({ name: font.name || "untitled", data }),
+        });
+        const created: { id: string; name: string } = await response.json();
+        setSavedId(created.id);
+        setSavedName(created.name);
+        history.replaceState(null, "", `/font?id=${created.id}`);
+      }
+      flash("Saved to your account");
+    } catch (error) {
+      console.error("Failed to save the font:", error);
+      flash("Save failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveRef = useRef(handleSave);
+  handleSaveRef.current = handleSave;
 
   // keyboard shortcuts — bitmap operations act on the selected glyph
   useEffect(() => {
@@ -109,6 +143,11 @@ function App() {
       const current = findGlyph(store.font, store.code);
       const mod = event.metaKey || event.ctrlKey;
 
+      if (mod && event.key.toLowerCase() === "s") {
+        event.preventDefault();
+        if (user) handleSaveRef.current();
+        return;
+      }
       if (mod && event.key.toLowerCase() === "z") {
         event.preventDefault();
         if (event.shiftKey) store.redo();
@@ -177,48 +216,18 @@ function App() {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  const handleImport = async (file: File) => {
-    try {
-      const imported = parseBDF(await file.text());
-      if (imported.glyphs.length === 0) throw new Error("no glyphs found");
-      setFont(imported);
-      flash(`Imported ${file.name} — ${imported.glyphs.length} glyphs`);
-    } catch (error) {
-      console.error("Failed to import the BDF file:", error);
-      flash("Import failed — not a valid BDF file");
-    }
-  };
-
   return (
     <>
       <main className="absolute inset-0 flex select-none flex-col bg-background text-foreground">
         <Appbar active="font">
-          <Button
-            variant="outline"
-            size="sm"
-            title="Import a BDF file"
-            onClick={() => fileRef.current?.click()}
-          >
-            Import BDF
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            title="Export as BDF"
-            onClick={() =>
-              download(`${font.name || "untitled"}.bdf`, serializeBDF(font))
-            }
-          >
-            Export BDF
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            title="Start a new font"
-            onClick={() => useNewFontDialog.getState().show()}
-          >
-            New Font
-          </Button>
+          {savedName && (
+            <span
+              className="max-w-48 truncate pr-2 text-xs text-muted-foreground"
+              title={savedName}
+            >
+              {savedName}
+            </span>
+          )}
           <Button
             variant="outline"
             size="sm"
@@ -227,6 +236,30 @@ function App() {
           >
             Code
           </Button>
+          {user ? (
+            <Button
+              variant="outline"
+              size="sm"
+              title={
+                savedId
+                  ? "Save changes to your account"
+                  : "Save this font to your account"
+              }
+              disabled={saving}
+              onClick={handleSave}
+            >
+              <SaveIcon className="size-3.5" />
+              {saving ? "Saving…" : "Save"}
+            </Button>
+          ) : (
+            <a
+              href="/login"
+              title="Sign in to save fonts to your account"
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+            >
+              Sign in to Save
+            </a>
+          )}
         </Appbar>
 
         <section className="flex min-h-0 flex-1">
@@ -275,23 +308,7 @@ function App() {
         </footer>
       </main>
 
-      <input
-        ref={fileRef}
-        type="file"
-        accept=".bdf,text/plain"
-        className="hidden"
-        onChange={(event) => {
-          const file = event.target.files?.[0];
-          event.target.value = "";
-          if (file) handleImport(file);
-        }}
-      />
       <ConfirmDialog />
-      <NewFontDialog
-        onCreate={(selected, fillGlyphs) =>
-          setFont(blankFont(selected, fillGlyphs))
-        }
-      />
       <FontCodeDialog />
     </>
   );

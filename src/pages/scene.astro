@@ -1,13 +1,33 @@
 ---
-export const prerender = true;
 import App from "../apps/scene-editor/app";
 import Head from "../components/astro/head.astro";
 import "../styles/global.css";
+import { getDb } from "@/lib/db";
+import { scene } from "@/lib/db/schema";
+import { and, eq } from "drizzle-orm";
+
+const user = Astro.locals.user;
+const id = Astro.url.searchParams.get("id");
+
+let initialScene: { id: string; name: string; data: string } | null = null;
+if (id) {
+  if (!user) return Astro.redirect("/login");
+  const [row] = await getDb()
+    .select({ id: scene.id, name: scene.name, data: scene.data })
+    .from(scene)
+    .where(and(eq(scene.id, id), eq(scene.userId, user.id)));
+  if (!row) return Astro.redirect("/scene");
+  initialScene = row;
+}
 ---
 
 <html lang="en">
   <Head />
   <body class="dark">
-    <App client:only="react" />
+    <App
+      client:only="react"
+      user={user ? { name: user.name, image: user.image } : null}
+      initialScene={initialScene}
+    />
   </body>
 </html>
