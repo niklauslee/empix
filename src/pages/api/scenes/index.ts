@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { desc, eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { scene } from "@/lib/db/schema";
-import { parseSceneData } from "@/lib/db/scenes";
+import { compressSceneData, parseSceneData } from "@/lib/db/scenes";
 
 export const GET: APIRoute = async ({ locals }) => {
   const user = locals.user;
@@ -43,12 +43,12 @@ export const POST: APIRoute = async ({ locals, request }) => {
     id: crypto.randomUUID(),
     userId: user.id,
     name,
-    data,
+    data: compressSceneData(data),
     ...meta,
     createdAt: now,
     updatedAt: now,
   };
   await getDb().insert(scene).values(row);
 
-  return Response.json(row, { status: 201 });
+  return Response.json({ ...row, data }, { status: 201 });
 };

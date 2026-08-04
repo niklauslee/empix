@@ -75,6 +75,9 @@ function App({
   );
   const [savedName, setSavedName] = useState(initialFont?.name ?? "");
   const [saving, setSaving] = useState(false);
+  // font object as of the last load/save, to detect unsaved edits
+  const savedFontRef = useRef(font);
+  const dirty = font !== savedFontRef.current;
 
   const glyph = findGlyph(font, code);
   const onPixels = glyph?.pixels.filter((on) => on).length ?? 0;
@@ -88,13 +91,28 @@ function App({
   useEffect(() => {
     if (!initialFont) return;
     try {
-      setFont(parseBDF(initialFont.data));
+      const loaded = parseBDF(initialFont.data);
+      setFont(loaded);
+      savedFontRef.current = loaded;
     } catch (error) {
       console.error("Failed to load the saved font:", error);
       flash("Failed to load the saved font");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // warn before leaving the page (closing the tab or navigating to another
+  // URL) while there are edits that haven't been saved
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (dirty) {
+        event.preventDefault();
+        event.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [dirty]);
 
   useEffect(() => {
     document.title = savedName
@@ -121,6 +139,7 @@ function App({
         setSavedName(created.name);
         history.replaceState(null, "", `/font?id=${created.id}`);
       }
+      savedFontRef.current = font;
       flash("Saved to your account");
     } catch (error) {
       console.error("Failed to save the font:", error);
@@ -132,6 +151,15 @@ function App({
 
   const handleSaveRef = useRef(handleSave);
   handleSaveRef.current = handleSave;
+
+  // auto-save 10s after the last edit, once signed in
+  useEffect(() => {
+    if (!user || !dirty || saving) return;
+    const timer = setTimeout(() => {
+      handleSaveRef.current();
+    }, 10000);
+    return () => clearTimeout(timer);
+  }, [user, dirty, saving, font]);
 
   // keyboard shortcuts — bitmap operations act on the selected glyph
   useEffect(() => {
@@ -145,7 +173,7 @@ function App({
 
       if (mod && event.key.toLowerCase() === "s") {
         event.preventDefault();
-        if (user) handleSaveRef.current();
+        if (user && store.font !== savedFontRef.current) handleSaveRef.current();
         return;
       }
       if (mod && event.key.toLowerCase() === "z") {
@@ -245,7 +273,7 @@ function App({
                   ? "Save changes to your account"
                   : "Save this font to your account"
               }
-              disabled={saving}
+              disabled={saving || !dirty}
               onClick={handleSave}
             >
               <SaveIcon className="size-3.5" />

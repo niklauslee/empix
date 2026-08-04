@@ -2,7 +2,11 @@ import type { APIRoute } from "astro";
 import { and, eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { font } from "@/lib/db/schema";
-import { countGlyphs } from "@/lib/db/fonts";
+import {
+  compressFontData,
+  countGlyphs,
+  decompressFontData,
+} from "@/lib/db/fonts";
 
 export const GET: APIRoute = async ({ params, locals }) => {
   const user = locals.user;
@@ -14,7 +18,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
     .where(and(eq(font.id, params.id!), eq(font.userId, user.id)));
   if (!row) return new Response("Not found", { status: 404 });
 
-  return Response.json(row);
+  return Response.json({ ...row, data: decompressFontData(row.data) });
 };
 
 export const PATCH: APIRoute = async ({ params, locals, request }) => {
@@ -24,7 +28,7 @@ export const PATCH: APIRoute = async ({ params, locals, request }) => {
   const body = (await request.json()) as { name?: unknown; data?: unknown };
   const changes: {
     name?: string;
-    data?: string;
+    data?: Buffer;
     glyphCount?: number;
     updatedAt: Date;
   } = { updatedAt: new Date() };
@@ -38,7 +42,7 @@ export const PATCH: APIRoute = async ({ params, locals, request }) => {
     if (!body.data.includes("STARTFONT")) {
       return new Response("Not a valid BDF file", { status: 400 });
     }
-    changes.data = body.data;
+    changes.data = compressFontData(body.data);
     changes.glyphCount = countGlyphs(body.data);
   }
   if (changes.name === undefined && changes.data === undefined) {
@@ -52,7 +56,8 @@ export const PATCH: APIRoute = async ({ params, locals, request }) => {
     .returning();
   if (result.length === 0) return new Response("Not found", { status: 404 });
 
-  return Response.json(result[0]);
+  const [updated] = result;
+  return Response.json({ ...updated, data: decompressFontData(updated.data) });
 };
 
 export const DELETE: APIRoute = async ({ params, locals }) => {

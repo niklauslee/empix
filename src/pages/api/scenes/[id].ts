@@ -2,7 +2,11 @@ import type { APIRoute } from "astro";
 import { and, eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { scene } from "@/lib/db/schema";
-import { parseSceneData } from "@/lib/db/scenes";
+import {
+  compressSceneData,
+  decompressSceneData,
+  parseSceneData,
+} from "@/lib/db/scenes";
 
 export const GET: APIRoute = async ({ params, locals }) => {
   const user = locals.user;
@@ -14,7 +18,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
     .where(and(eq(scene.id, params.id!), eq(scene.userId, user.id)));
   if (!row) return new Response("Not found", { status: 404 });
 
-  return Response.json(row);
+  return Response.json({ ...row, data: decompressSceneData(row.data) });
 };
 
 export const PATCH: APIRoute = async ({ params, locals, request }) => {
@@ -24,7 +28,7 @@ export const PATCH: APIRoute = async ({ params, locals, request }) => {
   const body = (await request.json()) as { name?: unknown; data?: unknown };
   const changes: {
     name?: string;
-    data?: string;
+    data?: Buffer;
     width?: number;
     height?: number;
     shapeCount?: number;
@@ -39,7 +43,7 @@ export const PATCH: APIRoute = async ({ params, locals, request }) => {
   if (typeof body.data === "string") {
     const meta = parseSceneData(body.data);
     if (!meta) return new Response("Not a valid scene file", { status: 400 });
-    changes.data = body.data;
+    changes.data = compressSceneData(body.data);
     Object.assign(changes, meta);
   }
   if (changes.name === undefined && changes.data === undefined) {
@@ -53,7 +57,11 @@ export const PATCH: APIRoute = async ({ params, locals, request }) => {
     .returning();
   if (result.length === 0) return new Response("Not found", { status: 404 });
 
-  return Response.json(result[0]);
+  const [updated] = result;
+  return Response.json({
+    ...updated,
+    data: decompressSceneData(updated.data),
+  });
 };
 
 export const DELETE: APIRoute = async ({ params, locals }) => {

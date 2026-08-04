@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { desc, eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { font } from "@/lib/db/schema";
-import { countGlyphs } from "@/lib/db/fonts";
+import { compressFontData, countGlyphs } from "@/lib/db/fonts";
 
 export const GET: APIRoute = async ({ locals }) => {
   const user = locals.user;
@@ -42,12 +42,12 @@ export const POST: APIRoute = async ({ locals, request }) => {
     id: crypto.randomUUID(),
     userId: user.id,
     name,
-    data,
+    data: compressFontData(data),
     glyphCount: countGlyphs(data),
     createdAt: now,
     updatedAt: now,
   };
   await getDb().insert(font).values(row);
 
-  return Response.json(row, { status: 201 });
+  return Response.json({ ...row, data }, { status: 201 });
 };

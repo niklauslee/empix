@@ -61,6 +61,9 @@ function App({
   );
   const [savedName, setSavedName] = useState(initialScene?.name ?? "");
   const [saving, setSaving] = useState(false);
+  // actionSequence value as of the last successful save, to detect unsaved edits
+  const [savedActionSequence, setSavedActionSequence] = useState(0);
+  const dirty = actionSequence !== savedActionSequence;
 
   const flash = (message: string) => {
     setNotice(message);
@@ -110,25 +113,47 @@ function App({
         setSavedName(created.name);
         history.replaceState(null, "", `/scene?id=${created.id}`);
       }
-      flash("Saved to your account");
+      setSavedActionSequence(actionSequence);
     } catch (error) {
       console.error("Failed to save the scene:", error);
       flash("Save failed");
     } finally {
       setSaving(false);
     }
-  }, [savedId, savedName]);
+  }, [savedId, savedName, actionSequence]);
+
+  // warn before leaving the page (closing the tab or navigating to another
+  // URL) while there are edits that haven't been saved
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (dirty) {
+        event.preventDefault();
+        event.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [dirty]);
+
+  // auto-save 10s after the last edit, once signed in
+  useEffect(() => {
+    if (!user || !dirty || saving) return;
+    const timer = setTimeout(() => {
+      handleSave();
+    }, 10000);
+    return () => clearTimeout(timer);
+  }, [user, dirty, saving, handleSave]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
         event.preventDefault();
-        if (user && !saving) handleSave();
+        if (user && !saving && dirty) handleSave();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [user, saving, handleSave]);
+  }, [user, saving, dirty, handleSave]);
 
   return (
     <>
@@ -176,7 +201,7 @@ function App({
                     ? "Save changes to your account"
                     : "Save this scene to your account"
                 }
-                disabled={saving}
+                disabled={saving || !dirty}
                 onClick={handleSave}
               >
                 <SaveIcon className="size-3.5" />

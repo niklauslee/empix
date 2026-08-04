@@ -1,3 +1,5 @@
+import { deflate, inflate } from "pako";
+
 /** Parsed shape of `Editor#saveToJSON()`, without pulling in the editor core. */
 export interface SceneMeta {
   width: number;
@@ -18,4 +20,14 @@ export function parseSceneData(data: string): SceneMeta | null {
   if (typeof width !== "number" || typeof height !== "number") return null;
   if (!Array.isArray(shapes)) return null;
   return { width, height, shapeCount: shapes.length };
+}
+
+/** Compress scene JSON for storage in the `scene.data` blob column. */
+export function compressSceneData(data: string): Buffer {
+  return Buffer.from(deflate(data));
+}
+
+/** Decompress the `scene.data` blob column back into scene JSON. */
+export function decompressSceneData(data: Buffer | Uint8Array): string {
+  return new TextDecoder("utf-8").decode(inflate(data));
 }

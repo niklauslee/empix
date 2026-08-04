@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import {
   DownloadIcon,
   LogOutIcon,
-  PencilIcon,
   PlusIcon,
   SquarePenIcon,
   Trash2Icon,
@@ -10,7 +9,6 @@ import {
 } from "lucide-react";
 import { Appbar } from "@/components/appbar";
 import { Button } from "@/components/ui/button";
-import { TextField } from "@/components/ui/text-field";
 import {
   ConfirmDialog,
   useConfirmDialog,
@@ -27,6 +25,7 @@ import {
 } from "@/apps/font-editor/bdf";
 import { loadDefaultGlyphSource } from "@/apps/font-editor/font-store";
 import { codepointsForRanges } from "./charsets";
+import { EditableName } from "./editable-name";
 import { NewFontDialog, useNewFontDialog } from "./new-font-dialog";
 import { Sidebar, type DashboardView } from "./sidebar";
 
@@ -410,14 +409,11 @@ function App({ user }: { user: DashboardUser }) {
                         key={row.id}
                         className="grid grid-cols-[1fr_80px_70px_180px_116px] items-center gap-2 border-b-[1.5px] border-neutral-800 px-4 py-2 text-xs last:border-b-0"
                       >
-                        <div className="flex items-center gap-1.5 pr-2">
-                          <PencilIcon className="size-3 shrink-0 text-muted-foreground/60" />
-                          <TextField
-                            value={row.name}
-                            onChange={(name) => handleRenameScene(row.id, name)}
-                            className="h-7"
-                          />
-                        </div>
+                        <EditableName
+                          name={row.name}
+                          onSave={(name) => handleRenameScene(row.id, name)}
+                          onOpen={() => (location.href = `/scene?id=${row.id}`)}
+                        />
                         <div className="text-muted-foreground">
                           {row.shapeCount}
                         </div>
@@ -520,14 +516,11 @@ function App({ user }: { user: DashboardUser }) {
                         key={row.id}
                         className="grid grid-cols-[1fr_80px_180px_116px] items-center gap-2 border-b-[1.5px] border-neutral-800 px-4 py-2 text-xs last:border-b-0"
                       >
-                        <div className="flex items-center gap-1.5 pr-2">
-                          <PencilIcon className="size-3 shrink-0 text-muted-foreground/60" />
-                          <TextField
-                            value={row.name}
-                            onChange={(name) => handleRename(row.id, name)}
-                            className="h-7"
-                          />
-                        </div>
+                        <EditableName
+                          name={row.name}
+                          onSave={(name) => handleRename(row.id, name)}
+                          onOpen={() => (location.href = `/font?id=${row.id}`)}
+                        />
                         <div className="text-muted-foreground">
                           {row.glyphCount}
                         </div>

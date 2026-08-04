@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, blob } from "drizzle-orm/sqlite-core";
 
 // better-auth's core schema (user/session/account/verification), hand-written
 // because `better-auth/adapters/drizzle` generation needs to import the real
@@ -65,7 +65,9 @@ export const font = sqliteTable("font", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
-  data: text("data").notNull(),
+  // BDF source, pako-deflated — see compressFontData/decompressFontData in
+  // ./fonts.ts.
+  data: blob("data", { mode: "buffer" }).notNull(),
   glyphCount: integer("glyphCount").notNull(),
   createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
@@ -79,7 +81,9 @@ export const scene = sqliteTable("scene", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
-  data: text("data").notNull(),
+  // JSON scene data, pako-deflated — see compressSceneData/decompressSceneData
+  // in ./scenes.ts.
+  data: blob("data", { mode: "buffer" }).notNull(),
   width: integer("width").notNull(),
   height: integer("height").notNull(),
   shapeCount: integer("shapeCount").notNull(),
