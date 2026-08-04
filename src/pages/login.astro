@@ -1,0 +1,43 @@
+---
+import { GithubLogoIcon } from "@phosphor-icons/react";
+import Head from "../components/astro/head.astro";
+import Logo from "../components/logo";
+import { Button } from "../components/ui/button";
+import "../styles/global.css";
+
+const user = Astro.locals.user;
+if (user) {
+  return Astro.redirect("/dashboard");
+}
+---
+
+<html lang="en">
+  <Head title="Empix — Sign in" />
+  <body class="dark">
+    <main
+      class="flex min-h-screen items-center justify-center bg-background text-foreground"
+    >
+      <div
+        class="flex w-full max-w-sm flex-col items-center gap-6 rounded-xl border border-border bg-card p-8 text-card-foreground"
+      >
+        <Logo size={1.5} />
+        <Button id="sign-in-github" className="w-full">
+          <GithubLogoIcon weight="fill" />
+          Sign in with GitHub
+        </Button>
+      </div>
+    </main>
+    <script>
+      import { authClient } from "@/lib/auth-client";
+
+      document
+        .getElementById("sign-in-github")
+        ?.addEventListener("click", () => {
+          authClient.signIn.social({
+            provider: "github",
+            callbackURL: "/dashboard",
+          });
+        });
+    </script>
+  </body>
+</html>
