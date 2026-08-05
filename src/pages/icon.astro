@@ -1,0 +1,34 @@
+---
+import App from "../apps/icon-editor/app";
+import Head from "../components/astro/head.astro";
+import "../styles/global.css";
+import { getDb } from "@/lib/db";
+import { iconSet } from "@/lib/db/schema";
+import { decompressIconSetData } from "@/lib/db/icon-sets";
+import { and, eq } from "drizzle-orm";
+
+const user = Astro.locals.user;
+const id = Astro.url.searchParams.get("id");
+
+let initialIconSet: { id: string; name: string; data: string } | null = null;
+if (id) {
+  if (!user) return Astro.redirect("/login");
+  const [row] = await getDb()
+    .select({ id: iconSet.id, name: iconSet.name, data: iconSet.data })
+    .from(iconSet)
+    .where(and(eq(iconSet.id, id), eq(iconSet.userId, user.id)));
+  if (!row) return Astro.redirect("/icon");
+  initialIconSet = { ...row, data: decompressIconSetData(row.data) };
+}
+---
+
+<html lang="en">
+  <Head title="Empix Icon Editor" />
+  <body class="dark">
+    <App
+      client:only="react"
+      user={user ? { name: user.name, image: user.image } : null}
+      initialIconSet={initialIconSet}
+    />
+  </body>
+</html>

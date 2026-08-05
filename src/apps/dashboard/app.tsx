@@ -73,6 +73,16 @@ interface SceneRow {
   updatedAt: string;
 }
 
+interface IconSetRow {
+  id: string;
+  name: string;
+  width: number;
+  height: number;
+  iconCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 /** A blank scene, same defaults as `editor-component.tsx`'s `basicSetup()`. */
 function blankScene() {
   return JSON.stringify({
@@ -82,6 +92,11 @@ function blankScene() {
     scale: 5,
     shapes: [],
   });
+}
+
+/** A blank icon set, same default box as `icon-store.ts`'s `createIconSet()`. */
+function blankIconSet() {
+  return JSON.stringify({ box: { w: 16, h: 16 }, icons: [] });
 }
 
 interface DashboardUser {
@@ -110,10 +125,14 @@ async function api(path: string, init?: RequestInit) {
 function App({ user }: { user: DashboardUser }) {
   const [scenes, setScenes] = useState<SceneRow[] | null>(null);
   const [fonts, setFonts] = useState<FontRow[] | null>(null);
+  const [iconSets, setIconSets] = useState<IconSetRow[] | null>(
+    null,
+  );
   const [notice, setNotice] = useState("");
   const [view, setView] = useState<DashboardView>("scenes");
   const fileRef = useRef<HTMLInputElement>(null);
   const sceneFileRef = useRef<HTMLInputElement>(null);
+  const iconSetFileRef = useRef<HTMLInputElement>(null);
 
   const flash = (message: string) => {
     setNotice(message);
@@ -122,15 +141,18 @@ function App({ user }: { user: DashboardUser }) {
 
   const load = async () => {
     try {
-      const [scenesResponse, fontsResponse] = await Promise.all([
-        api("/api/scenes"),
-        api("/api/fonts"),
-      ]);
+      const [scenesResponse, fontsResponse, iconSetsResponse] =
+        await Promise.all([
+          api("/api/scenes"),
+          api("/api/fonts"),
+          api("/api/icon-sets"),
+        ]);
       setScenes(await scenesResponse.json());
       setFonts(await fontsResponse.json());
+      setIconSets(await iconSetsResponse.json());
     } catch (error) {
       console.error("Failed to load the dashboard:", error);
-      flash("Failed to load your scenes and fonts");
+      flash("Failed to load your scenes, fonts and icon sets");
     }
   };
 
@@ -312,6 +334,95 @@ function App({ user }: { user: DashboardUser }) {
     }
   };
 
+  const handleUploadIconSet = async (file: File) => {
+    try {
+      const data = await file.text();
+      const parsed = JSON.parse(data);
+      if (!Array.isArray(parsed.icons) || typeof parsed.box !== "object") {
+        throw new Error("not an icon set file");
+      }
+      const name = file.name.replace(/\.eicon$/i, "");
+      const response = await api("/api/icon-sets", {
+        method: "POST",
+        body: JSON.stringify({ name, data }),
+      });
+      const created: IconSetRow = await response.json();
+      setIconSets((current) => [created, ...(current ?? [])]);
+      flash(`Uploaded ${file.name}`);
+    } catch (error) {
+      console.error("Failed to upload the icon set:", error);
+      flash("Upload failed — not a valid .eicon file");
+    }
+  };
+
+  const handleCreateIconSet = async () => {
+    try {
+      const response = await api("/api/icon-sets", {
+        method: "POST",
+        body: JSON.stringify({ name: "untitled", data: blankIconSet() }),
+      });
+      const created: IconSetRow = await response.json();
+      location.href = `/icon?id=${created.id}`;
+    } catch (error) {
+      console.error("Failed to create the icon set:", error);
+      flash("Failed to create the icon set");
+    }
+  };
+
+  const handleRenameIconSet = async (id: string, name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    const previous = iconSets;
+    setIconSets(
+      (current) =>
+        current?.map((p) => (p.id === id ? { ...p, name: trimmed } : p)) ??
+        current,
+    );
+    try {
+      await api(`/api/icon-sets/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ name: trimmed }),
+      });
+    } catch (error) {
+      console.error("Failed to rename the icon set:", error);
+      flash("Rename failed");
+      setIconSets(previous);
+    }
+  };
+
+  const handleDeleteIconSet = (row: IconSetRow) => {
+    useConfirmDialog
+      .getState()
+      .show(
+        "Delete Icon Set",
+        `Are you sure you want to delete "${row.name}"? This action cannot be undone.`,
+        async () => {
+          const previous = iconSets;
+          setIconSets(
+            (current) => current?.filter((p) => p.id !== row.id) ?? current,
+          );
+          try {
+            await api(`/api/icon-sets/${row.id}`, { method: "DELETE" });
+          } catch (error) {
+            console.error("Failed to delete the icon set:", error);
+            flash("Delete failed");
+            setIconSets(previous);
+          }
+        },
+      );
+  };
+
+  const handleDownloadIconSet = async (row: IconSetRow) => {
+    try {
+      const response = await api(`/api/icon-sets/${row.id}`);
+      const full: IconSetRow & { data: string } = await response.json();
+      download(`${full.name}.eicon`, full.data);
+    } catch (error) {
+      console.error("Failed to download the icon set:", error);
+      flash("Download failed");
+    }
+  };
+
   return (
     <>
       <main className="absolute inset-0 flex select-none flex-col bg-background text-foreground">
@@ -341,6 +452,7 @@ function App({ user }: { user: DashboardUser }) {
             onChange={setView}
             sceneCount={scenes?.length ?? null}
             fontCount={fonts?.length ?? null}
+            iconSetCount={iconSets?.length ?? null}
           />
 
           <div className="min-h-0 flex-1 overflow-auto">
@@ -560,11 +672,131 @@ function App({ user }: { user: DashboardUser }) {
                   </div>
                 </>
               )}
+
+              {view === "icons" && (
+                <>
+                  <div className="mb-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <h1 className="text-sm font-medium">Icon Sets</h1>
+                      {iconSets && (
+                        <span className="text-xs text-muted-foreground">
+                          {iconSets.length} set
+                          {iconSets.length === 1 ? "" : "s"}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        title="Start a new icon set"
+                        onClick={handleCreateIconSet}
+                      >
+                        <PlusIcon className="size-3.5" />
+                        New Icon Set
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        title="Upload an .eicon file"
+                        onClick={() => iconSetFileRef.current?.click()}
+                      >
+                        <UploadIcon className="size-3.5" />
+                        Upload Icons
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="mb-8 border-[1.5px] border-neutral-800">
+                    <div className="grid grid-cols-[1fr_60px_70px_180px_116px] items-center gap-2 border-b-[1.5px] border-neutral-800 px-4 py-2 text-xs text-muted-foreground">
+                      <div>Name</div>
+                      <div>Icons</div>
+                      <div>Size</div>
+                      <div>Updated</div>
+                      <div className="text-right">Actions</div>
+                    </div>
+
+                    {iconSets === null && (
+                      <div className="px-4 py-6 text-center text-xs text-muted-foreground/60">
+                        Loading…
+                      </div>
+                    )}
+
+                    {iconSets !== null && iconSets.length === 0 && (
+                      <div className="px-4 py-6 text-center text-xs text-muted-foreground/60">
+                        No icon sets yet — start one from the icon editor
+                        and save it to your account.
+                      </div>
+                    )}
+
+                    {iconSets?.map((row) => (
+                      <div
+                        key={row.id}
+                        className="grid grid-cols-[1fr_60px_70px_180px_116px] items-center gap-2 border-b-[1.5px] border-neutral-800 px-4 py-2 text-xs last:border-b-0"
+                      >
+                        <EditableName
+                          name={row.name}
+                          onSave={(name) => handleRenameIconSet(row.id, name)}
+                          onOpen={() => (location.href = `/icon?id=${row.id}`)}
+                        />
+                        <div className="text-muted-foreground">
+                          {row.iconCount}
+                        </div>
+                        <div className="text-muted-foreground">
+                          {row.width}x{row.height}
+                        </div>
+                        <div className="text-muted-foreground">
+                          {new Date(row.updatedAt).toLocaleString()}
+                        </div>
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            title="Open in Icon Editor"
+                            onClick={() =>
+                              (location.href = `/icon?id=${row.id}`)
+                            }
+                          >
+                            <SquarePenIcon className="size-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            title="Download as .eicon"
+                            onClick={() => handleDownloadIconSet(row)}
+                          >
+                            <DownloadIcon className="size-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            title="Delete"
+                            onClick={() => handleDeleteIconSet(row)}
+                          >
+                            <Trash2Icon className="size-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
       </main>
 
+      <input
+        ref={iconSetFileRef}
+        type="file"
+        accept=".eicon,application/json"
+        className="hidden"
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          event.target.value = "";
+          if (file) handleUploadIconSet(file);
+        }}
+      />
       <input
         ref={sceneFileRef}
         type="file"
