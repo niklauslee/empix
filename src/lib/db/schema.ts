@@ -90,3 +90,23 @@ export const scene = sqliteTable("scene", {
   createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
 });
+
+// An icon set saved from the icon editor (IconSet, serialized as JSON — see
+// icon-editor/icon.ts), owned by a user and managed from the dashboard.
+// Every icon in the set shares one box, mirrored below as width/height for
+// listing.
+export const iconSet = sqliteTable("icon_set", {
+  id: text("id").primaryKey(),
+  userId: text("userId")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  // JSON icon set data, pako-deflated — see
+  // compressIconSetData/decompressIconSetData in ./icon-sets.ts.
+  data: blob("data", { mode: "buffer" }).notNull(),
+  width: integer("width").notNull(),
+  height: integer("height").notNull(),
+  iconCount: integer("iconCount").notNull(),
+  createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
+});

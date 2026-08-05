@@ -3,11 +3,12 @@ import Logo from "@/components/logo";
 import { cn } from "@/lib/utils";
 
 /** Which page is currently open — shown as a label, not a link. */
-export type AppbarApp = "scene" | "font" | "dashboard";
+export type AppbarApp = "scene" | "font" | "icon" | "dashboard";
 
 const APP_LABELS: Record<AppbarApp, string> = {
   scene: "Scene",
   font: "Font",
+  icon: "Icon",
   dashboard: "Dashboard",
 };
 

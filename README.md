@@ -4,7 +4,7 @@
 
 👉 https://empix.niklauslee.workers.dev/
 
-Two super-simple editors for embedded devices with monochrome displays.
+Three super-simple editors for embedded devices with monochrome displays.
 
 ## Scene editor
 
@@ -27,13 +27,23 @@ A BDF glyph editor for creating and editing bitmap fonts.
 - Import / export BDF fonts
 - Preview text rendered with the font
 
+## Icon editor
+
+![Icon Editor](https://github.com/niklauslee/empix/blob/main/public/images/icon-editor.png?raw=true)
+
+An editor for icon sets — many named icon bitmaps sharing one fixed size.
+
+- Edit icon bitmaps on a shared, resizable grid
+- [u8g2](https://github.com/olikraus/u8g2) XBM C byte array code generation
+- Export all icons at once, or just the selected one
+
 ## Dashboard
 
-Sign in with GitHub to save scenes and fonts to your account and manage them
-from one place.
+Sign in with GitHub to save scenes, fonts and icon sets to your account and
+manage them from one place.
 
-- Create, rename, delete, download and upload scenes and fonts
-- Open a saved scene or font straight into its editor
+- Create, rename, delete, download and upload scenes, fonts and icon sets
+- Open a saved scene, font or icon set straight into its editor
 - Everything is scoped to your account — nobody else can see or edit it
 
 ## Build

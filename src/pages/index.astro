@@ -1,6 +1,6 @@
 ---
 import { GithubLogoIcon } from "@phosphor-icons/react";
-import { MonitorIcon, TypeIcon } from "lucide-react";
+import { ImageIcon, MonitorIcon, TypeIcon } from "lucide-react";
 import Head from "../components/astro/head.astro";
 import Logo from "../components/logo";
 import { Button } from "../components/ui/button";
@@ -22,13 +22,13 @@ if (user) {
         <Logo size={2.5} className="text-green-600" />
         <h1 class="text-2xl font-semibold">Empix Studio</h1>
         <p class="max-w-md text-sm text-muted-foreground">
-          Two browser-based editors for embedded devices with monochrome
-          displays. Design a scene or craft a bitmap font, then export
-          u8g2-ready C/C++ code.
+          Three browser-based editors for embedded devices with monochrome
+          displays. Design a scene, craft a bitmap font, or draw an icon set,
+          then export u8g2-ready C/C++ code.
         </p>
       </div>
 
-      <div class="grid w-full max-w-lg grid-cols-1 gap-4 sm:grid-cols-2">
+      <div class="grid w-full max-w-2xl grid-cols-1 gap-4 sm:grid-cols-3">
         <div
           class="flex flex-col gap-2 rounded-xl border border-border bg-card p-5 text-card-foreground"
         >
@@ -46,6 +46,15 @@ if (user) {
           <div class="text-sm font-medium">Font editor</div>
           <p class="text-xs text-muted-foreground">
             A BDF glyph editor for crafting bitmap fonts for your display.
+          </p>
+        </div>
+        <div
+          class="flex flex-col gap-2 rounded-xl border border-border bg-card p-5 text-card-foreground"
+        >
+          <ImageIcon className="size-5 text-green-600" />
+          <div class="text-sm font-medium">Icon editor</div>
+          <p class="text-xs text-muted-foreground">
+            Edit a set of named icon bitmaps and generate u8g2 XBM code.
           </p>
         </div>
       </div>

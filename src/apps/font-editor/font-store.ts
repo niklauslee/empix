@@ -1,8 +1,5 @@
 /**
- * Font editor state. The font lives in memory only — unlike the scene editor
- * it is *not* persisted: serializing a few thousand glyphs to BDF on every edit
- * made `localStorage` writes stall the browser. Use Import / Export to keep
- * work across reloads.
+ * Font editor state.
  */
 
 import { create } from "zustand";

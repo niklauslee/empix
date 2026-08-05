@@ -1,17 +1,19 @@
 # Empix Studio
 
-Two browser-based editors for embedded devices with monochrome displays:
+Three browser-based editors for embedded devices with monochrome displays:
 
 - **Scene editor** (`/scene`) — draws into a packed 1-bpp pixel buffer (like a
   real display framebuffer) and generates
   [u8g2](https://github.com/olikraus/u8g2) C/C++ or XBM code from the scene.
 - **Font editor** (`/font`) — a BDF glyph editor.
+- **Icon editor** (`/icon`) — edits many named icon bitmaps that share one
+  fixed size (an icon set) and generates u8g2-ready XBM C byte arrays.
 
-Editing works anonymously with no account: the scene autosaves to
-`localStorage` and the font stays in memory (import/export). Signing in with
-GitHub adds a **dashboard** (`/dashboard`) that saves scenes and fonts
-per-user to a Cloudflare D1 database, so they can be reopened from any
-browser.
+Editing works anonymously with no account, but nothing persists until you
+sign in: the scene, the font and the icon set all stay in memory only
+(import/export). Signing in with GitHub adds a **dashboard** (`/dashboard`)
+that saves scenes, fonts and icon sets per-user to a Cloudflare D1 database,
+so they can be reopened from any browser.
 
 Astro, server-rendered, + React islands, deployed to Cloudflare Workers
 (`@astrojs/cloudflare`) with a D1 binding — not a static-assets-only site.
@@ -58,14 +60,17 @@ src/
     dashboard.astro auth-required; redirects to /login if not signed in
     scene.astro     scene editor; ?id= loads a saved scene (auth-required only then)
     font.astro      font editor; ?id= loads a saved font (auth-required only then)
+    icon.astro      icon editor; ?id= loads a saved icon set (auth-required only then)
     api/
       auth/[...all].ts    better-auth catch-all handler
-      scenes/index.ts, scenes/[id].ts   CRUD for the signed-in user's scenes
-      fonts/index.ts, fonts/[id].ts     CRUD for the signed-in user's fonts
+      scenes/index.ts, scenes/[id].ts       CRUD for the signed-in user's scenes
+      fonts/index.ts, fonts/[id].ts         CRUD for the signed-in user's fonts
+      icon-sets/index.ts, icon-sets/[id].ts CRUD for the signed-in user's icon sets
   apps/
     scene-editor/  the u8g2 scene editor app (AppContext, engine, UI, commands)
     font-editor/    the BDF glyph editor app (self-contained)
-    dashboard/      lists/manages a signed-in user's saved scenes and fonts
+    icon-editor/    the icon set editor app (self-contained)
+    dashboard/      lists/manages a signed-in user's saved scenes, fonts and icon sets
   components/
     editor/         reusable editor core — canvas, shapes, tools, undo/redo
     ui/             shadcn components
@@ -76,7 +81,7 @@ src/
     utils.ts        cn, detectPlatform, generateNewName, odd
     auth.ts         getAuth() — lazy better-auth singleton (GitHub OAuth + D1)
     auth-client.ts  authClient — better-auth browser client (signIn/signOut)
-    db/             schema.ts (Drizzle), index.ts (getDb()), fonts.ts, scenes.ts
+    db/             schema.ts (Drizzle), index.ts (getDb()), fonts.ts, scenes.ts, icon-sets.ts
   middleware.ts     resolves the session on every request into Astro.locals
   font-data.ts      generated — embedded BDF fonts (deflate + base64)
   styles/           global.css (Tailwind v4 + theme), fonts.css (@font-face)
@@ -85,13 +90,17 @@ src/
 All pages render their app's `<App client:only="react" />` inside
 `<body class="dark">` (there is no light theme) with the shared
 `components/astro/head.astro`, which takes an optional `title` and includes
-the Google Analytics tag. `scene.astro`/`font.astro`/`dashboard.astro` share
-`components/appbar.tsx` for their header (logo, current-page label, a
-"Dashboard" back-link, and app-specific actions on the right).
+the Google Analytics tag. `scene.astro`/`font.astro`/`icon.astro`/
+`dashboard.astro` share `components/appbar.tsx` for their header (logo,
+current-page label, a "Dashboard" back-link, and app-specific actions on the
+right).
 
 The apps share `components/editor/`, `ui/`, `icons/`, `dialogs/`, `logo.tsx`,
 `appbar.tsx`, `lib/utils.ts` and `font-data.ts` — nothing else. In particular
-the font editor does not touch the editor core, `AppContext` or the engine.
+the font editor and the icon editor don't touch the editor core, `AppContext`
+or the engine, and the icon editor doesn't share code with the font editor
+either (`icon-editor/draw.ts` is a deliberate near-duplicate of
+`font-editor/draw.ts`, not an import — the two apps stay independent).
 
 ## Scene editor
 
@@ -106,21 +115,20 @@ Three layers, from inside out:
 
 `src/apps/scene-editor/app-context.ts` glues them: `AppContext` is a singleton
 exposed as `window.app`, and holds `editor`, `commands`, `keymap`,
-`codeGenerator`. Its `wiring()` subscribes to editor events and pushes state into
-`useEditorStore`; every action also triggers `saveData()`
-(`localStorage["app-data"]`), the always-on anonymous draft autosave.
-`initialize(editor, initialData?)` additionally loads the keymap, the embedded
-BDF fonts, and registers commands; when `initialData` is given (a scene loaded
-server-side from D1 via `?id=`, see `scene.astro`) it takes priority over the
-localStorage draft and is loaded via `loadFromJSON` instead. It is called from
-`app.tsx`'s `onMount` handler on `EditorComponent`.
+`codeGenerator`. Its `wiring()` subscribes to editor events and pushes state
+into `useEditorStore`. `initialize(editor, initialData?)` additionally loads
+the keymap, the embedded BDF fonts, and registers commands; when
+`initialData` is given (a scene loaded server-side from D1 via `?id=`, see
+`scene.astro`) it is loaded via `loadFromJSON`, otherwise the editor starts
+blank. It is called from `app.tsx`'s `onMount` handler on `EditorComponent`.
 
-Cloud save is opt-in and separate from the localStorage draft: `app.tsx` shows
-a **Save** button (only when signed in — otherwise a "Sign in to Save" link to
-`/login`) that `POST`s `/api/scenes` the first time and `PATCH`s
-`/api/scenes/:id` afterward, then updates the URL to `/scene?id=...` via
-`history.replaceState`. Saving to the cloud never touches or clears the
-localStorage draft.
+Cloud save only exists when signed in: `app.tsx` shows a **Save** button
+(only when signed in — otherwise a "Sign in to Save" link to `/login`) that
+`POST`s `/api/scenes` the first time and `PATCH`s `/api/scenes/:id`
+afterward, then updates the URL to `/scene?id=...` via
+`history.replaceState`; edits also auto-save 10s after the last change while
+signed in. Anonymous edits aren't persisted anywhere and are lost on reload
+(a `beforeunload` warning fires if there are unsaved changes).
 
 ### Editor core (`src/components/editor/`)
 
@@ -227,6 +235,46 @@ listener in `app.tsx`.
   editor (`POST`/`PATCH` `/api/fonts`), independent of the in-memory-only
   default.
 
+## Icon editor (`src/apps/icon-editor/`)
+
+A self-contained icon set editor at `/icon`, modeled closely on the font
+editor: one fixed `Box` (width/height, no baseline/origin) shared by every
+icon in the set, icons keyed by name instead of Unicode codepoint. No editor
+core, no `AppContext`, no engine, no command manager — keyboard shortcuts are
+a single `keydown` listener in `app.tsx`, same as the font editor.
+
+- `icon.ts` — the `IconSet` / `Icon` / `Box` model: `createIconSet`,
+  `createIcon`, `findIcon`, `uniqueName`, `remapPixels` / `resizeBox` (crops
+  or pads every icon top-left anchored when the box changes — no baseline to
+  keep pixels relative to, unlike the font editor's `resizeBox`),
+  `sanitizeIdentifier` (for codegen), `serializeIconSet` / `parseIconSet`
+  (plain JSON — there's no BDF-equivalent interchange format for icon sets).
+- `draw.ts` — pixel operations (pen, eraser, line, rect, flood fill, shift,
+  flip, invert, clear) and the `Tool` union, operating on `boolean[]` +
+  `Box`. A deliberate near-duplicate of `font-editor/draw.ts` rather than a
+  shared import (see above).
+- `icon-store.ts` — zustand store: the `IconSet`, selected icon name, tool,
+  cell size, guides, filter, hover cell, and an undo stack of bitmap patches
+  keyed by icon name (structural edits — add/remove icon, box resize — clear
+  it). Like the font, the set is **not** persisted locally: it starts as a
+  blank 16×16 set and is kept in memory only. Only the cell-size (zoom)
+  preference lives in `localStorage` (`icon-editor-cell-size`).
+- `render.ts` — `setupCanvas` plus `drawIcon` (plain top-left pixel blit — no
+  baseline math, unlike the font editor's `drawGlyph`).
+- `app.tsx` — layout (appbar / icon list / grid + toolbar / properties /
+  status bar), keyboard shortcuts. When opened via `/icon?id=`,
+  `initialIconSet.data` is parsed with `parseIconSet()` into the store on
+  mount. Same Save / "Sign in to Save" pattern as the other editors
+  (`POST`/`PATCH` `/api/icon-sets`); with `icon-list.tsx`, `icon-canvas.tsx`,
+  `toolbar.tsx`, `properties.tsx`.
+- `code-generator.ts` — `generateXBM(box, icons, {lang, useProgmem})` packs
+  each icon LSB-first per row (true XBM bit order, matching u8g2's
+  `drawXBM`/`drawXBMP`, unlike the scene editor's whole-framebuffer
+  `generateXBM` which reuses the MSB-first `GraphicContext` packing) and
+  emits one `#define`/byte-array block per icon. `code-dialog.tsx`
+  (`IconCodeDialog` / `showIconCodeDialog`) picks the language, PROGMEM, and
+  whether to export all icons or just the selected one.
+
 ## Dashboard, auth & cloud persistence
 
 - **Auth**: `src/lib/auth.ts` — `getAuth()`, a lazily-constructed `betterAuth()`
@@ -244,34 +292,42 @@ listener in `app.tsx`.
 - **Database**: `src/lib/db/schema.ts` (Drizzle, SQLite dialect, D1 binding
   `DB`) has better-auth's core tables (`user`, `session`, `account`,
   `verification` — hand-written, not generated, because generation needs
-  `better-auth`'s config which pulls in `cloudflare:workers`) plus two app
+  `better-auth`'s config which pulls in `cloudflare:workers`) plus three app
   tables: `scene` (`data` = `Editor#saveToJSON` output, `width`/`height`/
-  `shapeCount` mirrored for listing) and `font` (`data` = raw BDF text,
-  `glyphCount` mirrored). Both are `userId`-scoped with `onDelete: "cascade"`.
-  `src/lib/db/index.ts` — `getDb()`, same lazy-singleton pattern as
-  `getAuth()`. `db/fonts.ts` (`countGlyphs`) and `db/scenes.ts`
-  (`parseSceneData`) derive the mirrored metadata without importing the
-  editor/font-editor code.
+  `shapeCount` mirrored for listing), `font` (`data` = raw BDF text,
+  `glyphCount` mirrored), and `iconSet` — SQL table name `icon_set`, the one
+  place a table's SQL name and its Drizzle export diverge, since `icon_set`
+  is the conventional snake_case SQLite name while every other identifier in
+  the codebase stays camelCase (`data` = `IconSet` JSON, `width`/`height`/
+  `iconCount` mirrored). All three are `userId`-scoped with
+  `onDelete: "cascade"`. `src/lib/db/index.ts` — `getDb()`, same
+  lazy-singleton pattern as `getAuth()`. `db/fonts.ts` (`countGlyphs`),
+  `db/scenes.ts` (`parseSceneData`) and `db/icon-sets.ts`
+  (`parseIconSetData`) derive the mirrored metadata without importing the
+  editor/font-editor/icon-editor code.
 - **API routes** (`src/pages/api/`): `scenes/index.ts` (`GET` list metadata
   only, `POST` create) and `scenes/[id].ts` (`GET`/`PATCH`/`DELETE`), mirrored
-  by `fonts/index.ts` / `fonts/[id].ts`. Every query is scoped with
-  `eq(<table>.userId, user.id)`, so another user's row 404s rather than 403s.
-  `auth/[...all].ts` just forwards to `getAuth().handler(request)`.
+  by `fonts/index.ts` / `fonts/[id].ts` and `icon-sets/index.ts` /
+  `icon-sets/[id].ts`. Every query is scoped with `eq(<table>.userId,
+user.id)`, so another user's row 404s rather than 403s. `auth/[...all].ts`
+  just forwards to `getAuth().handler(request)`.
 - **Dashboard app** (`src/apps/dashboard/`, route `/dashboard`, redirects to
-  `/login` if signed out): `app.tsx` fetches `/api/scenes` and `/api/fonts` on
-  mount and renders a two-tab (Scenes/Fonts) table via `sidebar.tsx` — create,
-  inline rename (optimistic, rolls back on failure), delete (via the shared
-  `ConfirmDialog`), download (blobs the full row to `.empix`/`.bdf`), and
-  upload. "New Scene" / "New Font" create a blank row then navigate to
-  `/scene?id=…` / `/font?id=…`. `new-font-dialog.tsx` + `charsets.ts` pick
-  Unicode glyph ranges (optionally pre-filled from the embedded 6x13 font)
-  when creating a font.
-- `scene.astro` / `font.astro` stay usable **anonymously** — auth is only
-  enforced when the URL carries `?id=`: signed out → redirect to `/login`;
-  signed in but the row doesn't belong to you → redirect back to the
-  id-less URL. When it resolves, the row is fetched server-side via Drizzle
-  and passed as `initialScene`/`initialFont` (plus `user: {name, image} |
-  null`) props to the React app.
+  `/login` if signed out): `app.tsx` fetches `/api/scenes`, `/api/fonts` and
+  `/api/icon-sets` on mount and renders a three-tab (Scenes/Fonts/Icon Sets)
+  table via `sidebar.tsx` — create, inline rename (optimistic, rolls back on
+  failure), delete (via the shared `ConfirmDialog`), download (blobs the full
+  row to `.empix`/`.bdf`/`.eicon`), and upload. "New Scene" / "New Font" /
+  "New Icon Set" create a blank row then navigate to `/scene?id=…` /
+  `/font?id=…` / `/icon?id=…` (icon sets default to a blank 16×16 box, no
+  creation-time dialog). `new-font-dialog.tsx` + `charsets.ts` pick Unicode
+  glyph ranges (optionally pre-filled from the embedded 6x13 font) when
+  creating a font.
+- `scene.astro` / `font.astro` / `icon.astro` stay usable **anonymously** —
+  auth is only enforced when the URL carries `?id=`: signed out → redirect to
+  `/login`; signed in but the row doesn't belong to you → redirect back to
+  the id-less URL. When it resolves, the row is fetched server-side via
+  Drizzle and passed as `initialScene`/`initialFont`/`initialIconSet` (plus
+  `user: {name, image} | null`) props to the React app.
 
 ## Fonts
 
@@ -302,8 +358,10 @@ Two unrelated font pipelines:
 - Adding a command: register it in `src/apps/scene-editor/commands.ts` and bind
   a key in `src/apps/scene-editor/keymap.json`; invoke with
   `window.app.commands.execute(id)`.
-- Code shared by both apps belongs in `src/components/` or `src/lib/`;
-  app-specific code stays under its `src/apps/<app>/` directory.
+- Code shared across apps belongs in `src/components/` or `src/lib/`;
+  app-specific code stays under its `src/apps/<app>/` directory. The font
+  editor and icon editor deliberately don't share code with each other even
+  though they're structurally similar — see the note above `draw.ts`.
 - Import alias `@/*` → `src/*`. TypeScript is `astro/tsconfigs/strict`.
 - Debugging: `window.app` (app context) and `window.editor` (editor instance) —
   scene editor only.

@@ -1,13 +1,14 @@
-import { MonitorIcon, TypeIcon } from "lucide-react";
+import { ImageIcon, MonitorIcon, TypeIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type DashboardView = "scenes" | "fonts";
+export type DashboardView = "scenes" | "fonts" | "icons";
 
 interface SidebarProps {
   active: DashboardView;
   onChange: (view: DashboardView) => void;
   sceneCount: number | null;
   fontCount: number | null;
+  iconSetCount: number | null;
 }
 
 const ITEMS: {
@@ -17,6 +18,7 @@ const ITEMS: {
 }[] = [
   { id: "scenes", label: "Scenes", icon: MonitorIcon },
   { id: "fonts", label: "Fonts", icon: TypeIcon },
+  { id: "icons", label: "Icon Sets", icon: ImageIcon },
 ];
 
 export function Sidebar({
@@ -24,10 +26,12 @@ export function Sidebar({
   onChange,
   sceneCount,
   fontCount,
+  iconSetCount,
 }: SidebarProps) {
   const counts: Record<DashboardView, number | null> = {
     scenes: sceneCount,
     fonts: fontCount,
+    icons: iconSetCount,
   };
 
   return (
