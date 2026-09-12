@@ -182,7 +182,7 @@ export function IconList({ className, ...others }: IconListProps) {
                   </div>
                   <span
                     className={cn(
-                      "w-full truncate text-center font-mono text-xs leading-none",
+                      "w-full truncate text-center font-mono text-[10px] leading-none",
                       selected ? "text-neutral-100" : "text-muted-foreground",
                     )}
                   >
