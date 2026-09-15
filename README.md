@@ -1,6 +1,6 @@
 # Pixpix Studio
 
-👉 https://pixpix-studio.niklauslee.workers.dev/
+👉 https://pixpix-studio.mklaabs.com/
 
 Three super-simple editors for embedded devices with monochrome displays.
 
