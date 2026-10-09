@@ -458,7 +458,7 @@ Server-rendered: `astro.config.mjs` sets `output: "server"` with the
 `@astrojs/cloudflare` adapter, so `astro build` emits a Worker (not just
 static assets). `wrangler.jsonc` sets `main` to the adapter's server
 entrypoint, an `assets` binding for `./dist`, and a `d1_databases` binding
-(`DB`, database `pixpix`, migrations in `drizzle/migrations`). Secrets
+(`DB`, database `pixpix-studio-db`, migrations in `drizzle/migrations`). Secrets
 (`GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `BETTER_AUTH_SECRET`) come from
 `.dev.vars` locally and Worker secrets in production. Live at
 <https://pixpix-studio.mklaabs.com/>

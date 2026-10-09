@@ -10,6 +10,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
+    "deploy": "astro build && wrangler deploy",
     "generate-types": "wrangler types"
   },
   "dependencies": {

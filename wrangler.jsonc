@@ -11,8 +11,8 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "pixpix-studio",
-      "database_id": "4dd9f406-f617-4087-ab16-9f7bc44f13ee",
+      "database_name": "pixpix-studio-db",
+      "database_id": "56b278db-f56c-4313-87a0-f384a4c164de",
       "migrations_dir": "drizzle/migrations",
       "remote": true,
     },
