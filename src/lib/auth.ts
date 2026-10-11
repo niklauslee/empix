@@ -15,6 +15,12 @@ export function getAuth() {
       database: drizzleAdapter(drizzle(env.DB, { schema }), {
         provider: "sqlite",
       }),
+      // Derived per request from the Host header, restricted to these hosts,
+      // so production and the dev server (any port) work without a fixed
+      // BETTER_AUTH_URL.
+      baseURL: {
+        allowedHosts: ["pixpix-studio.mklaabs.com", "localhost:*"],
+      },
       socialProviders: {
         github: {
           clientId: env.GITHUB_CLIENT_ID,
