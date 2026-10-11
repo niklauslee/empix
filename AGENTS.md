@@ -48,7 +48,7 @@ Database (D1 via Drizzle, no npm script wraps these yet — run directly):
 - `npx wrangler d1 migrations apply DB --local` / `--remote` — apply pending
   migrations to the local dev DB or the remote D1 database
 
-Local dev needs a `.dev.vars` (gitignored, see `.dev.vars.example`) with
+Local dev needs a `.env` (gitignored, see `.env.example`) with
 `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` (GitHub OAuth app) and
 `BETTER_AUTH_SECRET`.
 
@@ -460,7 +460,7 @@ static assets). `wrangler.jsonc` sets `main` to the adapter's server
 entrypoint, an `assets` binding for `./dist`, and a `d1_databases` binding
 (`DB`, database `pixpix-studio-db`, migrations in `drizzle/migrations`). Secrets
 (`GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `BETTER_AUTH_SECRET`) come from
-`.dev.vars` locally and Worker secrets in production. Live at
+`.env` locally and Worker secrets in production. Live at
 <https://pixpix-studio.mklaabs.com/>
 
 ## Documentation

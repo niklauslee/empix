@@ -59,7 +59,7 @@ $ npm run dev
 ```
 
 Signing in and saving to the dashboard needs a GitHub OAuth app and a
-Cloudflare D1 database configured locally (`.dev.vars`, `wrangler.jsonc`) —
+Cloudflare D1 database configured locally (`.env`, `wrangler.jsonc`) —
 see `AGENTS.md` for details. The editors themselves work without any of that.
 
 ## Remote database (Cloudflare D1)
@@ -80,7 +80,7 @@ it:
 $ npx wrangler d1 migrations apply DB --remote
 ```
 
-Production also needs its own copies of the secrets from `.dev.vars`
+Production also needs its own copies of the secrets from `.env`
 (`GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `BETTER_AUTH_SECRET`), set as
 Worker secrets:
 
